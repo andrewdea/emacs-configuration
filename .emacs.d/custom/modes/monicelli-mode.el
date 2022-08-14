@@ -14,55 +14,71 @@
 
 ;;; Commentary:
 
-;; short description here
+;; Simple mode providing syntax highlight for the Monicelli programming language
+;; see https://github.com/esseks/monicelli for more info on this great language
 
-;; full doc on how to use here
+;; Add this to your init file to have monicelli-mode available:
+;; (add-to-list 'load-path "<path to the folder where you have this file>")
+;; 			   ;eg ~/.emacs.d/custom/modes
+;; ;; loading monicelli mode
+;; (autoload 'monicelli-mode "<path to this file>")
+;; 			     ; eg ~/.emacs.d/custom/modes/monicelli-mode.el
+;;
+;; ;; opening monicelli files with monicelli-mode
+;; (add-to-list 'auto-mode-alist '("\\.mc\\'" . monicelli-mode))
+
 
 ;;; Code:
+;; earlier version 
+;; (setq monicelli-highlights
+;; 	     '(
+;; 	       ("\\(\\(bituma\\)\\|\\(#\\)\\).*$" . 'font-lock-comment-face)
+;; 	       ("\\( e velocità di esecuzione\\)\\|\\(o tarapia tapioco\\)\\|\\(o magari\\)\\|\\(che cos'è\\)\\|\\(Lei ha clacsonato\\)\\|\\(voglio\\)\\|\\(come\\( se\\)? fosse\\)" . 'font-lock-keyword-face)
+;; 	       ("\\(Necchi\\)\\|\\(Mascetti\\)\\|\\(Perozzi\\)\\|\\(Melandri\\)\\|\\(Sassaroli\\)" . 'font-lock-type-face)
+;; 	       ("\\(a posterdati\\)\\|\\(mi porga\\)" . 'font-lock-builtin-face)
+;; 	       ("\\(\\(\\(blinda\\)\\|\\(\\(b\\|p\\)rematurata\\)\\) la supercazzo\\(l\\|r\\)a\\)\\|\\(o scherziamo?\\)\\|\\(vaffanzum\\)" . 'font-lock-function-name-face)
+;; 	       ("voglio \\([^,]+\\), " . (1 'font-lock-constant-face))
+;; 	       ))
 
-(setq monicelli-highlights
-	     '(
-	       ("\\(\\(bituma\\)\\|\\(#\\)\\).*$" . 'font-lock-comment-face)
-	       ("\\( e velocità di esecuzione\\)\\|\\(o tarapia tapioco\\)\\|\\(o magari\\)\\|\\(che cos'è\\)\\|\\(Lei ha clacsonato\\)\\|\\(voglio\\)\\|\\(come\\( se\\)? fosse\\)" . 'font-lock-keyword-face)
-	       ("\\(Necchi\\)\\|\\(Mascetti\\)\\|\\(Perozzi\\)\\|\\(Melandri\\)\\|\\(Sassaroli\\)" . 'font-lock-type-face)
-	       ("\\(a posterdati\\)\\|\\(mi porga\\)" . 'font-lock-builtin-face)
-	       ("\\(\\(\\(blinda\\)\\|\\(\\(b\\|p\\)rematurata\\)\\) la supercazzo\\(l\\|r\\)a\\)\\|\\(o scherziamo?\\)\\|\\(vaffanzum\\)" . 'font-lock-function-name-face)
-	       ("voglio \\([^,]+\\), " . (1 'font-lock-constant-face))
-	       ))
-
+;; trying out better approach?
 ;; this would have been an easier way to do it
 ;; create the list for font-lock.
 ;; each category of keyword is given a particular face
-;; (setq mylsl-font-lock-keywords
-;;       (let* (
-;;             ;; define several category of keywords
-;;             (x-keywords '("break" "default" "do" "else" "for" "if" "return" "state" "while"))
-;;             (x-types '("float" "integer" "key" "list" "rotation" "string" "vector"))
-;;             (x-constants '("ACTIVE" "AGENT" "ALL_SIDES" "ATTACH_BACK"))
-;;             (x-events '("at_rot_target" "at_target" "attach"))
-;;             (x-functions '("llAbs" "llAcos" "llAddToLandBanList" "llAddToLandPassList"))
+(setq monicelli-font-lock-keywords
+      (let* (
+             ;; define several category of keywords
+	     (x-comments '("bituma"))
+             (x-keywords '("e velocità di esecuzione" "o tarapia tapioco"
+			   "o magari" "che cos'è" "Lei ha clacsonato" "voglio"
+			   "come se fosse" "come fosse"))
+             (x-types '("Necchi" "Mascetti" "Perozzi" "Melandri" "Sassaroli"))
+	     (x-built-ins '("a posterdati" "mi porga"))
+             (x-functions '("blinda" "prematurata la supercazzola" "vaffanzum"))
 
-;;             ;; generate regex string for each category of keywords
-;;             (x-keywords-regexp (regexp-opt x-keywords 'words))
-;;             (x-types-regexp (regexp-opt x-types 'words))
-;;             (x-constants-regexp (regexp-opt x-constants 'words))
-;;             (x-events-regexp (regexp-opt x-events 'words))
-;;             (x-functions-regexp (regexp-opt x-functions 'words)))
+             ;; generate regex string for each category of keywords
+	      (x-comments-regexp (regexp-opt x-comments 'words))
+             (x-keywords-regexp (regexp-opt x-keywords 'words))
+             (x-types-regexp (regexp-opt x-types 'words))
+             (x-built-ins-regexp (regexp-opt x-built-ins 'words))
+             (x-functions-regexp (regexp-opt x-functions 'words))
+	     )
 
-;;         `(
-;;           (,x-types-regexp . 'font-lock-type-face)
-;;           (,x-constants-regexp . 'font-lock-constant-face)
-;;           (,x-events-regexp . 'font-lock-builtin-face)
-;;           (,x-functions-regexp . 'font-lock-function-name-face)
-;;           (,x-keywords-regexp . 'font-lock-keyword-face)
-;;           ;; note: order above matters, because once colored, that part won't change.
-;;           ;; in general, put longer words first
-;;           )))
+        `(
+          (,x-types-regexp . 'font-lock-type-face)
+          (,x-built-ins-regexp . 'font-lock-builtin-face)
+          (,x-functions-regexp . 'font-lock-function-name-face)
+	  (,x-comments-regexp . 'font-lock-comment-face)
+          (,x-keywords-regexp . 'font-lock-keyword-face)
+          ;; note: order above matters, because once colored, that part won't change.
+          ;; in general, put longer words first
+          )))
 
 ;;;###autoload
  (define-derived-mode monicelli-mode prog-mode "monicelli"
 	 "majore mode for editing code in Monicelli language"
-	 (setq font-lock-defaults '(monicelli-highlights)))
+	 ;; (setq font-lock-defaults '(monicelli-highlights))
+	 (setq font-lock-defaults '(monicelli-font-lock-keywords))
+	 )
 
 ;; add the mode to the `features' list
 (provide 'monicelli-mode)
