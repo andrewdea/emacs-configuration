@@ -254,6 +254,9 @@ point reaches the beginning or end of the buffer, stop there."
 ;; remap C-y to `smart-yank'
 (global-set-key (kbd "C-y") #'smart-yank)
 
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+
 ;;;;; search
 ;; from beginning of document
 (global-set-key (kbd "M-s")
@@ -510,6 +513,9 @@ moves to the beginning of the file and searches for that symbol"
 ;; scala
 (add-to-list 'auto-mode-alist '("\.sc" . scala-mode))
 
+;; lisp
+(setq inferior-lisp-program "/usr/local/bin/sbcl") ; slime
+
 ;; monicelli
 ;; adding customization path
 (add-to-list 'load-path "~/.emacs.d/custom/modes")
@@ -565,32 +571,6 @@ and set its contents as the appropriate programming-language-template"
   )
 
 ;;;; RANDOM STUFF
-;; this should help with slime
-(setq inferior-lisp-program "/usr/local/bin/sbcl")
-
-;;;;; scratch place to try out stuff
-
-(require 'ytdl);; TODO try this out
-
-;; some scratch stuff that might help with compiling
-;; compile short cut
-;; (defun cmp ()
-;;   (interactive)
-;;   (setq file-ext (get-file-ext))
-;;   (setq prog-language
-
-
-;; 	(setq programming-language (cond ((equal ".java" file-ext) "c")
-;; 					  ((equal ".c" file-ext) "c")
-;; 					  (equal ".sc" file-ext) "scala"))
-
-;; 	auto-mode-alist
-
-;; 	(symbol-name (cdr (quote ("\\.tzst\\'" . tar-mode))))
-
-;;
-;;
-
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are inkpot, my-misterioso, and tango-dark
 (custom-set-variables
@@ -602,7 +582,7 @@ and set its contents as the appropriate programming-language-template"
    '("4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e1f160fa86a1b1caf048291afc747dee2bd71a90004618eb43b3011439c23651" "53a13376230f7e885e34de9dfa8ebc5ffd61efbd0c75742398b2ea63fae858ba" "dcd0071f9671b9598b40b4cb08a76dc34a093aca496c83951d567f07ec7f25ae" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(org-inlinetask magit outshine ytdl javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
@@ -611,5 +591,3 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-(put 'upcase-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
