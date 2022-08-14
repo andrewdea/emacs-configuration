@@ -1,0 +1,10 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!.emacs
+# etc...
+
+# some files to be tracked are in subdirectories
+!*/.emacs.d/*

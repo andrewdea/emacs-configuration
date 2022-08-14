@@ -4,13 +4,14 @@
 ;;; Code:
 
 ;;;; BENCHMARK
-;; benchmark-init to check where init is spending time
+;; benchmark-init to check where init is slow to load
 
 (use-package benchmark-init
   :ensure t
   :config
   ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook #'benchmark-init/deactivate))
+  ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
+  (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
 ;;;; MELPA and package stuff
 (add-to-list 'package-archives
@@ -26,29 +27,25 @@
 (use-package package)
 (package-initialize)
 
-(defun my-hl-line-hook ()
-  (hl-line-mode t))
-(add-hook 'package-menu-mode-hook #'my-hl-line-hook)
+(add-hook 'package-menu-mode-hook (lambda () (hl-line-mode t)))
 
 ;;;; appearance: SIZING, FRAMES, WINDOWS, THEMES
 ;;;;; startup
 ;; use updated source files
 (setq load-prefer-newer t)
-;; show column numbers
-(setq column-number-mode t)
-;; default theme: tango-dark; load a different theme at night
-(setq hour (nth 2 (decode-time (current-time))))
-(if (or (> hour 21) (< hour 8))
-    (load-theme 'inkpot t) ; I really like the way org files look in this
-  (load-theme 'tango-dark)) ; default
 
-;; TODO thinking of adding this to tango-dark:
-;; (set-face-attribute 'region nil :background "#483d8b")
-;; need to figure out how to do it elegantly
-;; I might also like the purple that's used by inkpot when highlighting
-;; not sure what it is though
+;; choose default theme based on time of day
+(defun default-theme ()
+  (let ((hour (nth 2 (decode-time (current-time)))))
+    (if (or (> hour 21) (< hour 8))
+	'inkpot ; at night (really good for org files)
+      'tango-dark))) ; during the day
 
-;; resize current frame
+;; my daily default theme is based on standard tango-dark;
+;; with this small edit in ~/.emacs.d/tango-dark-theme.el
+;; '(region ((t (:background "#483d8b")))) ; purple for highlighted region
+
+;; resize current frame (toggle)
 (defun big-frame ()
   (interactive)
   (if (< (frame-parameter (selected-frame) 'width) 200)
@@ -56,24 +53,25 @@
     (set-frame-size (selected-frame) 100 45))
   (set-frame-position (selected-frame) 0 0))
 
-;; default to big-frame
-(big-frame)
+(defun startup-look (&optional arg)
+  (interactive)
+  (setq column-number-mode t)
+  (load-theme (default-theme))
+  (big-frame)
+  (if arg (find-file arg)))
 
-;; inhibit startup screen when opening a file
-(defun my-inhibit-startup-screen ()
-  (ignore (setq inhibit-startup-screen t)))
-(add-hook 'command-line-functions #'my-inhibit-startup-screen)
+(add-hook 'after-init-hook #'startup-look)
 
-;;;;; resizing
+;;;;; resizing and movement
 ;; make current window bigger or smaller
 (defun wbig (&optional arg) (interactive "P")
        (if arg () (setq arg 25))
-       (kmacro-exec-ring-item (quote ("\C-x}" 0 "%d")) arg)
+       (enlarge-window-horizontally arg)
        (message (concat "expanded window by " (number-to-string arg))))
 
 (defun wsmall (&optional arg) (interactive "P")
        (if arg () (setq arg 25))
-       (kmacro-exec-ring-item (quote ("\C-x{" 0 "%d")) arg)
+       (shrink-window-horizontally arg)
        (message (concat "reduced window by " (number-to-string arg))))
 
 ;; frame to have together with max youtube
@@ -82,6 +80,19 @@
   (set-frame-size (selected-frame) 83 52)
   (set-frame-position (selected-frame) 838 24))
 (add-hook 'tetris-mode-hook #'yt-frame)
+
+(defun right-frame ()
+	 (interactive)
+	 (let ((available-width
+		(nth 3 (nth 1 (nth 0 (display-monitor-attributes-list)))))
+	       (adj-frame-width
+		(- (frame-outer-width) 9))) ;; adjust for scroll bar
+	       (set-frame-position
+		(selected-frame) (- available-width adj-frame-width) 0)))
+
+(defun left-frame ()
+	 (interactive)
+	 (set-frame-position (selected-frame) 0 0))
 
 ;;;;; themes and colors
 ;; this highlights characters beyond the 80 char limit
@@ -94,33 +105,14 @@
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;; define a misterioso theme with 'charcoal' background and 'tea rose' cursor
-(defun my-misterioso ()
-  (interactive)
-  (load-theme 'misterioso)
-  (set-background-color "#232B2B"); "#36454F")
-  (set-cursor-color "#F88379") ; thinking of dark orange as well: #FF8C00
-
-  ;; using a dark cyan as color for highlighted region
-  ;; not set on it, but the default is hard to notice on dark background
-  ;; have also used #232B2B, which is darker and easier on the eyes
-  (set-face-attribute 'region nil :background "#008B8B")
-  )
-
 (defun un-theme (&optional arg)
   "disables all custom themes
-and loads the optional argument.
-the my-misterioso theme is loaded
-when the argument consists of a
-substring of 'my-misterioso'"
+and loads the optional argument"
   (interactive "snew theme: ")
   (while custom-enabled-themes
     (disable-theme (car custom-enabled-themes)))
   (if (not (string= "" arg))
-      (if (string-match-p arg "my-misterioso")
-	  (my-misterioso)
-	(load-theme (intern arg)))))
+      (load-theme (intern arg))))
 
 ;;;;; appearance for specific modes
 (add-hook 'dired-mode-hook
@@ -130,11 +122,8 @@ substring of 'my-misterioso'"
 (use-package org
   :ensure t
   :config
-  (define-key global-map "\C-cs" #'org-store-link)
-  (define-key global-map "\C-cl" #'org-insert-link)
-  (define-key global-map "\C-c \C-o" #'org-open-at-point)
-  (define-key global-map "\C-ca" #'org-agenda)
-  (define-key global-map (kbd "C-M-<backspace>") #'org-cut-subtree) ;; todo: move this to the :bind section!!
+  (add-hook 'org-mode-hook
+	    (lambda () (visual-line-mode t)))
 
   (setq org-hide-emphasis-markers t)
 
@@ -150,6 +139,7 @@ substring of 'my-misterioso'"
   (defun org-refresh-agenda ()
     (setq org-agenda-files (directory-files "~/org" nil "org$")))
   (org-refresh-agenda)
+
   (defun my-org-tab ()
     "if current line is a heading, call regular org-cycle;
 else, first move to previous visible heading, then call it"
@@ -160,55 +150,76 @@ else, first move to previous visible heading, then call it"
     (org-cycle))
 
   (defun open-file-same-window () (interactive)
-	 (setf (cdr (assoc 'file org-link-frame-setup)) #'find-file)
+	 (setf (cdr (assoc 'file org-link-frame-setup))
+	       #'find-file)
 	 (org-open-at-point)
-	 (setf (cdr (assoc 'file org-link-frame-setup)) #'find-file-other-window))
-  
-  :bind (("C-c o" . open-file-same-window)
+	 (setf (cdr (assoc 'file org-link-frame-setup))
+	       #'find-file-other-window))
+
+  (defun electric-fontify ()
+    "If in org-mode (or a derived mode),
+when a region is highlighted and we've inserted a character that fontifies text,
+the whole region is fontified (by automatically inserting character at mark)"
+    ;; (interactive)
+    (if (derived-mode-p 'org-mode)
+	(let ((fontify-list '(?* ?/ ?_ ?= ?~ ?+)))
+	  (if (and mark-active
+		   (member last-command-event fontify-list))
+	      (progn (exchange-point-and-mark)
+		     (insert last-command-event))))))
+  (add-hook 'post-self-insert-hook 'electric-fontify)
+  :bind (("C-c s" . org-store-link)
+	 ("C-c l" . org-insert-link)
+	 ("C-c a" . org-agenda)
 	 :map org-mode-map
+	 ("M--" . org-timestamp-down-day)
+	 ("M-_" . org-timestamp-down-day)
+	 ("M-+" . org-timestamp-up-day)
+	 ("C-c o" . open-file-same-window)
+	 ("C-M-<backspace>" . org-cut-subtree)
 	 ("TAB" . my-org-tab)))
 
-(add-hook 'org-mode-hook
-	  (lambda () (visual-line-mode t)))
 
 ;;;; FILE SHORTCUTS
 ;; open init file
-(fset 'init
-      (lambda (&optional arg) (interactive)
-	(find-file "~/.emacs")))
+(defun init ()
+  (interactive)
+  (find-file "~/.emacs"))
 
 ;; open HackerRank
-(fset 'hacker-rank
-      (lambda (&optional arg) (interactive)
-	(find-file "~/desktop/HackerRankProblems/")))
+(defun hacker-rank ()
+  (interactive)
+  (find-file "~/desktop/HackerRankProblems/"))
 
 ;; open zsh profile
-(fset 'zsh-profile
-      (lambda (&optional arg) (interactive)
-	(find-file "/Users/andrewdeangelis/.zshenv")))
+(defun zshenv ()
+  (interactive)
+  (find-file "/Users/andrewdeangelis/.zshenv"))
 ;; open bash profile
-(fset 'bash-profile ; note: I switched shell to zsh, this might no longer be needed
-      (lambda (&optional arg) (interactive)
-	(find-file "/Users/andrewdeangelis/.bash_profile")))
+(defun bash-profile () ; note: I switched shell to zsh, this might no longer be needed
+  (interactive)
+  (find-file "/Users/andrewdeangelis/.bash_profile"))
 
 ;; open org folder
-(fset 'forg
-      (lambda (&optional arg) (interactive)
-	(find-file "~/org")))
+(defun forg ()
+  (interactive)
+  (find-file "~/org"))
 ;; open mobile org folder
-(fset 'beorg
-      (lambda (&optional arg) (interactive)
-	(find-file "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/")))
+(defun beorg ()
+  (interactive)
+  (find-file
+   "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/"))
 ;; open generic todo
-(fset 'todo
-      (lambda (&optional arg) (interactive)
-	(find-file "~/org/TODO.org")))
+(defun todo ()
+  (interactive)
+  (find-file "~/org/TODO.org"))
 ;; open generic notes
-(fset 'notes
-      (lambda (&optional arg) (interactive)
-	(find-file "~/org/Notes.org")))
+(defun notes ()
+  (interactive)
+  (find-file "~/org/Notes.org"))
 
 ;;;; TEXT EDITING
+;;;;; utilities
 (defun smarter-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
 
@@ -221,7 +232,7 @@ If ARG is not nil or 1, move forward ARG - 1 lines first.  If
 point reaches the beginning or end of the buffer, stop there."
   (interactive "^p")
   (setq arg (or arg 1))
-  
+
   (when (/= arg 1)
     (let ((line-move-visual nil))
       (forward-line (1- arg))))
@@ -234,13 +245,23 @@ point reaches the beginning or end of the buffer, stop there."
 ;; remap C-a to 'smarter-move-beginning-of-line'
 (global-set-key (kbd "\C-a") #'smarter-move-beginning-of-line)
 
-;; SEARCH from beginning of document
+(defun smart-yank ()
+  "when region is highlighted, kill current region and call yank"
+  (interactive)
+  (if mark-active
+      (progn (delete-region (region-beginning) (region-end)) (yank))
+    (yank)))
+;; remap C-y to `smart-yank'
+(global-set-key (kbd "C-y") #'smart-yank)
+
+;;;;; search
+;; from beginning of document
 (global-set-key (kbd "M-s")
 		(lambda () (interactive)
 		  (point-to-register 'r)
 		  (beginning-of-buffer) (isearch-forward)))
 
-;; search from end of document
+;; from end of document
 (global-set-key (kbd "M-r")
 		(lambda () (interactive)
 		  (point-to-register 'r)
@@ -252,32 +273,18 @@ point reaches the beginning or end of the buffer, stop there."
 		(lambda () (interactive)
 		  (jump-to-register 'r)))
 
-;; when region is highlighted,
-;; a call to yank is also call to kill current region
-(defun smart-yank ()
-  (interactive)
-  (if mark-active
-      (progn (delete-region (region-beginning) (region-end)) (yank))
-    (yank)))
-;; remap M-; to `smart-yank'
-(global-set-key (kbd "C-y") #'smart-yank)
-
-
-;; Editing macro:
-;; copies line/region and comments it out
-(fset 'region-copy-comm
-      (lambda (&optional arg) (interactive "p")
-	(kmacro-exec-ring-item (quote ("\M-w\C-x\C-x\M-;\n" 0 "%d")) arg)
-	(message "commented region has been copied")))
-
-(fset 'line-copy-comm
-      (lambda (&optional arg) (interactive "p")
-	(kmacro-exec-ring-item (quote ([?\C-a ?\C-  ?\C-e ?\M-w ?\C-x ?\C-x
+;;;;; comments
+;; copy line/region and comment it out
+(defun region-copy-comm (&optional arg) (interactive "p")
+	      (kmacro-exec-ring-item (quote ("\M-w\C-x\C-x\M-;\n" 0 "%d")) arg)
+	(message "commented region has been copied"))
+(defun line-copy-comm (&optional arg)
+  (interactive "p")
+  (kmacro-exec-ring-item (quote ([?\C-a ?\C-  ?\C-e ?\M-w ?\C-x ?\C-x
 					      ?\M-\; ?\C-e return] 0 "%d"))
-			       arg)
-	(message "commented line has been copied")))
-
-(defun copy-com ()
+			 arg)
+  (message "commented line has been copied"))
+(defun copy-comm ()
   (interactive)
   (if mark-active
       (region-copy-comm)
@@ -312,10 +319,26 @@ point reaches the beginning or end of the buffer, stop there."
     (replace-string commented-arg
 		    (string-replace comment-start "" commented-arg))))
 
-;; autocomplete
+;;;;; autocomplete
 (use-package company
-  :ensure t)
+  :ensure t
+  :config
+  (setq company-dabbrev-downcase nil))
 (global-company-mode t)
+
+;;;;; macros
+(defun save-macro (name)
+  "Save the current macro as named function definition inside
+your initialization file so you can reuse it anytime in the
+future."
+  (interactive "SSave Macro as: ")
+  (name-last-kbd-macro name)
+  (save-excursion
+    (init)
+    (goto-char (point-max))
+    (insert "\n\n;; Saved macro\n")
+    (insert-kbd-macro name)
+    (insert "\n")))
 
 ;;;; BUFFER AND FRAME movements
 (defun switch-to-minibuffer-window ()
@@ -418,9 +441,11 @@ else, first move to previous visible heading, then call it"
     (if (null (looking-at outline-regexp))
 	(outline-previous-visible-heading 1))
     (backward-paragraph))
-  
+
   :bind (:map outshine-mode-map
 	      ("TAB" . my-outline-tab)
+	      ("C-c C-p" . outline-previous-visible-heading)
+	      ("C-c C-n" . outline-next-visible-heading)
 	      ("M-<down>" . outline-move-subtree-down)
 	      ("M-<up>" . outline-move-subtree-up)))
 
@@ -576,16 +601,17 @@ and set its contents as the appropriate programming-language-template"
 ;;
 
 ;;; CUSTOM-added variables and faces
+;; my custom-safe-themes are inkpot, my-misterioso, and tango-dark
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("e1f160fa86a1b1caf048291afc747dee2bd71a90004618eb43b3011439c23651" "bbec550ad7022c5bde15ca81819ed94401144fe4c9242cad10a0c7bfea2c1982" default))
+   '("4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e1f160fa86a1b1caf048291afc747dee2bd71a90004618eb43b3011439c23651" "53a13376230f7e885e34de9dfa8ebc5ffd61efbd0c75742398b2ea63fae858ba" "dcd0071f9671b9598b40b4cb08a76dc34a093aca496c83951d567f07ec7f25ae" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(magit outshine ytdl javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(org-inlinetask magit outshine ytdl javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
