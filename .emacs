@@ -82,17 +82,17 @@
 (add-hook 'tetris-mode-hook #'yt-frame)
 
 (defun right-frame ()
-	 (interactive)
-	 (let ((available-width
-		(nth 3 (nth 1 (nth 0 (display-monitor-attributes-list)))))
-	       (adj-frame-width
-		(- (frame-outer-width) 9))) ;; adjust for scroll bar
-	       (set-frame-position
-		(selected-frame) (- available-width adj-frame-width) 0)))
+  (interactive)
+  (let ((available-width
+	 (nth 3 (nth 1 (nth 0 (display-monitor-attributes-list)))))
+	(adj-frame-width
+	 (- (frame-outer-width) 9))) ;; adjust for scroll bar
+    (set-frame-position
+     (selected-frame) (- available-width adj-frame-width) 0)))
 
 (defun left-frame ()
-	 (interactive)
-	 (set-frame-position (selected-frame) 0 0))
+  (interactive)
+  (set-frame-position (selected-frame) 0 0))
 
 ;;;;; themes and colors
 ;; this highlights characters beyond the 80 char limit
@@ -276,12 +276,12 @@ point reaches the beginning or end of the buffer, stop there."
 ;;;;; comments
 ;; copy line/region and comment it out
 (defun region-copy-comm (&optional arg) (interactive "p")
-	      (kmacro-exec-ring-item (quote ("\M-w\C-x\C-x\M-;\n" 0 "%d")) arg)
-	(message "commented region has been copied"))
+       (kmacro-exec-ring-item (quote ("\M-w\C-x\C-x\M-;\n" 0 "%d")) arg)
+       (message "commented region has been copied"))
 (defun line-copy-comm (&optional arg)
   (interactive "p")
   (kmacro-exec-ring-item (quote ([?\C-a ?\C-  ?\C-e ?\M-w ?\C-x ?\C-x
-					      ?\M-\; ?\C-e return] 0 "%d"))
+					?\M-\; ?\C-e return] 0 "%d"))
 			 arg)
   (message "commented line has been copied"))
 (defun copy-comm ()
@@ -563,15 +563,6 @@ and set its contents as the appropriate programming-language-template"
       (template-set-contents file-name file-ext)
     )
   )
-
-(defun java-print ()
-  (interactive)
-  (setq contents-as-string
-	(template-file-to-string
-	 "~/.emacs.d/custom/programming-language-templates/PrintLn.java"))
-  (with-current-buffer (buffer-name)
-    (insert contents-as-string)))
-
 
 ;;;; RANDOM STUFF
 ;; this should help with slime
