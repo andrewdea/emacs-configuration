@@ -44,10 +44,21 @@
 ;; this would have been an easier way to do it
 ;; create the list for font-lock.
 ;; each category of keyword is given a particular face
+(setq comment-start "#")
+
+;; define some helper functions for regex construction
+(defun group-regexp (arg)
+  (concat "\\(" arg "\\)"))
+
+;; (setq or-regexp "\\|")
+
+;; (setq til-newline-regexp ".*$")
+
+
 (setq monicelli-font-lock-keywords
       (let* (
              ;; define several category of keywords
-	     (x-comments '("bituma"))
+	     ;; (x-comments '("bituma" "#"))
              (x-keywords '("e velocità di esecuzione" "o tarapia tapioco"
 			   "o magari" "che cos'è" "Lei ha clacsonato" "voglio"
 			   "come se fosse" "come fosse"))
@@ -56,7 +67,14 @@
              (x-functions '("blinda" "prematurata la supercazzola" "vaffanzum"))
 
              ;; generate regex string for each category of keywords
-	      (x-comments-regexp (regexp-opt x-comments 'words))
+	     (until-newline-regexp ".*$")
+	     (or-regexp "\\|")
+	     ;; (x-comments-regexp (concat (regexp-opt x-comments 'words)
+	     ;; 				until-newline-regexp))
+	     ;; (x-comments-regexp "\\(#\\|bituma\\).*$")
+	     (x-comments-regexp
+	      (concat (group-regexp (concat "bituma" or-regexp comment-start))
+		      until-newline-regexp))
              (x-keywords-regexp (regexp-opt x-keywords 'words))
              (x-types-regexp (regexp-opt x-types 'words))
              (x-built-ins-regexp (regexp-opt x-built-ins 'words))
