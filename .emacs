@@ -326,7 +326,9 @@ point reaches the beginning or end of the buffer, stop there."
 (use-package company
   :ensure t
   :config
-  (setq company-dabbrev-downcase nil))
+  (setq company-dabbrev-downcase nil)
+  :bind (:map company-mode-map
+	      ("s-RET" . company-abort)))
 (global-company-mode t)
 
 ;;;;; macros
@@ -582,7 +584,7 @@ and set its contents as the appropriate programming-language-template"
    '("4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e1f160fa86a1b1caf048291afc747dee2bd71a90004618eb43b3011439c23651" "53a13376230f7e885e34de9dfa8ebc5ffd61efbd0c75742398b2ea63fae858ba" "dcd0071f9671b9598b40b4cb08a76dc34a093aca496c83951d567f07ec7f25ae" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(which-key org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
