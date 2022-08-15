@@ -55,6 +55,7 @@
 
 (defun startup-look (&optional arg)
   (interactive)
+  (tool-bar-mode -1) ; trying out without the toolbar
   (setq column-number-mode t)
   (load-theme (default-theme))
   (big-frame)
@@ -412,7 +413,7 @@ future."
 	    (lambda () (visual-line-mode t))))
 
 ;;;; PROGRAMMING support and utilities
-;;;;; ido completion framework
+;;;;; ido completion mode
 (setq ido-everywhere t)
 (ido-mode 1)
 ;;;;; appearance
@@ -435,17 +436,6 @@ else, first move to previous visible heading, then call it"
     (if (null (looking-at outline-regexp))
 	(outline-previous-visible-heading 1))
     (outshine-kbd-TAB))
-
-  (defun my-next-visible-heading ()
-    (interactive)
-    (if (null (looking-at outline-regexp))
-	(outline-next-visible-heading 1))
-    (forward-paragraph))
-  (defun my-previous-visible-heading ()
-    (interactive)
-    (if (null (looking-at outline-regexp))
-	(outline-previous-visible-heading 1))
-    (backward-paragraph))
 
   :bind (:map outshine-mode-map
 	      ("TAB" . my-outline-tab)
@@ -478,7 +468,10 @@ moves to the beginning of the file and searches for that symbol"
 	   ;; TODO: [check if final point is same as starting point*, then
 	   ;; add a function to ask whether we should use grep,
 	   ;; provide a default folder,
-	   ;; open a new shell and call grep on that folder]
+	   ;; open a new shell and call grep on that folder.
+	   ;; also combine this with doc (eg javadoc) functionalities
+	   ;; to open the function's documentation in eww
+	   ;; if not found in local code]
 	   ;; * +/- length of symbol
 	   )))
 
