@@ -29,73 +29,89 @@
 
 
 ;;; Code:
-;; earlier version 
-;; (setq monicelli-highlights
-;; 	     '(
-;; 	       ("\\(\\(bituma\\)\\|\\(#\\)\\).*$" . 'font-lock-comment-face)
-;; 	       ("\\( e velocità di esecuzione\\)\\|\\(o tarapia tapioco\\)\\|\\(o magari\\)\\|\\(che cos'è\\)\\|\\(Lei ha clacsonato\\)\\|\\(voglio\\)\\|\\(come\\( se\\)? fosse\\)" . 'font-lock-keyword-face)
-;; 	       ("\\(Necchi\\)\\|\\(Mascetti\\)\\|\\(Perozzi\\)\\|\\(Melandri\\)\\|\\(Sassaroli\\)" . 'font-lock-type-face)
-;; 	       ("\\(a posterdati\\)\\|\\(mi porga\\)" . 'font-lock-builtin-face)
-;; 	       ("\\(\\(\\(blinda\\)\\|\\(\\(b\\|p\\)rematurata\\)\\) la supercazzo\\(l\\|r\\)a\\)\\|\\(o scherziamo?\\)\\|\\(vaffanzum\\)" . 'font-lock-function-name-face)
-;; 	       ("voglio \\([^,]+\\), " . (1 'font-lock-constant-face))
-;; 	       ))
+(setq comment-start "#")
+;; earlier version of syntax highlights
+(setq monicelli-highlights
+	     '(
+	       ("\\(\\(bituma\\)\\|\\(#\\)\\).*$" . 'font-lock-comment-face)
+	       ("\\( e velocità di esecuzione\\)\\|\\(o tarapia tapioco\\)\\|\\(o magari\\)\\|\\(che cos'è\\)\\|\\(Lei ha clacsonato\\)\\|\\(voglio\\)\\|\\(come\\( se\\)? fosse\\)" . 'font-lock-keyword-face)
+	       ("\\(Necchi\\)\\|\\(Mascetti\\)\\|\\(Perozzi\\)\\|\\(Melandri\\)\\|\\(Sassaroli\\)" . 'font-lock-type-face)
+	       ("\\(a posterdati\\)\\|\\(mi porga\\)" . 'font-lock-builtin-face)
+	       ("\\(\\(\\(blinda\\)\\|\\(\\(b\\|p\\)rematurata\\)\\) la supercazzo\\(l\\|r\\)a\\)\\|\\(o scherziamo?\\)\\|\\(vaffanzum\\)" . 'font-lock-function-name-face)
+	       ("voglio \\([^,]+\\), " . (1 'font-lock-constant-face))
+	       ))
 
 ;; trying out better approach?
 ;; this would have been an easier way to do it
 ;; create the list for font-lock.
 ;; each category of keyword is given a particular face
-(setq comment-start "#")
 
 ;; define some helper functions for regex construction
-(defun group-regexp (arg)
-  (concat "\\(" arg "\\)"))
+;; (defun rgx-group (arg)
+;;   (concat "\\(" arg "\\)"))
 
-;; (setq or-regexp "\\|")
+;; (defun rgx-or (args)
+;; 	 (let ((first (car args))
+;; 	       (rest (cdr args)))
+;; 	   (concat (if (> (length first) 1)
+;; 		     (rgx-group first) 
+;; 		       first)
+;; 		   (when rest
+;; 		     (concat "\\|" (rgx-or rest))))))
 
-;; (setq til-newline-regexp ".*$")
+;; (defun rgx-create (args &optional prefix postfix)
+;;   (concat prefix (rgx-or args) postfix))
+
+;; (setq rgx-til-newline ".*$")
+
+;; (setq rgx-? "?")
+
+;; (defun rgx-opt (args)
+;;   (concat (rgx-or args) "?"))
 
 
-(setq monicelli-font-lock-keywords
-      (let* (
-             ;; define several category of keywords
-	     ;; (x-comments '("bituma" "#"))
-             (x-keywords '("e velocità di esecuzione" "o tarapia tapioco"
-			   "o magari" "che cos'è" "Lei ha clacsonato" "voglio"
-			   "come se fosse" "come fosse"))
-             (x-types '("Necchi" "Mascetti" "Perozzi" "Melandri" "Sassaroli"))
-	     (x-built-ins '("a posterdati" "mi porga"))
-             (x-functions '("blinda" "prematurata la supercazzola" "vaffanzum"))
+;; (setq monicelli-font-lock-keywords
+;;       (let* (
+;;              ;; define several category of keywords
+;; 	     ;; (x-comments '("bituma" "#"))
+;;              (x-keywords '("e velocità di esecuzione" "o tarapia tapioco"
+;; 			   "o magari" "che cos'è" "Lei ha clacsonato" "voglio"
+;; 			   "come se fosse" "come fosse"))
+;;              (x-types '("Necchi" "Mascetti" "Perozzi" "Melandri" "Sassaroli"))
+;; 	     (x-built-ins '("a posterdati" "mi porga"))
+;;              (x-functions '("blinda" "prematurata la supercazzola" "vaffanzum"))
 
-             ;; generate regex string for each category of keywords
-	     (until-newline-regexp ".*$")
-	     (or-regexp "\\|")
-	     ;; (x-comments-regexp (concat (regexp-opt x-comments 'words)
-	     ;; 				until-newline-regexp))
-	     ;; (x-comments-regexp "\\(#\\|bituma\\).*$")
-	     (x-comments-regexp
-	      (concat (group-regexp (concat "bituma" or-regexp comment-start))
-		      until-newline-regexp))
-             (x-keywords-regexp (regexp-opt x-keywords 'words))
-             (x-types-regexp (regexp-opt x-types 'words))
-             (x-built-ins-regexp (regexp-opt x-built-ins 'words))
-             (x-functions-regexp (regexp-opt x-functions 'words))
-	     )
+;;              ;; generate regex string for each category of keywords
+;; 	     (until-newline-regexp ".*$")
+;; 	     (or-regexp "\\|")
+;; 	     ;; (x-comments-regexp (concat (regexp-opt x-comments 'words)
+;; 	     ;; 				until-newline-regexp))
+;; 	     ;; (x-comments-regexp "\\(#\\|bituma\\).*$")
+;; 	     (x-comments-regexp (concat (rgx-group (rgx-or '("bituma" "#"))) rgx-til-newline))
+;;              (x-keywords-regexp (regexp-opt x-keywords 'words))
+;;              (x-types-regexp (regexp-opt x-types 'words))
+;;              (x-built-ins-regexp (regexp-opt x-built-ins 'words))
+;;              ;; (x-functions-regexp (regexp-opt x-functions 'words))
+;; 	     (x-functions-regexp (rgx-group (rgx-or `(,(concat (rgx-create `("blinda" ,(concat (rgx-group (rgx-or '("b" "p"))) "rematurata")))
+;; 	       (concat " la supercazzo" (rgx-group (rgx-or '("l" "r"))) "a o scherziamo"))
+;; 		"vaffanzum"))))
+;; 	     )
 
-        `(
-          (,x-types-regexp . 'font-lock-type-face)
-          (,x-built-ins-regexp . 'font-lock-builtin-face)
-          (,x-functions-regexp . 'font-lock-function-name-face)
-	  (,x-comments-regexp . 'font-lock-comment-face)
-          (,x-keywords-regexp . 'font-lock-keyword-face)
-          ;; note: order above matters, because once colored, that part won't change.
-          ;; in general, put longer words first
-          )))
+;;         `(
+;;           (,x-types-regexp . 'font-lock-type-face)
+;;           (,x-built-ins-regexp . 'font-lock-builtin-face)
+;;           (,x-functions-regexp . 'font-lock-function-name-face)
+;; 	  (,x-comments-regexp . 'font-lock-comment-face)
+;;           (,x-keywords-regexp . 'font-lock-keyword-face)
+;;           ;; note: order above matters, because once colored, that part won't change.
+;;           ;; in general, put longer words first
+;;           )))
 
 ;;;###autoload
  (define-derived-mode monicelli-mode prog-mode "monicelli"
 	 "majore mode for editing code in Monicelli language"
-	 ;; (setq font-lock-defaults '(monicelli-highlights))
-	 (setq font-lock-defaults '(monicelli-font-lock-keywords))
+	 (setq font-lock-defaults '(monicelli-highlights))
+	 ;; (setq font-lock-defaults '(monicelli-font-lock-keywords))
 	 )
 
 ;; add the mode to the `features' list
