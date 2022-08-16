@@ -60,6 +60,8 @@
   (load-theme (default-theme))
   (big-frame)
   (mood-line-mode t)
+  (scroll-bar-mode -1)
+  (global-yascroll-bar-mode 1)
   (if arg (find-file)))
 
 (add-hook 'after-init-hook #'startup-look)
@@ -191,7 +193,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; open HackerRank
 (defun hacker-rank ()
   (interactive)
-  (find-file "~/desktop/HackerRankProblems/"))
+  (dired "~/desktop/HackerRankProblems/"))
 
 ;; open zsh profile
 (defun zshenv ()
@@ -205,11 +207,11 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; open org folder
 (defun forg ()
   (interactive)
-  (find-file "~/org"))
+  (dired "~/org"))
 ;; open mobile org folder
 (defun beorg ()
   (interactive)
-  (find-file
+  (dired
    "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/"))
 ;; open generic todo
 (defun todo ()
@@ -578,7 +580,7 @@ and set its contents as the appropriate programming-language-template"
    '("29b6168e6eb6401df4d80c69b41832e014069308efb6f58c1d28c3400158f907" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
