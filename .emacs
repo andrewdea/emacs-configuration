@@ -55,11 +55,12 @@
 
 (defun startup-look (&optional arg)
   (interactive)
-  (tool-bar-mode -1) ; trying out without the toolbar
+  (tool-bar-mode -1) ; I've never needed the toolbar
   (setq column-number-mode t)
   (load-theme (default-theme))
   (big-frame)
-  (if arg (find-file arg)))
+  (mood-line-mode t)
+  (if arg (find-file)))
 
 (add-hook 'after-init-hook #'startup-look)
 
@@ -101,7 +102,7 @@
   :ensure t
   :config
   (setq whitespace-style '(face lines-tail trailing)))
-(defun wspace () (interactive) (whitespace-mode))
+(defun wspace () (interactive) (whitespace-mode 'toggle))
 
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -574,10 +575,10 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e1f160fa86a1b1caf048291afc747dee2bd71a90004618eb43b3011439c23651" "53a13376230f7e885e34de9dfa8ebc5ffd61efbd0c75742398b2ea63fae858ba" "dcd0071f9671b9598b40b4cb08a76dc34a093aca496c83951d567f07ec7f25ae" default))
+   '("29b6168e6eb6401df4d80c69b41832e014069308efb6f58c1d28c3400158f907" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(which-key org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
