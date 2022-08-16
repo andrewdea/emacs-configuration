@@ -62,6 +62,7 @@
   (mood-line-mode t)
   (scroll-bar-mode -1)
   (global-yascroll-bar-mode 1)
+  (global-visual-line-mode t)
   (if arg (find-file)))
 
 (add-hook 'after-init-hook #'startup-look)
@@ -119,15 +120,15 @@ and loads the optional argument"
       (load-theme (intern arg))))
 
 ;;;;; appearance for specific modes
-(add-hook 'dired-mode-hook
-	  (lambda () (visual-line-mode t)))
+;; (add-hook 'dired-mode-hook
+;; 	  (lambda () (visual-line-mode t)))
 
 ;;;; ORG mode
 (use-package org
   :ensure t
   :config
-  (add-hook 'org-mode-hook
-	    (lambda () (visual-line-mode t)))
+  ;; (add-hook 'org-mode-hook
+  ;; 	    (lambda () (visual-line-mode t)))
 
   (setq org-hide-emphasis-markers t)
 
@@ -412,8 +413,9 @@ future."
   (defun bar-refresh ()
     (interactive)
     (sr-speedbar-refresh-turn-on))
-  (add-hook 'speedbar-mode-hook
-	    (lambda () (visual-line-mode t))))
+  ;; (add-hook 'speedbar-mode-hook
+  ;; 	    (lambda () (visual-line-mode t)))
+  )
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
@@ -423,7 +425,8 @@ future."
 (defun my-prog-appearance ()
   (linum-mode t)
   (electric-pair-local-mode t)
-  (visual-line-mode t))
+  ;; (visual-line-mode t)
+  )
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
 (use-package dash :ensure t)
