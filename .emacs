@@ -586,7 +586,6 @@ and set its contents as the appropriate programming-language-template"
   (while (looking-at "\\([0-9]+\\):<\\+>.*")
     (speedbar-edit-line) (next-line)
     (if to-toggle (speedbar-enable-update))))
-
 ;; I just need to find a way to have it 'anchor' at a particular directory
 
 ;;; CUSTOM-added variables and faces
