@@ -27,7 +27,8 @@
 (use-package package)
 (package-initialize)
 
-(add-hook 'package-menu-mode-hook (lambda () (hl-line-mode t)))
+(add-hook 'package-menu-mode-hook
+	  (lambda () (hl-line-mode t) (visual-line-mode -1)))
 
 ;;;; appearance: SIZING, FRAMES, WINDOWS, THEMES
 ;;;;; startup
@@ -122,15 +123,10 @@ and loads the optional argument"
       (load-theme (intern arg))))
 
 ;;;;; appearance for specific modes
-;; (add-hook 'dired-mode-hook
-;; 	  (lambda () (visual-line-mode t)))
-
 ;;;; ORG mode
 (use-package org
   :ensure t
   :config
-  ;; (add-hook 'org-mode-hook
-  ;; 	    (lambda () (visual-line-mode t)))
 
   (setq org-hide-emphasis-markers t)
 
@@ -415,9 +411,12 @@ future."
   (defun bar-refresh ()
     (interactive)
     (sr-speedbar-refresh-turn-on))
-  ;; (add-hook 'speedbar-mode-hook
-  ;; 	    (lambda () (visual-line-mode t)))
-  (defun my-speedbar-expand ()
+
+  ;; expand functionalities:
+  ;; these two functions, plus the built-in
+  ;; speedbar-expand-line-descendants,
+  ;; allow you to navigate the directory tree in multiple ways
+  (defun depth-first-expand ()
     "Open the directory at line, and keep opening its first subdirectory
 until we reach a directory with no subdirectories"
     (interactive)
@@ -425,11 +424,20 @@ until we reach a directory with no subdirectories"
     (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\+>.*"))
       (move-beginning-of-line 1)
       (while (looking-at dir-regexp)
-	(speedbar-toggle-line-expansion)
+	(speedbar-expand-line)
 	(next-line)
 	(move-beginning-of-line 1))))
+
+  (defun breadth-first-expand ()
+    "Open the directory at line, and open all subsequent directories that are
+at its same depth"
+	 (interactive)
+	 (speedbar-expand-line)
+	 (while (not (string-equal "Text: " (speedbar-item-info)))
+	   (speedbar-restricted-next 1)
+	   (speedbar-expand-line)))
   :bind (:map speedbar-mode-map
-	      ("C-<return>" . my-speedbar-expand))) 
+	      ("C-<return>" . depth-first-expand)))
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
@@ -438,9 +446,7 @@ until we reach a directory with no subdirectories"
 ;;;;; appearance
 (defun my-prog-appearance ()
   (linum-mode t)
-  (electric-pair-local-mode t)
-  ;; (visual-line-mode t)
-  )
+  (electric-pair-local-mode t))
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
 (use-package dash :ensure t)
