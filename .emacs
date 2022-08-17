@@ -399,7 +399,6 @@ future."
 (defun bar-toggle ()
   (interactive)
   (sr-speedbar-toggle))
-
 (defun bar-open ()
   (interactive)
   (sr-speedbar-open))
@@ -447,8 +446,15 @@ open siblings (directories at its same depth)"
     (while (not (string-equal "Text: " (speedbar-restricted-next 1)))
       (speedbar-contract-line)))
 
+  (defun my-expand (&optional arg)
+    (interactive "P")
+    (message "\n\ncalled my-expand!")
+    (if arg
+	(breadth-expand)
+      (depth-expand)))
+
   :bind (:map speedbar-mode-map
-	      ("C-<return>" . depth-expand)
+	      ("C-<return>" . my-expand) ; means C-u C-RET is breadth-expand
 	      ("M-<down>" . speedbar-restricted-next)
 	      ("M-<up>" . speedbar-restricted-prev)))
 
