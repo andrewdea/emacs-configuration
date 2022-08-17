@@ -396,15 +396,17 @@ future."
 ;; (global-set-key (kbd "\C-xb") 'my-switch-to-buffer)
 
 ;;;; SPEEDBAR
+(defun bar-toggle ()
+  (interactive)
+  (sr-speedbar-toggle))
+
+(defun bar-open ()
+  (interactive)
+  (sr-speedbar-open))
+
 (use-package sr-speedbar
   :ensure t
   :config
-  (defun bar-toggle ()
-    (interactive)
-    (sr-speedbar-toggle))
-  (defun bar-open ()
-    (interactive)
-    (sr-speedbar-open))
   (defun bar-close ()
     (interactive)
     (sr-speedbar-close))
@@ -414,9 +416,9 @@ future."
 
   ;; expand functionalities:
   ;; these two functions, plus the built-in
-  ;; speedbar-expand-line-descendants,
+  ;; speedbar-expand-line-descendants & speedbar-contract-line
   ;; allow you to navigate the directory tree in multiple ways
-  (defun depth-first-expand ()
+  (defun depth-expand ()
     "Open the directory at line, and keep opening its first subdirectory
 until we reach a directory with no subdirectories"
     (interactive)
@@ -427,17 +429,28 @@ until we reach a directory with no subdirectories"
 	(speedbar-expand-line)
 	(next-line)
 	(move-beginning-of-line 1))))
+  (defun breadth-expand ()
+    "Open the directory at line, and open all its subsequent siblings
+(directories that are at its same depth)"
+    (interactive)
+    (speedbar-expand-line)
+    ;; this loop works because restricted-next returns
+    ;; (speedbar-item-info), which shows a text representation
+    ;; of the item. the text is empty when the item is last in the sublist
+    (while (not (string-equal "Text: " (speedbar-restricted-next 1)))
+      (speedbar-expand-line)))
+  (defun breadth-contract ()
+    "Collapse the directory at line, and close all its subsequent
+open siblings (directories at its same depth)"
+    (interactive)
+    (speedbar-contract-line)
+    (while (not (string-equal "Text: " (speedbar-restricted-next 1)))
+      (speedbar-contract-line)))
 
-  (defun breadth-first-expand ()
-    "Open the directory at line, and open all subsequent directories that are
-at its same depth"
-	 (interactive)
-	 (speedbar-expand-line)
-	 (while (not (string-equal "Text: " (speedbar-item-info)))
-	   (speedbar-restricted-next 1)
-	   (speedbar-expand-line)))
   :bind (:map speedbar-mode-map
-	      ("C-<return>" . depth-first-expand)))
+	      ("C-<return>" . depth-expand)
+	      ("M-<down>" . speedbar-restricted-next)
+	      ("M-<up>" . speedbar-restricted-prev)))
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
