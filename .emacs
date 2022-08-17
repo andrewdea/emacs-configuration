@@ -39,7 +39,7 @@
 (defun default-theme ()
   (let ((hour (nth 2 (decode-time (current-time)))))
     (if (or (> hour 21) (< hour 8))
-	'inkpot ; at night (really good for org files)
+	'my-misterioso ; at night
       'tango-dark))) ; during the day
 
 ;; my daily default theme is based on standard tango-dark;
@@ -64,7 +64,6 @@
   (big-frame)
   (mood-line-mode t)
   (scroll-bar-mode -1)
-  (global-yascroll-bar-mode t)
   (global-visual-line-mode t)
   (if arg (find-file)))
 
@@ -422,6 +421,8 @@ future."
 until we reach a directory with no subdirectories"
     (interactive)
     (setq line-move-visual nil)
+    (point-to-register 'sr)
+    (setq expanded-by 'depth)
     (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\+>.*"))
       (move-beginning-of-line 1)
       (while (looking-at dir-regexp)
@@ -432,6 +433,8 @@ until we reach a directory with no subdirectories"
     "Open the directory at line, and open all its subsequent siblings
 (directories that are at its same depth)"
     (interactive)
+    (point-to-register 'sr)
+    (setq expanded-by 'breadth)
     (speedbar-expand-line)
     ;; this loop works because restricted-next returns
     ;; (speedbar-item-info), which shows a text representation
@@ -443,25 +446,47 @@ until we reach a directory with no subdirectories"
 open siblings (directories at its same depth)"
     (interactive)
     (speedbar-contract-line)
-    (while (not (string-equal "Text: " (speedbar-restricted-next 1)))
+    ;; this loop works because restricted next throws an error
+    ;; when we reach the end of the sublist.
+    ;; ignore-errors returns nil when it catches an error
+    ;; (and the value of the body when there is no error)
+    (while (ignore-errors (speedbar-restricted-next 1))
       (speedbar-contract-line)))
 
-  (defun my-expand (&optional arg)
+  (defun my-speedbar-expand (&optional arg)
+    "call depth-expand. With prefix argument (C-u), call breadth=expand"
     (interactive "P")
-    (message "\n\ncalled my-expand!")
     (if arg
 	(breadth-expand)
       (depth-expand)))
 
+  (defun my-speedbar-undo ()
+    "undo the latest breadth or depth expansion. has no concept of undo tree"
+    (interactive)
+    (jump-to-register 'sr)
+    (if (eq expanded-by 'breadth)
+	(progn
+	  (breadth-contract) (jump-to-register 'sr)
+	  (message "contracted by breadth and jumped to register")))
+    (if (eq expanded-by 'depth)
+	(progn (speedbar-contract-line)
+	       (message "jumped to register and contracted by depth"))))
+
   :bind (:map speedbar-mode-map
-	      ("C-<return>" . my-expand) ; means C-u C-RET is breadth-expand
+	      ("C-<return>" . my-speedbar-expand) 
 	      ("M-<down>" . speedbar-restricted-next)
-	      ("M-<up>" . speedbar-restricted-prev)))
+	      ("M-<up>" . speedbar-restricted-prev)
+	      ("C-x u" . my-speedbar-undo)))
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
 (setq ido-everywhere t)
 (ido-mode 1)
+;;;;; git
+;; possible enhancement is to add this as a hook to magit-functions
+;; so that it's automatically called when needed
+(defun git-refresh ()
+  (vc-refresh-state))
 ;;;;; appearance
 (defun my-prog-appearance ()
   (linum-mode t)
@@ -613,7 +638,10 @@ and set its contents as the appropriate programming-language-template"
 ;;;; RANDOM STUFF
 
 ;;; CUSTOM-added variables and faces
-;; my custom-safe-themes are inkpot, my-misterioso, and tango-dark
+;; my custom-safe-themes are inkpot (really good for org-files),
+;; my-misterioso, and tango-dark.
+;; trying out monokai and monokai-pro
+;; (need better contrast for comments, maybe need darker background)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
