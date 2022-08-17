@@ -483,12 +483,9 @@ open siblings (directories at its same depth)"
 (setq ido-everywhere t)
 (ido-mode 1)
 ;;;;; git
-;; possible enhancement is to add this as a hook to magit-functions
-;; so that it's automatically called when needed
 (defun vc-refresh-buffer (arg)
   (interactive)
   (set-buffer arg)
-  (message (concat "running vc-refresh-state in this buffer: " arg))
   (vc-refresh-state))
 
 (defun vc-refresh-all-git-buffers ()
@@ -496,6 +493,8 @@ open siblings (directories at its same depth)"
 	  (seq-intersection (mapcar #'buffer-name (buffer-list))
 			    (magit-list-files))))
 
+;; this might affect performance when there are many files
+;; but it can always be turned off
 (add-hook 'magit-refresh-buffer-hook #'vc-refresh-all-git-buffers)
 
 ;;;;; appearance
