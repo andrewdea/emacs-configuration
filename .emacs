@@ -485,11 +485,19 @@ open siblings (directories at its same depth)"
 ;;;;; git
 ;; possible enhancement is to add this as a hook to magit-functions
 ;; so that it's automatically called when needed
-(defun git-refresh ()
+(defun vc-refresh-buffer (arg)
   (interactive)
-  (message "running vc-refresh-state")
+  (set-buffer arg)
+  (message (concat "running vc-refresh-state in this buffer: " arg))
   (vc-refresh-state))
-(add-hook 'magit-refresh-buffer-hook #'git-refresh)
+
+(defun vc-refresh-all-git-buffers ()
+  (mapcar #'vc-refresh-buffer
+	  (seq-intersection (mapcar #'buffer-name (buffer-list))
+			    (magit-list-files))))
+
+(add-hook 'magit-refresh-buffer-hook #'vc-refresh-all-git-buffers)
+
 ;;;;; appearance
 (defun my-prog-appearance ()
   (linum-mode t)
