@@ -417,7 +417,19 @@ future."
     (sr-speedbar-refresh-turn-on))
   ;; (add-hook 'speedbar-mode-hook
   ;; 	    (lambda () (visual-line-mode t)))
-  )
+  (defun my-speedbar-expand ()
+    "Open the directory at line, and keep opening its first subdirectory
+until we reach a directory with no subdirectories"
+    (interactive)
+    (setq line-move-visual nil)
+    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\+>.*"))
+      (move-beginning-of-line 1)
+      (while (looking-at dir-regexp)
+	(speedbar-toggle-line-expansion)
+	(next-line)
+	(move-beginning-of-line 1))))
+  :bind (:map speedbar-mode-map
+	      ("C-<return>" . my-speedbar-expand))) 
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
@@ -574,24 +586,6 @@ and set its contents as the appropriate programming-language-template"
   )
 
 ;;;; RANDOM STUFF
-
-;; going to try to use this to make speedbar expand more smartly
-(defun my-speedbar-expand ()
-  (interactive)
-  (setq line-move-visual nil)
-  (message "set line-move-visual to: " line-move-visual)
-  (setq to-toggle
-	(if speedbar-update-flag
-	    (progn (speedbar-disable-update)
-		   (message "disabled update"
-			    t))))
-  (message "to toggle?" to-toggle)
-  (speedbar-edit-line)
-  (next-line)
-  (while (looking-at "\\([0-9]+\\):<\\+>.*")
-    (speedbar-edit-line) (next-line)
-    (if to-toggle (speedbar-enable-update))))
-;; I just need to find a way to have it 'anchor' at a particular directory
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are inkpot, my-misterioso, and tango-dark
