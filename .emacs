@@ -488,14 +488,17 @@ open siblings (directories at its same depth)"
   (set-buffer arg)
   (vc-refresh-state))
 
-(defun vc-refresh-all-git-buffers ()
-  (mapcar #'vc-refresh-buffer
-	  (seq-intersection (mapcar #'buffer-name (buffer-list))
-			    (magit-list-files))))
-
-;; this might affect performance when there are many files
-;; but it can always be turned off
-(add-hook 'magit-refresh-buffer-hook #'vc-refresh-all-git-buffers)
+(use-package magit
+  :ensure t
+  :config
+  (defun vc-refresh-all-git-buffers ()
+    (mapcar #'vc-refresh-buffer
+	    (seq-intersection (mapcar #'buffer-name (buffer-list))
+			      (magit-list-files))))
+  ;; this might affect performance when there are many files
+  ;; but it can always be turned off
+  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers))
+;; (add-hook 'magit-refresh-buffer-hook #'vc-refresh-all-git-buffers)
 
 ;;;;; appearance
 (defun my-prog-appearance ()
