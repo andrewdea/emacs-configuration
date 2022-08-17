@@ -486,7 +486,9 @@ open siblings (directories at its same depth)"
 ;; possible enhancement is to add this as a hook to magit-functions
 ;; so that it's automatically called when needed
 (defun git-refresh ()
+  (message "running vc-refresh-state")
   (vc-refresh-state))
+(add-hook 'magit-refresh-buffer-hook #'git-refresh)
 ;;;;; appearance
 (defun my-prog-appearance ()
   (linum-mode t)
