@@ -52,7 +52,7 @@
 (defun big-frame ()
   (interactive)
   (if (< (frame-parameter (selected-frame) 'width) 200)
-      (set-frame-size (selected-frame) 202 55)
+      (set-frame-size (selected-frame) 203 55)
     (set-frame-size (selected-frame) 100 45))
   (set-frame-position (selected-frame) 0 0))
 
@@ -92,10 +92,9 @@
   (interactive)
   (let ((available-width
 	 (nth 3 (nth 1 (nth 0 (display-monitor-attributes-list)))))
-	(adj-frame-width
-	 (- (frame-outer-width) 9))) ;; adjust for scroll bar
+	(adj-frame-width (frame-outer-width)))
     (set-frame-position
-     (selected-frame) (- available-width adj-frame-width) 0)))
+     (selected-frame) (- available-width (frame-outer-width)) 0)))
 
 (defun left-frame ()
   (interactive)
