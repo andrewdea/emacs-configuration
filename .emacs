@@ -413,7 +413,7 @@ future."
     (sr-speedbar-refresh-turn-on))
 
   ;; expand functionalities:
-  ;; these two functions, plus the built-in
+  ;; these 3 functions, plus the built-in
   ;; speedbar-expand-line-descendants & speedbar-contract-line
   ;; allow you to navigate the directory tree in multiple ways
   (defun depth-expand ()
@@ -433,28 +433,30 @@ until we reach a directory with no subdirectories"
     "Open the directory at line, and open all its subsequent siblings
 (directories that are at its same depth)"
     (interactive)
+    (message "expanding by breadth")
     (point-to-register 'sr)
     (setq expanded-by 'breadth)
-    (speedbar-expand-line)
-    ;; this loop works because restricted-next returns
-    ;; (speedbar-item-info), which shows a text representation
-    ;; of the item. the text is empty when the item is last in the sublist
-    (while (not (string-equal "Text: " (speedbar-restricted-next 1)))
-      (speedbar-expand-line)))
+    (move-beginning-of-line 1)
+    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\(-\\|\\+\\)>.*"))
+      (while (looking-at dir-regexp)
+	(speedbar-expand-line)
+	(speedbar-restricted-move 1)
+	(move-beginning-of-line 1)))
+    (message "opened all directories at this level"))
   (defun breadth-contract ()
     "Collapse the directory at line, and close all its subsequent
 open siblings (directories at its same depth)"
     (interactive)
-    (speedbar-contract-line)
-    ;; this loop works because restricted next throws an error
-    ;; when we reach the end of the sublist.
-    ;; ignore-errors returns nil when it catches an error
-    ;; (and the value of the body when there is no error)
-    (while (ignore-errors (speedbar-restricted-next 1))
-      (speedbar-contract-line)))
+    (message "closing all directories at this level")
+    (move-beginning-of-line 1)
+    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\(-\\|\\+\\)>.*"))
+    (while (looking-at dir-regexp)
+      (speedbar-contract-line)
+      (speedbar-restricted-move 1)
+      (move-beginning-of-line 1))))
 
   (defun my-speedbar-expand (&optional arg)
-    "call depth-expand. With prefix argument (C-u), call breadth=expand"
+    "call depth-expand. With prefix argument (C-u), call breadth-expand"
     (interactive "P")
     (if arg
 	(breadth-expand)
