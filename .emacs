@@ -13,7 +13,7 @@
   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
-;;;; MELPA and package stuff
+;;;; PACKAGES
 (add-to-list 'package-archives
              '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
@@ -181,7 +181,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("TAB" . my-org-tab)))
 
 
-;;;; FILE SHORTCUTS
+;;;; FILE SHORTCUTS and utilities
 ;; open init file
 (defun init ()
   (interactive)
@@ -218,6 +218,25 @@ the whole region is fontified (by automatically inserting character at mark)"
 (defun notes ()
   (interactive)
   (find-file "~/org/Notes.org"))
+
+;; execute 'find' command as external shell command
+;; possible enhancements:
+;; 1. format the newly created buffer
+;; and put it in a nice mode
+;; (preserve coloring and other shell utils but only reasonable key bindings)
+;; 2. make it so that the output has links you can use to open files
+(defun my-find (directory name-and-options)
+  (let ((command (concat "find " directory " -iname " name-and-options "&")))
+    (message (concat "executing command: " command))
+    (shell-command command
+		   (switch-to-buffer-other-window "find-command output"))
+    (insert (concat "\n==> result of " command ": \n"))))
+;; look for file in current directory
+(defun find-here (name-and-options)
+  (interactive "sfind: name and options: ")
+  (message (concat "find-here: default directory: " default-directory))
+  (my-find default-directory name-and-options))
+
 
 ;;;; TEXT EDITING
 ;;;;; utilities
