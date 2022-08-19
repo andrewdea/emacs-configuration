@@ -220,34 +220,42 @@ the whole region is fontified (by automatically inserting character at mark)"
   (find-file "~/org/Notes.org"))
 
 ;; execute 'find' command as external shell command
-;; possible enhancements:
-;; 1. format the newly created buffer
-;; and put it in a nice mode
-;; (preserve coloring and other shell utils but only reasonable key bindings)
-;; 2. make it so that the output has links you can use to open files
+;; put this is in its own 'mode' file
 (setq shell-command-dont-erase-buffer t)
-;; (setq so-async "&")
-(defun my-find (directory name-and-options)
-  (let ((command (concat "find " directory " -iname " name-and-options "&"))
-	(output-buffer "*shell-command output*"))
-    (message (concat "executing command: " command))
+(setq shell-async "&")
+(setq shell-latest-command nil)
+(setq shell-default-options nil)
+(setq shell-default-dir nil)
+
+;; look for file in current directory
+(defun my-shell-command (command)
+  (let ((output-buffer "*shell-command output*"))
+    (message (concat "executing command: " command " from my-shell-command"))
     (shell-command command
+		   (progn (end-of-buffer)
 		   (if (string-equal (buffer-name) output-buffer)
 		       ;; could this be made more elegant?
 		       (switch-to-buffer output-buffer)
-		     (switch-to-buffer-other-window output-buffer)))
-    (end-of-buffer)
+		     (switch-to-buffer-other-window output-buffer))))
     (insert (concat "\n==> result of " command
 		    "\n____________________________________________\n\n\n\n")))
-  (shell-output-mode))
+  (shell-output-mode)
+  (setq shell-latest-command command)
+  (setq shell-default-dir (nth 1 (split-string command))))
 
-;; look for file in current directory
-(defun find-here (name-and-options)
-  (interactive "sfind with name-and-options: ")
-  ;; (let ((name-and-options
-  ;; 	 (read-from-minibuffer
-  ;; 	  (concat "find " default-directory " -iname ______" "&" " : "))))
-  (my-find default-directory name-and-options))
+(defun shell-redo ()
+  (interactive)
+  (let ((default-command shell-latest-command))
+    (my-shell-command (read-from-minibuffer "shell command: " default-command))))
+
+(defun find-here ()
+  (interactive)
+  (let ((default-command
+	  (concat "find "
+		  (if shell-default-dir shell-default-dir default-directory)
+		  " -iname "
+		  shell-default-options shell-async)))
+    (my-shell-command (read-from-minibuffer "shell command: " default-command))))
 
 (defun so-open-file-at-point ()
   (interactive)
@@ -256,9 +264,14 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (erase-buffer))
 
-(defun define-shell-output-keymap ()
-  (local-set-key (kbd "C-<return>") #'so-open-file-at-point)
-  (local-set-key (kbd "C-M-<backspace>") #'so-flush))
+(defvar shell-output-mode-map
+    (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-<return>") #'so-open-file-at-point)
+    (define-key map (kbd "C-M-<backspace>") #'so-flush)
+    (define-key map (kbd "C-<up>") #'backward-paragraph) ; define paragraphs by file path mb?
+    (define-key map (kbd "C-<down>") #'forward-paragraph)
+    (define-key map (kbd "C-r") #'shell-redo) ; will have to think what key is best for this
+    map))
 
 (defcustom shell-output-mode-hook '()
   "Hook for customizing find-output mode."
@@ -268,8 +281,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;;;###autoload
 (define-derived-mode shell-output-mode shell-mode "shell-output"
   "majore mode for shell output"
-  (setq-local font-lock-defaults '(shell-font-lock-keywords t))
-  (define-shell-output-keymap))
+  (message "setting shell-output-mode")
+  (setq-local font-lock-defaults '(shell-font-lock-keywords t)))
 
 
 
