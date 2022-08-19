@@ -713,11 +713,7 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("1d40f5d8db0ea775307e3d257a67bb064606cf8f29de5abae658823a89df8e7f"
-     "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d"
-     "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf"
-     "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2"
-     "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
+   '("aa2c30832aa44b7ee462c41ea1cd791827483f35241ea8b8456bb75d8cc67fda" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
    '(monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
