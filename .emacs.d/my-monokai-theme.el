@@ -19,11 +19,15 @@
 (custom-theme-set-faces
  'my-monokai
  '(font-lock-builtin-face ((((class color) (min-colors 257)) (:foreground "#F92672" :weight normal)) (((class color) (min-colors 89)) (:foreground "#FF1493" :weight normal))))
- '(font-lock-comment-delimiter-face ((((class color) (min-colors 257)) (:foreground "#8a6d8a")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
+ ;; '(font-lock-comment-delimiter-face ((((class color) (min-colors 257)) (:foreground "#8a6d8a")) (((class color) (min-colors 89)) (:foreground "#8B8878")))) 
  ;; '(font-lock-comment-face ((((class color) (min-colors 257)) (:foreground "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
- '(font-lock-comment-face ((((class color) (min-colors 257)) (:foreground "#8a4e8a")) (((class color) (min-colors 89)) (:foreground "#8a4e8a"))))
- 
- '(font-lock-constant-face ((((class color) (min-colors 257)) (:foreground "#AE81FF")) (((class color) (min-colors 89)) (:foreground "#AF87FF"))))
+  ;; '(font-lock-constant-face ((((class color) (min-colors 257)) (:foreground "#AE81FF")) (((class color) (min-colors 89)) (:foreground "#AF87FF"))))
+
+  '(font-lock-comment-delimiter-face ((((class color) (min-colors 257)) (:foreground "#AE81FF")) (((class color) (min-colors 89)) (:foreground "#AE81FF"))))
+ '(font-lock-comment-face ((((class color) (min-colors 257)) (:foreground "#AE81FF")) (((class color) (min-colors 89)) (:foreground "#AF87FF"))))
+ '(font-lock-constant-face ((((class color) (min-colors 257)) (:foreground "#5a9e9c")) (((class color) (min-colors 89)) (:foreground "#4e8a88"))))
+
+
  '(font-lock-doc-face ((((class color) (min-colors 257)) (:foreground "#E6DB74")) (((class color) (min-colors 89)) (:foreground "#CDC673"))))
  '(font-lock-function-name-face ((((class color) (min-colors 257)) (:foreground "#A6E22E")) (((class color) (min-colors 89)) (:foreground "#87D700"))))
  '(font-lock-keyword-face ((((class color) (min-colors 257)) (:foreground "#F92672" :weight normal)) (((class color) (min-colors 89)) (:foreground "#FF1493" :weight normal))))
@@ -41,7 +45,6 @@
  '(lazy-highlight ((((class color) (min-colors 257)) (:inherit highlight :background "#8f5902")) (((class color) (min-colors 89)) (:inherit highlight :background "#3E3E3E"))))
  
  '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#49483E")) (((class color) (min-colors 89)) (:inherit highlight :background "#474747"))))
-  ;; '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#8a4e8a")) (((class color) (min-colors 89)) (:inherit highlight :background "#8a4e8a"))))
 
  
  '(secondary-selection ((((class color) (min-colors 257)) (:inherit region :background "#3E3D31")) (((class color) (min-colors 89)) (:inherit region :background "#3E3E3E"))))
