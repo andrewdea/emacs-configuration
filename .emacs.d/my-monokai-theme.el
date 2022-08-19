@@ -45,7 +45,9 @@
  '(mouse ((((class color) (min-colors 257)) (:foreground "#202020" :background "#F8F8F2" :inverse-video t)) (((class color) (min-colors 89)) (:foreground "#1B1E1C" :background "#F5F5F5" :inverse-video t))))
  '(escape-glyph ((((class color) (min-colors 257)) (:foreground "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
  '(escape-glyph-face ((((class color) (min-colors 257)) (:foreground "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
- '(fringe ((((class color) (min-colors 257)) (:foreground "#F8F8F2" :background "#202020")) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C"))))
+ ;; '(fringe ((((class color) (min-colors 257)) (:foreground "#F8F8F2" :background "#202020")) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C"))))
+ '(fringe ((((class color) (min-colors 257)) (:foreground "#F8F8F2" :background "#272822")) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C"))))
+ ;; TODO: is this^ where we want to change things for ? yes
  '(link ((((class color) (min-colors 257)) (:foreground "#66D9EF" :underline t :weight bold)) (((class color) (min-colors 89)) (:foreground "#5FD7FF" :underline t :weight bold))))
  '(link-visited ((((class color) (min-colors 257)) (:foreground "#AE81FF" :underline t :weight normal)) (((class color) (min-colors 89)) (:foreground "#AF87FF" :underline t :weight normal))))
  '(success ((((class color) (min-colors 257)) (:foreground "#A6E22E")) (((class color) (min-colors 89)) (:foreground "#87D700"))))
@@ -1000,6 +1002,8 @@
  '(yascroll:thumb-text-area ((((class color) (min-colors 257)) (:foreground "#75715E" :background "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878" :background "#8B8878"))))
  '(yascroll:thumb-fringe ((((class color) (min-colors 257)) (:foreground "#75715E" :background "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878" :background "#8B8878"))))
  '(zencoding-preview-input ((((class color) (min-colors 257)) (:background "#3C3D37" :box "#F8F8F0")) (((class color) (min-colors 89)) (:background "#000000" :box "#FFFAFA"))))
- '(default ((((class color) (min-colors 257)) (:foreground "#F8F8F2" :background "#202020")) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C")))))
+ '(default ((((class color) (min-colors 257)) (:foreground "#F8F8F2" :background "#202020")) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C"))))
+
+ )
 
 (provide-theme 'my-monokai)
