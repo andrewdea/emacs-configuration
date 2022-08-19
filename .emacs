@@ -131,8 +131,12 @@ and loads the optional argument"
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 ;;;;; appearance for specific modes
+;; dired
+(add-hook 'dired-mode-hook
+	  (lambda ()
+	    (define-key dired-mode-map [mouse-2] 'dired-mouse-find-file)))
+
 ;;;; ORG mode
 (use-package org
   :ensure t
@@ -351,7 +355,8 @@ point reaches the beginning or end of the buffer, stop there."
 (defun line-copy-comm (&optional arg)
   (interactive "p")
   (kmacro-exec-ring-item (quote ([?\C-a ?\C-  ?\C-e ?\M-w ?\C-x ?\C-x
-					?\M-\; ?\C-e return] 0 "%d"))
+					?\M-\; ?\C-e return]
+				 0 "%d"))
 			 arg)
   (message "commented line has been copied"))
 (defun copy-comm ()
@@ -494,6 +499,7 @@ until we reach a directory with no subdirectories"
 	(speedbar-expand-line)
 	(next-line)
 	(move-beginning-of-line 1))))
+
   (defun breadth-expand ()
     "Open the directory at line, and open all its subsequent siblings
 (directories that are at its same depth)"
@@ -508,6 +514,7 @@ until we reach a directory with no subdirectories"
 	(speedbar-restricted-move 1)
 	(move-beginning-of-line 1)))
     (message "opened all directories at this level"))
+
   (defun breadth-contract ()
     "Collapse the directory at line, and close all its subsequent
 open siblings (directories at its same depth)"
@@ -515,10 +522,10 @@ open siblings (directories at its same depth)"
     (message "closing all directories at this level")
     (move-beginning-of-line 1)
     (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\(-\\|\\+\\)>.*"))
-    (while (looking-at dir-regexp)
-      (speedbar-contract-line)
-      (speedbar-restricted-move 1)
-      (move-beginning-of-line 1))))
+      (while (looking-at dir-regexp)
+	(speedbar-contract-line)
+	(speedbar-restricted-move 1)
+	(move-beginning-of-line 1))))
 
   (defun my-speedbar-expand (&optional arg)
     "call depth-expand. With prefix argument (C-u), call breadth-expand"
