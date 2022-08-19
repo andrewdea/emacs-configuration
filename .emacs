@@ -225,34 +225,52 @@ the whole region is fontified (by automatically inserting character at mark)"
 (setq shell-async "&")
 (setq shell-latest-command nil)
 (setq shell-default-options nil)
-(setq shell-default-dir nil)
 
 ;; look for file in current directory
 (defun my-shell-command (command)
-  (let ((output-buffer "*shell-command output*"))
-    (message (concat "executing command: " command " from my-shell-command"))
-    (shell-command command
-		   (progn (end-of-buffer)
-		   (if (string-equal (buffer-name) output-buffer)
-		       ;; could this be made more elegant?
-		       (switch-to-buffer output-buffer)
-		     (switch-to-buffer-other-window output-buffer))))
+  (let*
+      ((output-buffer-name "*shell-command output*")
+       (output-buffer
+	(if (string-equal (buffer-name) output-buffer-name)
+	    (switch-to-buffer output-buffer-name)
+	  (switch-to-buffer-other-window output-buffer-name))))
+    (message (concat "\nexecuting command: " command " from my-shell-command, output-buffer: " (buffer-name output-buffer)))
+    (message (concat "stringp command? " (if (stringp command) "t" "no")))
+    (message (concat "stringp buffer-name? " (if (stringp (buffer-name output-buffer)) "t" "no")))
+    (end-of-buffer)
+    (shell-command command (buffer-name output-buffer))
     (insert (concat "\n==> result of " command
-		    "\n____________________________________________\n\n\n\n")))
+		    "\n____________________________________________\n\n")))
   (shell-output-mode)
-  (setq shell-latest-command command)
-  (setq shell-default-dir (nth 1 (split-string command))))
+  (setq-local shell-latest-command command)
+  ;; (setq-local default-directory
+  ;; 	      (let ((new-dir
+  ;; 		     (seq-find (lambda (arg) (not (string-match "\\-" arg)))
+  ;; 			       (cdr (split-string command)))
+  ;; 		     ))
+  ;; 		(if new-dir new-dir default-directory)))
+  (let ((new-dir ;; todo: move this above to the let* function
+	 (seq-find (lambda (arg) (not (string-match "\\-" arg)))
+		   (cdr-safe (split-string command)))))
+    (if new-dir (setq-local default-directory new-dir)))
+  (message
+   (concat "set local default-directory: " default-directory)))
 
 (defun shell-redo ()
   (interactive)
   (let ((default-command shell-latest-command))
     (my-shell-command (read-from-minibuffer "shell command: " default-command))))
 
+(defun my-switch-to-buffer (arg)
+  (if (string-equal (buffer-name) arg)
+      (switch-to-buffer arg)
+    (switch-to-buffer-other-window arg)))
+
 (defun find-here ()
   (interactive)
   (let ((default-command
 	  (concat "find "
-		  (if shell-default-dir shell-default-dir default-directory)
+		  default-directory
 		  " -iname "
 		  shell-default-options shell-async)))
     (my-shell-command (read-from-minibuffer "shell command: " default-command))))
