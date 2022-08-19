@@ -225,17 +225,52 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; and put it in a nice mode
 ;; (preserve coloring and other shell utils but only reasonable key bindings)
 ;; 2. make it so that the output has links you can use to open files
+(setq shell-command-dont-erase-buffer t)
+;; (setq so-async "&")
 (defun my-find (directory name-and-options)
-  (let ((command (concat "find " directory " -iname " name-and-options "&")))
+  (let ((command (concat "find " directory " -iname " name-and-options "&"))
+	(output-buffer "*shell-command output*"))
     (message (concat "executing command: " command))
     (shell-command command
-		   (switch-to-buffer-other-window "find-command output"))
-    (insert (concat "\n==> result of " command ": \n"))))
+		   (if (string-equal (buffer-name) output-buffer)
+		       ;; could this be made more elegant?
+		       (switch-to-buffer output-buffer)
+		     (switch-to-buffer-other-window output-buffer)))
+    (end-of-buffer)
+    (insert (concat "\n==> result of " command
+		    "\n____________________________________________\n\n\n\n")))
+  (shell-output-mode))
+
 ;; look for file in current directory
 (defun find-here (name-and-options)
-  (interactive "sfind: name and options: ")
-  (message (concat "find-here: default directory: " default-directory))
+  (interactive "sfind with name-and-options: ")
+  ;; (let ((name-and-options
+  ;; 	 (read-from-minibuffer
+  ;; 	  (concat "find " default-directory " -iname ______" "&" " : "))))
   (my-find default-directory name-and-options))
+
+(defun so-open-file-at-point ()
+  (interactive)
+  (find-file (string-trim (thing-at-point 'line))))
+(defun so-flush ()
+  (interactive)
+  (erase-buffer))
+
+(defun define-shell-output-keymap ()
+  (local-set-key (kbd "C-<return>") #'so-open-file-at-point)
+  (local-set-key (kbd "C-M-<backspace>") #'so-flush))
+
+(defcustom shell-output-mode-hook '()
+  "Hook for customizing find-output mode."
+  :type 'hook
+  :group 'shell-output)
+
+;;;###autoload
+(define-derived-mode shell-output-mode shell-mode "shell-output"
+  "majore mode for shell output"
+  (setq-local font-lock-defaults '(shell-font-lock-keywords t))
+  (define-shell-output-keymap))
+
 
 
 ;;;; TEXT EDITING
@@ -504,7 +539,6 @@ open siblings (directories at its same depth)"
 (ido-mode 1)
 ;;;;; git
 (defun vc-refresh-buffer (arg)
-  (interactive)
   (set-buffer arg)
   (vc-refresh-state))
 
@@ -512,13 +546,14 @@ open siblings (directories at its same depth)"
   :ensure t
   :config
   (defun vc-refresh-all-git-buffers ()
+    "get list of git files from magit,
+for each open buffer with one of these files, refresh the version-control state"
     (mapcar #'vc-refresh-buffer
 	    (seq-intersection (mapcar #'buffer-name (buffer-list))
 			      (magit-list-files))))
   ;; this might affect performance when there are many files
   ;; but it can always be turned off
   :hook (magit-refresh-buffer . vc-refresh-all-git-buffers))
-;; (add-hook 'magit-refresh-buffer-hook #'vc-refresh-all-git-buffers)
 
 ;;;;; appearance
 (defun my-prog-appearance ()
