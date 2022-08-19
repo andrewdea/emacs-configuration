@@ -13,7 +13,7 @@
  '(trailing-whitespace ((((class color) (min-colors 89)) (:background "#ff4242"))))
  ;; '(mode-line ((((class color) (min-colors 89)) (:background "#212931" :foreground "#eeeeec"))))
  '(mode-line ((((class color) (min-colors 89)) (:background "#14191f" :foreground "#eeeeec"))))
- '(mode-line-inactive ((((class color) (min-colors 89)) (:background "#878787" :foreground "#eeeeec"))))
+ '(mode-line-inactive ((((class color) (min-colors 89)) (:background "#878787" :foreground "#14191f"))))
  '(header-line ((((class color) (min-colors 89)) (:background "#808080" :foreground "#333333"))))
  '(minibuffer-prompt ((((class color) (min-colors 89)) (:foreground "#729fcf" :weight bold))))
  '(font-lock-builtin-face ((((class color) (min-colors 89)) (:foreground "#23d7d7"))))
