@@ -23,9 +23,9 @@
  ;; '(font-lock-comment-face ((((class color) (min-colors 257)) (:foreground "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
   ;; '(font-lock-constant-face ((((class color) (min-colors 257)) (:foreground "#AE81FF")) (((class color) (min-colors 89)) (:foreground "#AF87FF"))))
 
-  '(font-lock-comment-delimiter-face ((((class color) (min-colors 257)) (:foreground "#AE81FF")) (((class color) (min-colors 89)) (:foreground "#AE81FF"))))
- '(font-lock-comment-face ((((class color) (min-colors 257)) (:foreground "#AE81FF")) (((class color) (min-colors 89)) (:foreground "#AF87FF"))))
- '(font-lock-constant-face ((((class color) (min-colors 257)) (:foreground "#5a9e9c")) (((class color) (min-colors 89)) (:foreground "#4e8a88"))))
+ '(font-lock-constant-face ((((class color) (min-colors 257)) (:foreground "#AE81FF")) (((class color) (min-colors 89)) (:foreground "#AF87FF"))))
+ '(font-lock-comment-face ((((class color) (min-colors 257)) (:foreground "#5a9e9c")) (((class color) (min-colors 89)) (:foreground "#4e8a88"))))
+ '(font-lock-comment-delimiter-face ((((class color) (min-colors 257)) (:inherit font-lock-comment-face)) (((class color) (min-colors 89)) (:foreground "#AE81FF"))))
 
 
  '(font-lock-doc-face ((((class color) (min-colors 257)) (:foreground "#E6DB74")) (((class color) (min-colors 89)) (:foreground "#CDC673"))))
