@@ -100,6 +100,26 @@
   (set-frame-position (selected-frame) 0 0))
 
 ;;;;; themes and colors
+(defun un-theme (&optional arg)
+  "disables all custom themes
+and loads the optional argument"
+  (interactive "snew theme: ")
+  (mapcar #'disable-theme custom-enabled-themes)
+  (if arg (load-theme (intern arg))))
+
+(defun my-misterioso ()
+  (interactive)
+  (un-theme "my-misterioso"))
+(defun my-monokai ()
+  (interactive)
+  (un-theme "my-monokai"))
+(defun tango-dark ()
+  (interactive)
+  (un-theme "tango-dark"))
+(defun inkpot  ()
+  (interactive)
+  (un-theme "inkpot"))
+
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
   :ensure t
@@ -110,14 +130,6 @@
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun un-theme (&optional arg)
-  "disables all custom themes
-and loads the optional argument"
-  (interactive "snew theme: ")
-  (while custom-enabled-themes
-    (disable-theme (car custom-enabled-themes)))
-  (if (not (string= "" arg))
-      (load-theme (intern arg))))
 
 ;;;;; appearance for specific modes
 ;;;; ORG mode
