@@ -224,7 +224,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 (setq shell-command-dont-erase-buffer t)
 (setq shell-async "&")
 (setq shell-latest-command nil)
-(setq shell-default-options nil)
+(setq shell-default-options " -maxdepth 3 ")
 
 ;; look for file in current directory
 (defun my-shell-command (command)
@@ -250,7 +250,7 @@ the whole region is fontified (by automatically inserting character at mark)"
   ;; 		     ))
   ;; 		(if new-dir new-dir default-directory)))
   (let ((new-dir ;; todo: move this above to the let* function
-	 (seq-find (lambda (arg) (not (string-match "\\-" arg)))
+	 (seq-find (lambda (arg) (not (string-match "\\-" arg))) ; needs to be more robust
 		   (cdr-safe (split-string command)))))
     (if new-dir (setq-local default-directory new-dir)))
   (message
@@ -271,12 +271,14 @@ the whole region is fontified (by automatically inserting character at mark)"
   (let ((default-command
 	  (concat "find "
 		  default-directory
+		  shell-default-options
 		  " -iname "
-		  shell-default-options shell-async)))
+		 shell-async)))
     (my-shell-command (read-from-minibuffer "shell command: " default-command))))
 
 (defun so-open-file-at-point ()
   (interactive)
+  ; if region is selected, open region
   (find-file (string-trim (thing-at-point 'line))))
 (defun so-flush ()
   (interactive)
@@ -300,6 +302,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 (define-derived-mode shell-output-mode shell-mode "shell-output"
   "majore mode for shell output"
   (message "setting shell-output-mode")
+  ;; to these keywords,
+  ;; add the fact that accessible file-names should appear as hyperlinks
   (setq-local font-lock-defaults '(shell-font-lock-keywords t)))
 
 
