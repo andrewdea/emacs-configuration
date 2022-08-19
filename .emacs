@@ -716,10 +716,10 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("24168c7e083ca0bbc87c68d3139ef39f072488703dcdd82343b8cab71c0f62a7" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "0cdc4973d2c9e873534490108752f60a052195d13201bdbca3c3e9ff2cf0b773" default))
+   '("e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "24168c7e083ca0bbc87c68d3139ef39f072488703dcdd82343b8cab71c0f62a7" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "0cdc4973d2c9e873534490108752f60a052195d13201bdbca3c3e9ff2cf0b773" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(monokai-theme monokai-pro-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
