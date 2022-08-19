@@ -19,8 +19,10 @@
 (custom-theme-set-faces
  'my-monokai
  '(font-lock-builtin-face ((((class color) (min-colors 257)) (:foreground "#F92672" :weight normal)) (((class color) (min-colors 89)) (:foreground "#FF1493" :weight normal))))
- '(font-lock-comment-delimiter-face ((((class color) (min-colors 257)) (:foreground "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
- '(font-lock-comment-face ((((class color) (min-colors 257)) (:foreground "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
+ '(font-lock-comment-delimiter-face ((((class color) (min-colors 257)) (:foreground "#8a6d8a")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
+ ;; '(font-lock-comment-face ((((class color) (min-colors 257)) (:foreground "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
+ '(font-lock-comment-face ((((class color) (min-colors 257)) (:foreground "#8a4e8a")) (((class color) (min-colors 89)) (:foreground "#8a4e8a"))))
+ 
  '(font-lock-constant-face ((((class color) (min-colors 257)) (:foreground "#AE81FF")) (((class color) (min-colors 89)) (:foreground "#AF87FF"))))
  '(font-lock-doc-face ((((class color) (min-colors 257)) (:foreground "#E6DB74")) (((class color) (min-colors 89)) (:foreground "#CDC673"))))
  '(font-lock-function-name-face ((((class color) (min-colors 257)) (:foreground "#A6E22E")) (((class color) (min-colors 89)) (:foreground "#87D700"))))
@@ -36,8 +38,12 @@
  '(c-annotation-face ((((class color) (min-colors 257)) (:inherit font-lock-constant-face)) (((class color) (min-colors 89)) (:inherit font-lock-constant-face))))
  '(button ((t (:underline t))))
  '(highlight ((((class color) (min-colors 257)) (:background "#49483E")) (((class color) (min-colors 89)) (:background "#474747"))))
- '(lazy-highlight ((((class color) (min-colors 257)) (:inherit highlight :background "#3E3D31")) (((class color) (min-colors 89)) (:inherit highlight :background "#3E3E3E"))))
+ '(lazy-highlight ((((class color) (min-colors 257)) (:inherit highlight :background "#8f5902")) (((class color) (min-colors 89)) (:inherit highlight :background "#3E3E3E"))))
+ 
  '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#49483E")) (((class color) (min-colors 89)) (:inherit highlight :background "#474747"))))
+  ;; '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#8a4e8a")) (((class color) (min-colors 89)) (:inherit highlight :background "#8a4e8a"))))
+
+ 
  '(secondary-selection ((((class color) (min-colors 257)) (:inherit region :background "#3E3D31")) (((class color) (min-colors 89)) (:inherit region :background "#3E3E3E"))))
  '(shadow ((((class color) (min-colors 257)) (:foreground "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
  '(match ((((class color) (min-colors 257)) (:background "#A6E22E" :foreground "#202020" :weight bold)) (((class color) (min-colors 89)) (:background "#87D700" :foreground "#1B1E1C" :weight bold))))
@@ -47,7 +53,6 @@
  '(escape-glyph-face ((((class color) (min-colors 257)) (:foreground "#75715E")) (((class color) (min-colors 89)) (:foreground "#8B8878"))))
  ;; '(fringe ((((class color) (min-colors 257)) (:foreground "#F8F8F2" :background "#202020")) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C"))))
  '(fringe ((((class color) (min-colors 257)) (:foreground "#F8F8F2" :background "#272822")) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C"))))
- ;; TODO: is this^ where we want to change things for ? yes
  '(link ((((class color) (min-colors 257)) (:foreground "#66D9EF" :underline t :weight bold)) (((class color) (min-colors 89)) (:foreground "#5FD7FF" :underline t :weight bold))))
  '(link-visited ((((class color) (min-colors 257)) (:foreground "#AE81FF" :underline t :weight normal)) (((class color) (min-colors 89)) (:foreground "#AF87FF" :underline t :weight normal))))
  '(success ((((class color) (min-colors 257)) (:foreground "#A6E22E")) (((class color) (min-colors 89)) (:foreground "#87D700"))))
@@ -60,10 +65,10 @@
  '(menu ((((class color) (min-colors 257)) (:foreground "#F8F8F2" :background "#202020")) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C"))))
  '(minibuffer-prompt ((((class color) (min-colors 257)) (:foreground "#66D9EF")) (((class color) (min-colors 89)) (:foreground "#5FD7FF"))))
  '(mode-line-buffer-id ((((class color) (min-colors 257)) (:foreground "#A6E22E" :weight bold)) (((class color) (min-colors 89)) (:foreground "#87D700" :weight bold))))
- '(mode-line ((((class color) (min-colors 257)) (:inverse-video unspecified :underline unspecified :foreground "#F8F8F0" :background "#49483E" :box (:line-width 1 :color "#64645E" :style unspecified))) (((class color) (min-colors 89)) (:inverse-video unspecified :underline unspecified :foreground "#F5F5F5" :background "#1B1E1C" :box (:line-width 1 :color "#474747" :style unspecified)))))
+  '(mode-line ((((class color) (min-colors 257)) (:inverse-video unspecified :underline unspecified :foreground "#75715E" :background "#101010" :box (:line-width 1 :color "#64645E" :style unspecified))) (((class color) (min-colors 89)) (:inverse-video unspecified :underline unspecified :foreground "#8B8878" :background "#1B1E1C" :box (:line-width 1 :color "#3D3D3D" :style unspecified)))))
+ '(mode-line-inactive ((((class color) (min-colors 257)) (:inverse-video unspecified :underline unspecified :foreground "#F8F8F0" :background "#49483E" :box (:line-width 1 :color "#64645E" :style unspecified))) (((class color) (min-colors 89)) (:inverse-video unspecified :underline unspecified :foreground "#F5F5F5" :background "#1B1E1C" :box (:line-width 1 :color "#474747" :style unspecified)))))
  '(powerline-active1 ((((class color) (min-colors 257)) (:background "#35331D")) (((class color) (min-colors 89)) (:background "#333333"))))
  '(powerline-active2 ((((class color) (min-colors 257)) (:background "#202020")) (((class color) (min-colors 89)) (:background "#1B1E1C"))))
- '(mode-line-inactive ((((class color) (min-colors 257)) (:inverse-video unspecified :underline unspecified :foreground "#75715E" :background "#202020" :box (:line-width 1 :color "#64645E" :style unspecified))) (((class color) (min-colors 89)) (:inverse-video unspecified :underline unspecified :foreground "#8B8878" :background "#1B1E1C" :box (:line-width 1 :color "#3D3D3D" :style unspecified)))))
  '(powerline-inactive1 ((((class color) (min-colors 257)) (:background "#35331D")) (((class color) (min-colors 89)) (:background "#333333"))))
  '(powerline-inactive2 ((((class color) (min-colors 257)) (:background "#202020")) (((class color) (min-colors 89)) (:background "#1B1E1C"))))
  '(header-line ((((class color) (min-colors 257)) (:foreground "#F8F8F0" :background "#49483E" :box (:color "#64645E" :line-width 1 :style unspecified))) (((class color) (min-colors 89)) (:foreground "#FFFAFA" :background "#474747" :box (:color "#3D3D3D" :line-width 1 :style unspecified)))))
@@ -105,7 +110,10 @@
  '(grep-error-face ((((class color) (min-colors 257)) (:foreground "#F92672" :weight bold :underline t)) (((class color) (min-colors 89)) (:foreground "#FF1493" :weight bold :underline t))))
  '(grep-hit-face ((((class color) (min-colors 257)) (:foreground "#FD971F")) (((class color) (min-colors 89)) (:foreground "#FF8C00"))))
  '(grep-match-face ((((class color) (min-colors 257)) (:foreground "#A6E22E" :weight bold)) (((class color) (min-colors 89)) (:foreground "#87D700" :weight bold))))
+
  '(isearch ((((class color) (min-colors 257)) (:inherit region :foreground "#202020" :background "#E6DB74")) (((class color) (min-colors 89)) (:inherit region :foreground "#1B1E1C" :background "#CDC673"))))
+ ;; '(isearch ((((class color) (min-colors 257)) (:inherit region)) (((class color) (min-colors 89)) (:inherit region))))
+ 
  '(isearch-fail ((((class color) (min-colors 257)) (:inherit isearch :foreground "#F92672" :background "#202020" :bold t)) (((class color) (min-colors 89)) (:inherit isearch :foreground "#FF1493" :background "#1B1E1C" :bold t))))
  '(ace-jump-face-background ((((class color) (min-colors 257)) (:foreground "#75715E" :background "#202020" :inverse-video nil)) (((class color) (min-colors 89)) (:foreground "#8B8878" :background "#1B1E1C" :inverse-video nil))))
  '(ace-jump-face-foreground ((((class color) (min-colors 257)) (:foreground "#E6DB74" :background "#202020" :inverse-video nil :weight bold)) (((class color) (min-colors 89)) (:foreground "#CDC673" :background "#1B1E1C" :inverse-video nil :weight bold))))
