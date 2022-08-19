@@ -222,7 +222,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; execute 'find' command as external shell command
 ;; put this is in its own 'mode' file
 (setq shell-command-dont-erase-buffer t)
-(setq shell-async "&")
+(setq shell-async "&") ; these will be buffer-local vars
 (setq shell-latest-command nil)
 (setq shell-default-options " -maxdepth 3 ")
 
