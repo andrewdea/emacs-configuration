@@ -43,10 +43,9 @@
       'tango-dark))) ; during the day
 
 ;; my daily default theme is based on standard tango-dark;
-;; with this small edit in ~/.emacs.d/tango-dark-theme.el
-;; '(region ((t (:background "#483d8b")))) ; purple for highlighted region
-;; I also really like monokai and monokai-pro,
-;; but I'll have to fix their readability on comments
+;; with some small edits in ~/.emacs.d/tango-dark-theme.el
+;; I also really like monokai: made osme edits to improve readability
+;; in ~/.emacs.d/my-monokai-theme.el
 
 ;; resize current frame (toggle)
 (defun big-frame ()
@@ -742,19 +741,21 @@ and set its contents as the appropriate programming-language-template"
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are inkpot (really good for org-files),
-;; my-misterioso, and tango-dark.
-;; trying out monokai and monokai-pro
-;; (need better contrast for comments, maybe need darker background)
+;; my-misterioso, my-monokai, monokai, and tango-dark.
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "24168c7e083ca0bbc87c68d3139ef39f072488703dcdd82343b8cab71c0f62a7" "29b6168e6eb6401df4d80c69b41832e014069308efb6f58c1d28c3400158f907" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" default))
+   '("1d40f5d8db0ea775307e3d257a67bb064606cf8f29de5abae658823a89df8e7f"
+     "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d"
+     "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf"
+     "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2"
+     "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(monokai-theme monokai-pro-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
