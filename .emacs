@@ -242,39 +242,46 @@ the whole region is fontified (by automatically inserting character at mark)"
 (setq shell-command-dont-erase-buffer t)
 (setq shell-async "&") ; these will be buffer-local vars
 (setq shell-latest-command nil)
-(setq shell-default-options " -maxdepth 3 ")
+(setq find-default-options " -maxdepth 3 ")
+(setq shell-default-options nil)
+(setq grep-default-options "-nr")
 
 ;; look for file in current directory
 (defun execute-command (command)
   (let*
       ((output-buffer-name "*shell-command output*")
-       (output-buffer
-	(if (string-equal (buffer-name) output-buffer-name)
-	    (switch-to-buffer output-buffer-name)
-	  (switch-to-buffer-other-window output-buffer-name))))
-    (message (concat "\nexecuting command: " command " from execute-command, output-buffer: " (buffer-name output-buffer)))
-    (message (concat "stringp command? " (if (stringp command) "t" "no")))
-    (message (concat "stringp buffer-name? " (if (stringp (buffer-name output-buffer)) "t" "no")))
+       (output-buffer (my-switch-to-buffer output-buffer-name)))
+    (message (concat "\nexecuting command: " command " from execute-command,"
+		     " output-buffer: " (buffer-name output-buffer)))
     (end-of-buffer)
     (shell-command command (buffer-name output-buffer))
     (insert (concat "\n==> result of " command
 		    "\n____________________________________________\n\n")))
   (shell-output-mode)
-  (setq-local shell-latest-command command)
-  ;; (setq-local default-directory
-  ;; 	      (let ((new-dir
-  ;; 		     (seq-find (lambda (arg) (not (string-match "\\-" arg)))
-  ;; 			       (cdr (split-string command)))
-  ;; 		     ))
-  ;; 		(if new-dir new-dir default-directory)))
-  (let ((new-dir ;; todo: move this above to the let* function
-	 (seq-find (lambda (arg) (not (string-match "\\-" arg))) ; needs to be more robust
-		   (cdr-safe (split-string command)))))
-    ;; todo: will change this to be more robust and be able to deal w/ multiple commands
-    (if (and new-dir (string-match-p (regexp-quote "find") command))
-	(setq-local default-directory new-dir)))
+  (setq-local shell-latest-command (substring command)) ; copy by value
+  (setq-local default-directory (parse-folder-from-command command))
   (message
-   (concat "set local default-directory: " default-directory)))
+   (format "set local default-directory: %S from latest command: %S"
+	   default-directory shell-latest-command)))
+
+(defun parse-folder-from-command (command)
+  ;; remove the potential '&' character
+  (let ((adj-size (- (length command) 1)))
+    (if (equal (aref command adj-size) ?&)
+	(aset command adj-size ?\s)))
+  ;; parse according to command name
+  (let* ((split (split-string command))
+	 (name (pop split))
+	 (directory
+	  (cond ((string-equal name "find") ; the first non-option is the dir
+		 (seq-find (lambda (arg)
+			     (not (string-match "\\-" arg)))
+			   split))
+		((string-equal name "grep")
+	         (car (last split)))))) ; last arg is dir
+    (seq-find ; if directory is nil return default-directory
+     (lambda (arg) (if arg arg)) (list directory default-directory))))
+
 
 (defun shell-redo ()
   (interactive)
@@ -291,8 +298,20 @@ the whole region is fontified (by automatically inserting character at mark)"
   (let ((default-command
 	  (concat "find "
 		  default-directory
+		  find-default-options
 		  shell-default-options
 		  "-iname "
+		  shell-async)))
+    (execute-command (read-from-minibuffer "shell command: " default-command))))
+
+(defun grep-here ()
+  (interactive)
+  (let ((default-command
+	  (concat "grep "
+		  grep-default-options " "
+		  shell-default-options " "
+		  "'' "
+		  default-directory " "
 		  shell-async)))
     (execute-command (read-from-minibuffer "shell command: " default-command))))
 
@@ -300,23 +319,30 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive "sshell command: ")
   (execute-command arg))
 
-(defun file-at-line-or-region ()
+(defun parse-file-at-line ()
   (interactive)
-  ;; todo: add functionality to replace space with '\ '
-  ;; and maybe other escape chars will be needed
   (if mark-active
       (progn (goto-char (max (region-beginning) (region-end)))
 	     (deactivate-mark)
 	     (while (and (not (eolp)) (not (char-equal ?/ (char-after))))
 	       (right-char))
 	     (let ((right-margin (point)))
-	       (buffer-substring (move-beginning-of-line 1) right-margin)))
-    ;; (string-trim (thing-at-point 'line))))
-    (car (split-string (thing-at-point 'line) "\n\\|:"))))
+	       (list
+		(buffer-substring (move-beginning-of-line 1) right-margin))))
+    (split-string (thing-at-point 'line 'no-properties) "\n\\|:")))
 
 (defun so-open-file-at-point ()
   (interactive)
-  (find-file (file-at-line-or-region)))
+  (let* ((parsed-file (parse-file-at-line))
+	 (line (cdr parsed-file)))
+    (find-file (car parsed-file))
+    (if line
+	(progn
+	  (goto-line (string-to-number (car line)))
+	  (set-mark-command nil) (move-end-of-line nil)
+	  )
+      )))
+
 (defun so-flush ()
   (interactive)
   (erase-buffer))
