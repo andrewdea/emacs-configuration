@@ -226,14 +226,14 @@ the whole region is fontified (by automatically inserting character at mark)"
 (setq shell-default-options " -maxdepth 3 ")
 
 ;; look for file in current directory
-(defun my-shell-command (command)
+(defun execute-command (command)
   (let*
       ((output-buffer-name "*shell-command output*")
        (output-buffer
 	(if (string-equal (buffer-name) output-buffer-name)
 	    (switch-to-buffer output-buffer-name)
 	  (switch-to-buffer-other-window output-buffer-name))))
-    (message (concat "\nexecuting command: " command " from my-shell-command, output-buffer: " (buffer-name output-buffer)))
+    (message (concat "\nexecuting command: " command " from execute-command, output-buffer: " (buffer-name output-buffer)))
     (message (concat "stringp command? " (if (stringp command) "t" "no")))
     (message (concat "stringp buffer-name? " (if (stringp (buffer-name output-buffer)) "t" "no")))
     (end-of-buffer)
@@ -251,14 +251,16 @@ the whole region is fontified (by automatically inserting character at mark)"
   (let ((new-dir ;; todo: move this above to the let* function
 	 (seq-find (lambda (arg) (not (string-match "\\-" arg))) ; needs to be more robust
 		   (cdr-safe (split-string command)))))
-    (if new-dir (setq-local default-directory new-dir)))
+    ;; todo: will change this to be more robust and be able to deal w/ multiple commands
+    (if (and new-dir (string-match-p (regexp-quote "find") command))
+	(setq-local default-directory new-dir)))
   (message
    (concat "set local default-directory: " default-directory)))
 
 (defun shell-redo ()
   (interactive)
   (let ((default-command shell-latest-command))
-    (my-shell-command (read-from-minibuffer "shell command: " default-command))))
+    (execute-command (read-from-minibuffer "shell command: " default-command))))
 
 (defun my-switch-to-buffer (arg)
   (if (string-equal (buffer-name) arg)
@@ -271,14 +273,31 @@ the whole region is fontified (by automatically inserting character at mark)"
 	  (concat "find "
 		  default-directory
 		  shell-default-options
-		  " -iname "
-		 shell-async)))
-    (my-shell-command (read-from-minibuffer "shell command: " default-command))))
+		  "-iname "
+		  shell-async)))
+    (execute-command (read-from-minibuffer "shell command: " default-command))))
+
+(defun my-shell-command (arg)
+  (interactive "sshell command: ")
+  (execute-command arg))
+
+(defun file-at-line-or-region ()
+  (interactive)
+  ;; todo: add functionality to replace space with '\ '
+  ;; and maybe other escape chars will be needed
+  (if mark-active
+      (progn (goto-char (max (region-beginning) (region-end)))
+	     (deactivate-mark)
+	     (while (and (not (eolp)) (not (char-equal ?/ (char-after))))
+	       (right-char))
+	     (let ((right-margin (point)))
+	       (buffer-substring (move-beginning-of-line 1) right-margin)))
+    ;; (string-trim (thing-at-point 'line))))
+    (car (split-string (thing-at-point 'line) "\n\\|:"))))
 
 (defun so-open-file-at-point ()
   (interactive)
-  ; if region is selected, open region
-  (find-file (string-trim (thing-at-point 'line))))
+  (find-file (file-at-line-or-region)))
 (defun so-flush ()
   (interactive)
   (erase-buffer))
@@ -751,7 +770,7 @@ and set its contents as the appropriate programming-language-template"
    '("aa2c30832aa44b7ee462c41ea1cd791827483f35241ea8b8456bb75d8cc67fda" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(dwim-shell-command monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
