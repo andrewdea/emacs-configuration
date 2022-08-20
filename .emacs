@@ -44,8 +44,8 @@
 
 ;; my daily default theme is based on standard tango-dark;
 ;; with some small edits in ~/.emacs.d/tango-dark-theme.el
-;; I also really like monokai: made osme edits to improve readability
-;; in ~/.emacs.d/my-monokai-theme.el
+;; I also really like monokai:
+;; made some edits in ~/.emacs.d/my-monokai-theme.el
 
 ;; resize current frame (toggle)
 (defun big-frame ()
@@ -132,11 +132,6 @@ and loads the optional argument"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;; appearance for specific modes
-;; dired
-(add-hook 'dired-mode-hook
-	  (lambda ()
-	    (define-key dired-mode-map [mouse-2] 'dired-mouse-find-file)))
-
 ;;;; ORG mode
 (use-package org
   :ensure t
@@ -197,7 +192,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("TAB" . my-org-tab)))
 
 
-;;;; FILE SHORTCUTS and utilities
+;;;; FILE utilities
+;;;;; shortcuts
 ;; open init file
 (defun init ()
   (interactive)
@@ -235,6 +231,12 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (find-file "~/org/Notes.org"))
 
+;;;;; dired
+(add-hook 'dired-mode-hook
+	  (lambda ()
+	    (define-key dired-mode-map [mouse-2] 'dired-mouse-find-file)))
+
+;;;;; find
 ;; execute 'find' command as external shell command
 ;; possible enhancements:
 ;; 1. format the newly created buffer
