@@ -44,8 +44,8 @@
 
 ;; my daily default theme is based on standard tango-dark;
 ;; with some small edits in ~/.emacs.d/tango-dark-theme.el
-;; I also really like monokai:
-;; made some edits in ~/.emacs.d/my-monokai-theme.el
+;; I also really like monokai: made osme edits to improve readability
+;; in ~/.emacs.d/my-monokai-theme.el
 
 ;; resize current frame (toggle)
 (defun big-frame ()
@@ -63,6 +63,7 @@
   (big-frame)
   (mood-line-mode t)
   (scroll-bar-mode -1)
+  (yascroll-bar-mode t)
   (global-visual-line-mode t)
   (if arg (find-file)))
 
@@ -83,7 +84,6 @@
 ;; frame to have together with max youtube
 (defun yt-frame ()
   (interactive)
-  (delete-other-windows)
   (set-frame-size (selected-frame) 83 52)
   (set-frame-position (selected-frame) 838 24))
 (add-hook 'tetris-mode-hook #'yt-frame)
