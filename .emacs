@@ -44,8 +44,8 @@
 
 ;; my daily default theme is based on standard tango-dark;
 ;; with some small edits in ~/.emacs.d/tango-dark-theme.el
-;; I also really like monokai: made osme edits to improve readability
-;; in ~/.emacs.d/my-monokai-theme.el
+;; I also really like monokai:
+;; made some edits in ~/.emacs.d/my-monokai-theme.el
 
 ;; resize current frame (toggle)
 (defun big-frame ()
@@ -83,6 +83,7 @@
 ;; frame to have together with max youtube
 (defun yt-frame ()
   (interactive)
+  (delete-other-windows)
   (set-frame-size (selected-frame) 83 52)
   (set-frame-position (selected-frame) 838 24))
 (add-hook 'tetris-mode-hook #'yt-frame)
@@ -100,6 +101,26 @@
   (set-frame-position (selected-frame) 0 0))
 
 ;;;;; themes and colors
+(defun un-theme (&optional arg)
+  "disables all custom themes
+and loads the optional argument"
+  (interactive "snew theme: ")
+  (mapcar #'disable-theme custom-enabled-themes)
+  (if arg (load-theme (intern arg))))
+
+(defun my-misterioso ()
+  (interactive)
+  (un-theme "my-misterioso"))
+(defun my-monokai ()
+  (interactive)
+  (un-theme "my-monokai"))
+(defun tango-dark ()
+  (interactive)
+  (un-theme "tango-dark"))
+(defun inkpot  ()
+  (interactive)
+  (un-theme "inkpot"))
+
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
   :ensure t
@@ -109,15 +130,6 @@
 
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun un-theme (&optional arg)
-  "disables all custom themes
-and loads the optional argument"
-  (interactive "snew theme: ")
-  (while custom-enabled-themes
-    (disable-theme (car custom-enabled-themes)))
-  (if (not (string= "" arg))
-      (load-theme (intern arg))))
 
 ;;;;; appearance for specific modes
 ;;;; ORG mode
@@ -180,7 +192,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("TAB" . my-org-tab)))
 
 
-;;;; FILE SHORTCUTS and utilities
+;;;; FILE utilities
+;;;;; shortcuts
 ;; open init file
 (defun init ()
   (interactive)
@@ -218,6 +231,12 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (find-file "~/org/Notes.org"))
 
+;;;;; dired
+(add-hook 'dired-mode-hook
+	  (lambda ()
+	    (define-key dired-mode-map [mouse-2] 'dired-mouse-find-file)))
+
+;;;;; find
 ;; execute 'find' command as external shell command
 ;; put this is in its own 'mode' file
 (setq shell-command-dont-erase-buffer t)
@@ -392,7 +411,8 @@ point reaches the beginning or end of the buffer, stop there."
 (defun line-copy-comm (&optional arg)
   (interactive "p")
   (kmacro-exec-ring-item (quote ([?\C-a ?\C-  ?\C-e ?\M-w ?\C-x ?\C-x
-					?\M-\; ?\C-e return] 0 "%d"))
+					?\M-\; ?\C-e return]
+				 0 "%d"))
 			 arg)
   (message "commented line has been copied"))
 (defun copy-comm ()
@@ -535,6 +555,7 @@ until we reach a directory with no subdirectories"
 	(speedbar-expand-line)
 	(next-line)
 	(move-beginning-of-line 1))))
+
   (defun breadth-expand ()
     "Open the directory at line, and open all its subsequent siblings
 (directories that are at its same depth)"
@@ -549,6 +570,7 @@ until we reach a directory with no subdirectories"
 	(speedbar-restricted-move 1)
 	(move-beginning-of-line 1)))
     (message "opened all directories at this level"))
+
   (defun breadth-contract ()
     "Collapse the directory at line, and close all its subsequent
 open siblings (directories at its same depth)"
@@ -556,10 +578,10 @@ open siblings (directories at its same depth)"
     (message "closing all directories at this level")
     (move-beginning-of-line 1)
     (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\(-\\|\\+\\)>.*"))
-    (while (looking-at dir-regexp)
-      (speedbar-contract-line)
-      (speedbar-restricted-move 1)
-      (move-beginning-of-line 1))))
+      (while (looking-at dir-regexp)
+	(speedbar-contract-line)
+	(speedbar-restricted-move 1)
+	(move-beginning-of-line 1))))
 
   (defun my-speedbar-expand (&optional arg)
     "call depth-expand. With prefix argument (C-u), call breadth-expand"
@@ -767,7 +789,7 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("aa2c30832aa44b7ee462c41ea1cd791827483f35241ea8b8456bb75d8cc67fda" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
+   '("6e65f6c8edc0393009a92d25c524d1d483f32477d23165231db46cb5cb6359a9" "674e84cd9c5957a54838a331ed2dfbebd1153b41ffe75c398fbf0c689087bb98" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
    '(dwim-shell-command monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
