@@ -267,7 +267,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 		     " output-buffer: " (buffer-name output-buffer)))
     (end-of-buffer)
     (shell-command command (buffer-name output-buffer))
-    (insert (concat "\n==> result of " command
+    (insert (concat "\n➡️➡️ result of " command
 		    "\n____________________________________________\n\n")))
   (shell-output-mode)
   (setq-local shell-latest-command (substring command)) ; copy by value
@@ -277,7 +277,7 @@ the whole region is fontified (by automatically inserting character at mark)"
    (format "set local default-directory: %S from latest command: %S"
 	   default-directory shell-latest-command)))
 
-(defun parse-folder-from-command (command)
+(defun parse-directory-from-command (command)
   ;; remove the potential '&' character
   (let ((adj-size (- (length command) 1)))
     (if (equal (aref command adj-size) ?&)
@@ -292,7 +292,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 			   split))
 		((string-equal name "grep") ; last arg is dir
 	         (car (last split))))))
-    directory))
+    (if (file-directory-p directory) ; only return if it actually exists
+	directory)))
 
 
 (defun shell-redo ()
@@ -384,7 +385,7 @@ the whole region is fontified (by automatically inserting character at mark)"
   :init-value nil
   :keymap shell-output-mode-map
   ;; (setq-local font-lock-defaults '(grep-mode-font-lock-keywords))
-  )
+  (message "set the shell-output-mode"))
 
 
 
