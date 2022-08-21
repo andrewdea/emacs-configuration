@@ -278,8 +278,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 		 (seq-find (lambda (arg)
 			     (not (string-match "\\-" arg)))
 			   split))
-		((string-equal name "grep")
-	         (car (last split)))))) ; last arg is dir
+		((string-equal name "grep") ; last arg is dir
+	         (car (last split))))))
     directory))
 
 
@@ -336,19 +336,17 @@ the whole region is fontified (by automatically inserting character at mark)"
   (let* ((parsed-file (parse-file-at-line))
 	 (line (cdr parsed-file)))
     (find-file (car parsed-file))
-    (if line
+    (if line ; select the line
 	(progn
 	  (goto-line (string-to-number (car line)))
-	  (set-mark-command nil) (move-end-of-line nil)
-	  )
-      )))
+	  (set-mark-command nil) (move-end-of-line nil)))))
 
 (defun so-flush ()
   (interactive)
   (erase-buffer))
 
 (defvar shell-output-mode-map
-    (let ((map (make-sparse-keymap)))
+  (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-<return>") #'so-open-file-at-point)
     (define-key map (kbd "C-M-<backspace>") #'so-flush)
     (define-key map (kbd "C-<up>") #'backward-paragraph) ; define paragraphs by file path mb?
@@ -362,12 +360,19 @@ the whole region is fontified (by automatically inserting character at mark)"
   :group 'shell-output)
 
 ;;;###autoload
-(define-derived-mode shell-output-mode shell-mode "shell-output"
-  "majore mode for shell output"
-  (message "setting shell-output-mode")
-  ;; to these keywords,
-  ;; add the fact that accessible file-names should appear as hyperlinks
-  (setq-local font-lock-defaults '(shell-font-lock-keywords t)))
+;; (define-derived-mode shell-output-mode shell-mode "shell-output"
+;;   "majore mode for shell output"
+;;   (message "setting shell-output-mode")
+;;   ;; to these keywords,
+;;   ;; add the fact that accessible file-names should appear as hyperlinks
+;;   (setq-local font-lock-defaults '(shell-font-lock-keywords t)))
+(define-minor-mode shell-output-mode
+  "minor mode for shell output"
+  :lighter "shell-output"
+  :init-value nil
+  :keymap shell-output-mode-map
+  ;; (setq-local font-lock-defaults '(grep-mode-font-lock-keywords))
+  )
 
 
 
