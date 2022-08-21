@@ -100,6 +100,18 @@
   (interactive)
   (set-frame-position (selected-frame) 0 0))
 
+(defun delete-window-above ()
+  (interactive)
+  (windmove-up)
+  (delete-window))
+(defun delete-window-below ()
+  (interactive)
+  (windmove-down)
+  (delete-window))
+
+(global-set-key (kbd "C-x <up>") #'delete-window-above)
+(global-set-key (kbd "C-x <down>") #'delete-window-above)
+
 ;;;;; themes and colors
 (defun un-theme (&optional arg)
   "disables all custom themes
@@ -623,16 +635,16 @@ open siblings (directories at its same depth)"
     "undo the latest breadth or depth expansion. has no concept of undo tree"
     (interactive)
     (jump-to-register 'sr)
-    (if (eq expanded-by 'breadth)
-	(progn
-	  (breadth-contract) (jump-to-register 'sr)
-	  (message "contracted by breadth and jumped to register")))
-    (if (eq expanded-by 'depth)
-	(progn (speedbar-contract-line)
-	       (message "jumped to register and contracted by depth"))))
+    (cond ((eq expanded-by 'breadth)
+	   (breadth-contract)
+	   (jump-to-register 'sr)
+	   (message "contracted by breadth and jumped to register"))
+	  ((eq expanded-by 'depth)
+           (speedbar-contract-line)
+	   (message "jumped to register and contracted by depth"))))
 
   :bind (:map speedbar-mode-map
-	      ("C-<return>" . my-speedbar-expand) 
+	      ("C-<return>" . my-speedbar-expand)
 	      ("M-<down>" . speedbar-restricted-next)
 	      ("M-<up>" . speedbar-restricted-prev)
 	      ("C-x u" . my-speedbar-undo)))
