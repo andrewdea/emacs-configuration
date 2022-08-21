@@ -292,6 +292,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 			   split))
 		((string-equal name "grep") ; last arg is dir
 	         (car (last split))))))
+    ;; could update this to file-exists-p
+    ;; if I want grep to keep track of which file it searched
     (if (file-directory-p directory) ; only return if it actually exists
 	directory)))
 
