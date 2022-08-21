@@ -259,7 +259,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 		    "\n____________________________________________\n\n")))
   (shell-output-mode)
   (setq-local shell-latest-command (substring command)) ; copy by value
-  (setq-local default-directory (parse-folder-from-command command))
+  (setq-local default-directory
+	      (or (parse-folder-from-command command) default-directory))
   (message
    (format "set local default-directory: %S from latest command: %S"
 	   default-directory shell-latest-command)))
@@ -279,8 +280,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 			   split))
 		((string-equal name "grep")
 	         (car (last split)))))) ; last arg is dir
-    (seq-find ; if directory is nil return default-directory
-     (lambda (arg) (if arg arg)) (list directory default-directory))))
+    directory))
 
 
 (defun shell-redo ()
