@@ -100,6 +100,18 @@
   (interactive)
   (set-frame-position (selected-frame) 0 0))
 
+(defun delete-window-above ()
+  (interactive)
+  (windmove-up)
+  (delete-window))
+(defun delete-window-below ()
+  (interactive)
+  (windmove-down)
+  (delete-window))
+
+(global-set-key (kbd "C-x <up>") #'delete-window-above)
+(global-set-key (kbd "C-x <down>") #'delete-window-above)
+
 ;;;;; themes and colors
 (defun un-theme (&optional arg)
   "disables all custom themes
