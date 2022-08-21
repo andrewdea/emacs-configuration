@@ -44,8 +44,8 @@
 
 ;; my daily default theme is based on standard tango-dark;
 ;; with some small edits in ~/.emacs.d/tango-dark-theme.el
-;; I also really like monokai: made osme edits to improve readability
-;; in ~/.emacs.d/my-monokai-theme.el
+;; I also really like monokai:
+;; made some edits in ~/.emacs.d/my-monokai-theme.el
 
 ;; resize current frame (toggle)
 (defun big-frame ()
@@ -63,7 +63,6 @@
   (big-frame)
   (mood-line-mode t)
   (scroll-bar-mode -1)
-  (yascroll-bar-mode t)
   (global-visual-line-mode t)
   (if arg (find-file)))
 
@@ -84,6 +83,7 @@
 ;; frame to have together with max youtube
 (defun yt-frame ()
   (interactive)
+  (delete-other-windows)
   (set-frame-size (selected-frame) 83 52)
   (set-frame-position (selected-frame) 838 24))
 (add-hook 'tetris-mode-hook #'yt-frame)
@@ -238,45 +238,123 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 ;;;;; find
 ;; execute 'find' command as external shell command
-;; possible enhancements:
-;; 1. format the newly created buffer
-;; and put it in a nice mode
-;; (preserve coloring and other shell utils but only reasonable key bindings)
-;; 2. make it so that the output has links you can use to open files
+;; put this is in its own 'mode' file
 (setq shell-command-dont-erase-buffer t)
-;; (setq so-async "&")
-(defun my-find (directory name-and-options)
-  (let ((command (concat "find " directory " -iname " name-and-options "&"))
-	(output-buffer "*shell-command output*"))
-    (message (concat "executing command: " command))
-    (shell-command command
-		   (if (string-equal (buffer-name) output-buffer)
-		       ;; could this be made more elegant?
-		       (switch-to-buffer output-buffer)
-		     (switch-to-buffer-other-window output-buffer)))
-    (end-of-buffer)
-    (insert (concat "\n==> result of " command
-		    "\n____________________________________________\n\n\n\n")))
-  (shell-output-mode))
+(setq shell-async "&") ; these will be buffer-local vars
+(setq shell-latest-command nil)
+(setq find-default-options " -maxdepth 3 ")
+(setq shell-default-options nil)
+(setq grep-default-options "-nr")
 
 ;; look for file in current directory
-(defun find-here (name-and-options)
-  (interactive "sfind with name-and-options: ")
-  ;; (let ((name-and-options
-  ;; 	 (read-from-minibuffer
-  ;; 	  (concat "find " default-directory " -iname ______" "&" " : "))))
-  (my-find default-directory name-and-options))
+(defun execute-command (command)
+  (let*
+      ((output-buffer-name "*shell-command output*")
+       (output-buffer (my-switch-to-buffer output-buffer-name)))
+    (message (concat "\nexecuting command: " command " from execute-command,"
+		     " output-buffer: " (buffer-name output-buffer)))
+    (end-of-buffer)
+    (shell-command command (buffer-name output-buffer))
+    (insert (concat "\n==> result of " command
+		    "\n____________________________________________\n\n")))
+  (shell-output-mode)
+  (setq-local shell-latest-command (substring command)) ; copy by value
+  (setq-local default-directory (parse-folder-from-command command))
+  (message
+   (format "set local default-directory: %S from latest command: %S"
+	   default-directory shell-latest-command)))
+
+(defun parse-folder-from-command (command)
+  ;; remove the potential '&' character
+  (let ((adj-size (- (length command) 1)))
+    (if (equal (aref command adj-size) ?&)
+	(aset command adj-size ?\s)))
+  ;; parse according to command name
+  (let* ((split (split-string command))
+	 (name (pop split))
+	 (directory
+	  (cond ((string-equal name "find") ; the first non-option is the dir
+		 (seq-find (lambda (arg)
+			     (not (string-match "\\-" arg)))
+			   split))
+		((string-equal name "grep")
+	         (car (last split)))))) ; last arg is dir
+    (seq-find ; if directory is nil return default-directory
+     (lambda (arg) (if arg arg)) (list directory default-directory))))
+
+
+(defun shell-redo ()
+  (interactive)
+  (let ((default-command shell-latest-command))
+    (execute-command (read-from-minibuffer "shell command: " default-command))))
+
+(defun my-switch-to-buffer (arg)
+  (if (string-equal (buffer-name) arg)
+      (switch-to-buffer arg)
+    (switch-to-buffer-other-window arg)))
+
+(defun find-here ()
+  (interactive)
+  (let ((default-command
+	  (concat "find "
+		  default-directory
+		  find-default-options
+		  shell-default-options
+		  "-iname "
+		  shell-async)))
+    (execute-command (read-from-minibuffer "shell command: " default-command))))
+
+(defun grep-here ()
+  (interactive)
+  (let ((default-command
+	  (concat "grep "
+		  grep-default-options " "
+		  shell-default-options " "
+		  "'' "
+		  default-directory " "
+		  shell-async)))
+    (execute-command (read-from-minibuffer "shell command: " default-command))))
+
+(defun my-shell-command (arg)
+  (interactive "sshell command: ")
+  (execute-command arg))
+
+(defun parse-file-at-line ()
+  (interactive)
+  (if mark-active
+      (progn (goto-char (max (region-beginning) (region-end)))
+	     (deactivate-mark)
+	     (while (and (not (eolp)) (not (char-equal ?/ (char-after))))
+	       (right-char))
+	     (let ((right-margin (point)))
+	       (list
+		(buffer-substring (move-beginning-of-line 1) right-margin))))
+    (split-string (thing-at-point 'line 'no-properties) "\n\\|:")))
 
 (defun so-open-file-at-point ()
   (interactive)
-  (find-file (string-trim (thing-at-point 'line))))
+  (let* ((parsed-file (parse-file-at-line))
+	 (line (cdr parsed-file)))
+    (find-file (car parsed-file))
+    (if line
+	(progn
+	  (goto-line (string-to-number (car line)))
+	  (set-mark-command nil) (move-end-of-line nil)
+	  )
+      )))
+
 (defun so-flush ()
   (interactive)
   (erase-buffer))
 
-(defun define-shell-output-keymap ()
-  (local-set-key (kbd "C-<return>") #'so-open-file-at-point)
-  (local-set-key (kbd "C-M-<backspace>") #'so-flush))
+(defvar shell-output-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-<return>") #'so-open-file-at-point)
+    (define-key map (kbd "C-M-<backspace>") #'so-flush)
+    (define-key map (kbd "C-<up>") #'backward-paragraph) ; define paragraphs by file path mb?
+    (define-key map (kbd "C-<down>") #'forward-paragraph)
+    (define-key map (kbd "C-r") #'shell-redo) ; will have to think what key is best for this
+    map))
 
 (defcustom shell-output-mode-hook '()
   "Hook for customizing find-output mode."
@@ -286,8 +364,10 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;;;###autoload
 (define-derived-mode shell-output-mode shell-mode "shell-output"
   "majore mode for shell output"
-  (setq-local font-lock-defaults '(shell-font-lock-keywords t))
-  (define-shell-output-keymap))
+  (message "setting shell-output-mode")
+  ;; to these keywords,
+  ;; add the fact that accessible file-names should appear as hyperlinks
+  (setq-local font-lock-defaults '(shell-font-lock-keywords t)))
 
 
 
@@ -501,7 +581,6 @@ until we reach a directory with no subdirectories"
 	(speedbar-expand-line)
 	(next-line)
 	(move-beginning-of-line 1))))
-
   (defun breadth-expand ()
     "Open the directory at line, and open all its subsequent siblings
 (directories that are at its same depth)"
@@ -516,7 +595,6 @@ until we reach a directory with no subdirectories"
 	(speedbar-restricted-move 1)
 	(move-beginning-of-line 1)))
     (message "opened all directories at this level"))
-
   (defun breadth-contract ()
     "Collapse the directory at line, and close all its subsequent
 open siblings (directories at its same depth)"
@@ -540,16 +618,16 @@ open siblings (directories at its same depth)"
     "undo the latest breadth or depth expansion. has no concept of undo tree"
     (interactive)
     (jump-to-register 'sr)
-    (if (eq expanded-by 'breadth)
-	(progn
-	  (breadth-contract) (jump-to-register 'sr)
-	  (message "contracted by breadth and jumped to register")))
-    (if (eq expanded-by 'depth)
-	(progn (speedbar-contract-line)
-	       (message "jumped to register and contracted by depth"))))
+    (cond ((eq expanded-by 'breadth)
+	   (breadth-contract)
+	   (jump-to-register 'sr)
+	   (message "contracted by breadth and jumped to register"))
+	  ((eq expanded-by 'depth)
+           (speedbar-contract-line)
+	   (message "jumped to register and contracted by depth"))))
 
   :bind (:map speedbar-mode-map
-	      ("C-<return>" . my-speedbar-expand) 
+	      ("C-<return>" . my-speedbar-expand)
 	      ("M-<down>" . speedbar-restricted-next)
 	      ("M-<up>" . speedbar-restricted-prev)
 	      ("C-x u" . my-speedbar-undo)))
