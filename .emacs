@@ -754,6 +754,8 @@ moves to the beginning of the file and searches for that symbol"
 
 (add-hook 'java-mode-hook #'on-java-loaded)
 
+(add-hook 'java-mode-hook #'subword-mode)
+
 ;; scala
 (add-to-list 'auto-mode-alist '("\.sc" . scala-mode))
 
