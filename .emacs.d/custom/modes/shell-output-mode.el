@@ -35,7 +35,14 @@
 (setq shell-default-options nil)
 (setq grep-default-options "-nr")
 
-;; look for file in current directory
+;; execute command
+;; and display output in a buffer called *shell-output-command*
+;; if the buffer already exists, switch to it
+;; (while leaving current buffer open)
+;; else, create it.
+;; Then, update the default-directory to be the directory
+;; in which the command was executed,
+;; and update latest-command
 (defun execute-command (command)
   (let*
       ((output-buffer-name "*shell-command output*")
@@ -111,6 +118,7 @@
   (interactive "sshell command: ")
   (execute-command arg))
 
+;; get a file name from a line in the shell-output buffer
 (defun parse-file-at-line ()
   (interactive)
   (if mark-active
@@ -121,6 +129,9 @@
 	     (let ((right-margin (point)))
 	       (list
 		(buffer-substring (move-beginning-of-line 1) right-margin))))
+    ;; return list:
+    ;; first element is the parsed file,
+    ;; second element is the line-number (if present)
     (split-string (thing-at-point 'line 'no-properties) "\n\\|:")))
 
 (defun so-open-file-at-point ()

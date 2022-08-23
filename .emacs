@@ -532,8 +532,10 @@ open siblings (directories at its same depth)"
     "get list of git files from magit,
 for each open buffer with one of these files, refresh the version-control state"
     (mapcar #'vc-refresh-buffer
-	    (seq-intersection (mapcar #'buffer-name (buffer-list))
-			      (magit-list-files))))
+	    (seq-intersection
+	     (mapcar #'file-name-nondirectory (magit-list-files))
+	     (mapcar #'buffer-name (buffer-list))
+	     #'string-match)))
   ;; this might affect performance when there are many files
   ;; but it can always be turned off
   :hook (magit-refresh-buffer . vc-refresh-all-git-buffers))
