@@ -41,7 +41,7 @@
 
 ;;;###autoload
 (define-derived-mode monicelli-mode prog-mode "monicelli"
-  "majore mode for editing code in Monicelli language"
+  "major mode for editing code in Monicelli language"
   (setq font-lock-defaults '(monicelli-highlights)))
 
 ;; add the mode to the `features' list
