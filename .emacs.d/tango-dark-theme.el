@@ -2,8 +2,8 @@
   "Face colors using the Tango palette (dark background).
 Basic, Font Lock, Isearch, Gnus, Message, Ediff, Flyspell,
 Semantic, and Ansi-Color faces are included.
-Andrew De Angelis edit: changed highlighted region color to
-purple for better visibility")
+Andrew De Angelis edits: changed highlighted region color to
+purple for better visibility; playing around with the mode-line colors")
 
 (custom-theme-set-faces
  'tango-dark
@@ -18,7 +18,9 @@ purple for better visibility")
  '(isearch ((((class color) (min-colors 89)) (:foreground "#eeeeec" :background "#ce5c00"))))
  '(lazy-highlight ((((class color) (min-colors 89)) (:background "#8f5902"))))
  '(trailing-whitespace ((((class color) (min-colors 89)) (:background "#a40000"))))
- '(mode-line ((((class color) (min-colors 89)) (:box (:line-width -1 :style released-button) :background "#d3d7cf" :foreground "#2e3436"))))
+ ;; '(mode-line ((((class color) (min-colors 89)) (:box (:line-width -1 :style released-button) :background "#d3d7cf" :foreground "#2e3436"))))
+ ;; '(mode-line-inactive ((((class color) (min-colors 89)) (:box (:line-width -1 :style released-button) :background "#555753" :foreground "#eeeeec"))))
+ '(mode-line ((((class color) (min-colors 89)) (:box (:line-width -1 :style released-button) :background "#2e3436" :foreground "#eeeeec"))))
  '(mode-line-inactive ((((class color) (min-colors 89)) (:box (:line-width -1 :style released-button) :background "#555753" :foreground "#eeeeec"))))
  '(compilation-mode-line-fail ((((class color) (min-colors 89)) (:foreground "#a40000"))))
  '(compilation-mode-line-run ((((class color) (min-colors 89)) (:foreground "#ce5c00"))))

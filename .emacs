@@ -13,7 +13,7 @@
   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
-;;;; MELPA and package stuff
+;;;; PACKAGES
 (add-to-list 'package-archives
              '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
@@ -27,7 +27,8 @@
 (use-package package)
 (package-initialize)
 
-(add-hook 'package-menu-mode-hook (lambda () (hl-line-mode t)))
+(add-hook 'package-menu-mode-hook
+	  (lambda () (hl-line-mode t) (visual-line-mode -1)))
 
 ;;;; appearance: SIZING, FRAMES, WINDOWS, THEMES
 ;;;;; startup
@@ -38,27 +39,32 @@
 (defun default-theme ()
   (let ((hour (nth 2 (decode-time (current-time)))))
     (if (or (> hour 21) (< hour 8))
-	'inkpot ; at night (really good for org files)
+	'my-misterioso ; at night
       'tango-dark))) ; during the day
 
 ;; my daily default theme is based on standard tango-dark;
-;; with this small edit in ~/.emacs.d/tango-dark-theme.el
-;; '(region ((t (:background "#483d8b")))) ; purple for highlighted region
+;; with some small edits in ~/.emacs.d/tango-dark-theme.el
+;; I also really like monokai:
+;; made some edits in ~/.emacs.d/my-monokai-theme.el
 
 ;; resize current frame (toggle)
 (defun big-frame ()
   (interactive)
   (if (< (frame-parameter (selected-frame) 'width) 200)
-      (set-frame-size (selected-frame) 202 55)
+      (set-frame-size (selected-frame) 203 55)
     (set-frame-size (selected-frame) 100 45))
   (set-frame-position (selected-frame) 0 0))
 
 (defun startup-look (&optional arg)
   (interactive)
+  (tool-bar-mode -1) ; I've never needed the toolbar
   (setq column-number-mode t)
   (load-theme (default-theme))
   (big-frame)
-  (if arg (find-file arg)))
+  (mood-line-mode t)
+  (scroll-bar-mode -1)
+  (global-visual-line-mode t)
+  (if arg (find-file)))
 
 (add-hook 'after-init-hook #'startup-look)
 
@@ -77,6 +83,7 @@
 ;; frame to have together with max youtube
 (defun yt-frame ()
   (interactive)
+  (delete-other-windows)
   (set-frame-size (selected-frame) 83 52)
   (set-frame-position (selected-frame) 838 24))
 (add-hook 'tetris-mode-hook #'yt-frame)
@@ -85,45 +92,62 @@
   (interactive)
   (let ((available-width
 	 (nth 3 (nth 1 (nth 0 (display-monitor-attributes-list)))))
-	(adj-frame-width
-	 (- (frame-outer-width) 9))) ;; adjust for scroll bar
+	(adj-frame-width (frame-outer-width)))
     (set-frame-position
-     (selected-frame) (- available-width adj-frame-width) 0)))
+     (selected-frame) (- available-width (frame-outer-width)) 0)))
 
 (defun left-frame ()
   (interactive)
   (set-frame-position (selected-frame) 0 0))
 
+(defun delete-window-above ()
+  (interactive)
+  (windmove-up)
+  (delete-window))
+(defun delete-window-below ()
+  (interactive)
+  (windmove-down)
+  (delete-window))
+
+(global-set-key (kbd "C-x <up>") #'delete-window-above)
+(global-set-key (kbd "C-x <down>") #'delete-window-below)
+
 ;;;;; themes and colors
+(defun un-theme (&optional arg)
+  "disables all custom themes
+and loads the optional argument"
+  (interactive "snew theme: ")
+  (mapcar #'disable-theme custom-enabled-themes)
+  (if arg (load-theme (intern arg))))
+
+(defun my-misterioso ()
+  (interactive)
+  (un-theme "my-misterioso"))
+(defun my-monokai ()
+  (interactive)
+  (un-theme "my-monokai"))
+(defun tango-dark ()
+  (interactive)
+  (un-theme "tango-dark"))
+(defun inkpot  ()
+  (interactive)
+  (un-theme "inkpot"))
+
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
   :ensure t
   :config
   (setq whitespace-style '(face lines-tail trailing)))
-(defun wspace () (interactive) (whitespace-mode))
+(defun wspace () (interactive) (whitespace-mode 'toggle))
 
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun un-theme (&optional arg)
-  "disables all custom themes
-and loads the optional argument"
-  (interactive "snew theme: ")
-  (while custom-enabled-themes
-    (disable-theme (car custom-enabled-themes)))
-  (if (not (string= "" arg))
-      (load-theme (intern arg))))
-
 ;;;;; appearance for specific modes
-(add-hook 'dired-mode-hook
-	  (lambda () (visual-line-mode t)))
-
 ;;;; ORG mode
 (use-package org
   :ensure t
   :config
-  (add-hook 'org-mode-hook
-	    (lambda () (visual-line-mode t)))
 
   (setq org-hide-emphasis-markers t)
 
@@ -180,7 +204,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("TAB" . my-org-tab)))
 
 
-;;;; FILE SHORTCUTS
+;;;; FILE utilities
+;;;;; shortcuts
 ;; open init file
 (defun init ()
   (interactive)
@@ -189,7 +214,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; open HackerRank
 (defun hacker-rank ()
   (interactive)
-  (find-file "~/desktop/HackerRankProblems/"))
+  (dired "~/desktop/HackerRankProblems/"))
 
 ;; open zsh profile
 (defun zshenv ()
@@ -203,11 +228,11 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; open org folder
 (defun forg ()
   (interactive)
-  (find-file "~/org"))
+  (dired "~/org"))
 ;; open mobile org folder
 (defun beorg ()
   (interactive)
-  (find-file
+  (dired
    "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/"))
 ;; open generic todo
 (defun todo ()
@@ -217,6 +242,18 @@ the whole region is fontified (by automatically inserting character at mark)"
 (defun notes ()
   (interactive)
   (find-file "~/org/Notes.org"))
+;; open my custom modes
+(defun my-modes ()
+  (interactive)
+  (dired "~/.emacs.d/custom/modes"))
+
+;;;;; dired
+(add-hook 'dired-mode-hook
+	  (lambda ()
+	    (define-key dired-mode-map [mouse-2] 'dired-mouse-find-file)))
+
+;;;;; find and grep
+(require 'shell-output-mode "~/.emacs.d/custom/modes/shell-output-mode.el")
 
 ;;;; TEXT EDITING
 ;;;;; utilities
@@ -284,7 +321,8 @@ point reaches the beginning or end of the buffer, stop there."
 (defun line-copy-comm (&optional arg)
   (interactive "p")
   (kmacro-exec-ring-item (quote ([?\C-a ?\C-  ?\C-e ?\M-w ?\C-x ?\C-x
-					?\M-\; ?\C-e return] 0 "%d"))
+					?\M-\; ?\C-e return]
+				 0 "%d"))
 			 arg)
   (message "commented line has been copied"))
 (defun copy-comm ()
@@ -326,7 +364,9 @@ point reaches the beginning or end of the buffer, stop there."
 (use-package company
   :ensure t
   :config
-  (setq company-dabbrev-downcase nil))
+  (setq company-dabbrev-downcase nil)
+  :bind (:map company-mode-map
+	      ("s-RET" . company-abort)))
 (global-company-mode t)
 
 ;;;;; macros
@@ -391,33 +431,119 @@ future."
 ;; (global-set-key (kbd "\C-xb") 'my-switch-to-buffer)
 
 ;;;; SPEEDBAR
+(defun bar-toggle ()
+  (interactive)
+  (sr-speedbar-toggle))
+(defun bar-open ()
+  (interactive)
+  (sr-speedbar-open))
+
 (use-package sr-speedbar
   :ensure t
   :config
-  (defun bar-toggle ()
-    (interactive)
-    (sr-speedbar-toggle))
-  (defun bar-open ()
-    (interactive)
-    (sr-speedbar-open))
   (defun bar-close ()
     (interactive)
     (sr-speedbar-close))
   (defun bar-refresh ()
     (interactive)
     (sr-speedbar-refresh-turn-on))
-  (add-hook 'speedbar-mode-hook
-	    (lambda () (visual-line-mode t))))
+
+  ;; expand functionalities:
+  ;; these 3 functions, plus the built-in
+  ;; speedbar-expand-line-descendants & speedbar-contract-line
+  ;; allow you to navigate the directory tree in multiple ways
+  (defun depth-expand ()
+    "Open the directory at line, and keep opening its first subdirectory
+until we reach a directory with no subdirectories"
+    (interactive)
+    (setq line-move-visual nil)
+    (point-to-register 'sr)
+    (setq expanded-by 'depth)
+    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\+>.*"))
+      (move-beginning-of-line 1)
+      (while (looking-at dir-regexp)
+	(speedbar-expand-line)
+	(next-line)
+	(move-beginning-of-line 1))))
+  (defun breadth-expand ()
+    "Open the directory at line, and open all its subsequent siblings
+(directories that are at its same depth)"
+    (interactive)
+    (message "expanding by breadth")
+    (point-to-register 'sr)
+    (setq expanded-by 'breadth)
+    (move-beginning-of-line 1)
+    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\(-\\|\\+\\)>.*"))
+      (while (looking-at dir-regexp)
+	(speedbar-expand-line)
+	(speedbar-restricted-move 1)
+	(move-beginning-of-line 1)))
+    (message "opened all directories at this level"))
+  (defun breadth-contract ()
+    "Collapse the directory at line, and close all its subsequent
+open siblings (directories at its same depth)"
+    (interactive)
+    (message "closing all directories at this level")
+    (move-beginning-of-line 1)
+    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\(-\\|\\+\\)>.*"))
+      (while (looking-at dir-regexp)
+	(speedbar-contract-line)
+	(speedbar-restricted-move 1)
+	(move-beginning-of-line 1))))
+
+  (defun my-speedbar-expand (&optional arg)
+    "call depth-expand. With prefix argument (C-u), call breadth-expand"
+    (interactive "P")
+    (if arg
+	(breadth-expand)
+      (depth-expand)))
+
+  (defun my-speedbar-undo ()
+    "undo the latest breadth or depth expansion. has no concept of undo tree"
+    (interactive)
+    (jump-to-register 'sr)
+    (cond ((eq expanded-by 'breadth)
+	   (breadth-contract)
+	   (jump-to-register 'sr)
+	   (message "contracted by breadth and jumped to register"))
+	  ((eq expanded-by 'depth)
+           (speedbar-contract-line)
+	   (message "jumped to register and contracted by depth"))))
+
+  :bind (:map speedbar-mode-map
+	      ("C-<return>" . my-speedbar-expand)
+	      ("M-<down>" . speedbar-restricted-next)
+	      ("M-<up>" . speedbar-restricted-prev)
+	      ("C-x u" . my-speedbar-undo)))
 
 ;;;; PROGRAMMING support and utilities
-;;;;; ido completion framework
+;;;;; ido completion mode
 (setq ido-everywhere t)
 (ido-mode 1)
+;;;;; git
+(defun vc-refresh-buffer (arg)
+  (set-buffer arg)
+  (vc-refresh-state))
+
+(use-package magit
+  :ensure t
+  :config
+  (defun vc-refresh-all-git-buffers ()
+    "get list of git files from magit,
+for each open buffer with one of these files, refresh the version-control state"
+    (mapcar #'vc-refresh-buffer
+	    (seq-intersection
+	     (mapcar #'file-name-nondirectory (magit-list-files))
+	     (mapcar #'buffer-name (buffer-list))
+	     #'string-match)))
+  ;; this might affect performance when there are many files
+  ;; but it can always be turned off
+  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers))
+
 ;;;;; appearance
 (defun my-prog-appearance ()
   (linum-mode t)
-  (electric-pair-local-mode t)
-  (visual-line-mode t))
+  (electric-pair-local-mode t))
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
 (use-package dash :ensure t)
@@ -433,17 +559,6 @@ else, first move to previous visible heading, then call it"
     (if (null (looking-at outline-regexp))
 	(outline-previous-visible-heading 1))
     (outshine-kbd-TAB))
-
-  (defun my-next-visible-heading ()
-    (interactive)
-    (if (null (looking-at outline-regexp))
-	(outline-next-visible-heading 1))
-    (forward-paragraph))
-  (defun my-previous-visible-heading ()
-    (interactive)
-    (if (null (looking-at outline-regexp))
-	(outline-previous-visible-heading 1))
-    (backward-paragraph))
 
   :bind (:map outshine-mode-map
 	      ("TAB" . my-outline-tab)
@@ -476,7 +591,10 @@ moves to the beginning of the file and searches for that symbol"
 	   ;; TODO: [check if final point is same as starting point*, then
 	   ;; add a function to ask whether we should use grep,
 	   ;; provide a default folder,
-	   ;; open a new shell and call grep on that folder]
+	   ;; open a new shell and call grep on that folder.
+	   ;; also combine this with doc (eg javadoc) functionalities
+	   ;; to open the function's documentation in eww
+	   ;; if not found in local code]
 	   ;; * +/- length of symbol
 	   )))
 
@@ -509,6 +627,8 @@ moves to the beginning of the file and searches for that symbol"
   (define-key java-mode-map (kbd "C-i") #'javadoc-add-import))
 
 (add-hook 'java-mode-hook #'on-java-loaded)
+
+(add-hook 'java-mode-hook #'subword-mode)
 
 ;; scala
 (add-to-list 'auto-mode-alist '("\.sc" . scala-mode))
@@ -571,18 +691,20 @@ and set its contents as the appropriate programming-language-template"
   )
 
 ;;;; RANDOM STUFF
+
 ;;; CUSTOM-added variables and faces
-;; my custom-safe-themes are inkpot, my-misterioso, and tango-dark
+;; my custom-safe-themes are inkpot (really good for org-files),
+;; my-misterioso, my-monokai, monokai, and tango-dark.
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e1f160fa86a1b1caf048291afc747dee2bd71a90004618eb43b3011439c23651" "53a13376230f7e885e34de9dfa8ebc5ffd61efbd0c75742398b2ea63fae858ba" "dcd0071f9671b9598b40b4cb08a76dc34a093aca496c83951d567f07ec7f25ae" default))
+   '("6e65f6c8edc0393009a92d25c524d1d483f32477d23165231db46cb5cb6359a9" "674e84cd9c5957a54838a331ed2dfbebd1153b41ffe75c398fbf0c689087bb98" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(the-matrix-theme monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
