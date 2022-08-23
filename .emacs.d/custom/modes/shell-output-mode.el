@@ -172,3 +172,4 @@
 
 ;; add the mode to the `features' list
 (provide 'shell-output-mode)
+;;;
