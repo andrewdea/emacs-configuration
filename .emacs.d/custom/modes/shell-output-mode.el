@@ -1,4 +1,4 @@
-;;; find-output-mode.el --- shell-derived major mode for displaying the output of shell command 'find'. -*- coding: utf-8; lexical-binding: t; -*-
+;;; find-output-mode.el --- minor mode for displaying the output of shell commands, optimized for 'find' and 'grep'. -*- coding: utf-8; lexical-binding: t; -*-
 
 ;; Copyright © 2017, by you
 
@@ -29,7 +29,7 @@
 ;;; Code:
 
 (setq shell-command-dont-erase-buffer t)
-(setq shell-async "&") ; these will be buffer-local vars
+(setq shell-async "&")
 (setq shell-latest-command nil)
 (setq find-default-options " -maxdepth 3 ")
 (setq shell-default-options nil)
@@ -157,9 +157,8 @@
   :lighter "shell-output"
   :init-value nil
   :keymap shell-output-mode-map
-  ;; (setq-local font-lock-defaults '(grep-mode-font-lock-keywords))
   (message "set the shell-output-mode"))
 
 ;; add the mode to the `features' list
 (provide 'shell-output-mode)
-;;; 
+;;;
