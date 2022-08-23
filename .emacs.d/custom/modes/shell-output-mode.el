@@ -55,7 +55,7 @@
 	   default-directory shell-latest-command)))
 
 (defun parse-directory-from-command (command)
-  ;; remove the potential '&' character
+  ;; remove the potential '&' character at the end of the string
   (let ((adj-size (- (length command) 1)))
     (if (equal (aref command adj-size) ?&)
 	(aset command adj-size ?\s)))
