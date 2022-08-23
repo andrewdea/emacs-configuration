@@ -32,7 +32,7 @@
 (setq monicelli-highlights
       '(
 	("\\(\\(bituma\\)\\|\\(#\\)\\).*$" . 'font-lock-comment-face)
-	("\\( e velocità di esecuzione\\)\\|\\(o tarapia tapioco\\)\\|\\(o magari\\)\\|\\(che cos'è\\)\\|\\(Lei ha clacsonato\\)\\|\\(voglio\\)\\|\\(come\\( se\\)? fosse\\)\\|\\(con\\)" . 'font-lock-keyword-face)
+	("\\( e velocità di esecuzione\\)\\|\\(o tarapia tapioco\\)\\|\\(o magari\\)\\|\\(che cos'è\\)\\|\\(Lei ha clacsonato\\)\\|\\(voglio\\)\\|\\(come\\( se\\)? fosse\\)" . 'font-lock-keyword-face)
 	("\\(Necchi\\)\\|\\(Mascetti\\)\\|\\(Perozzi\\)\\|\\(Melandri\\)\\|\\(Sassaroli\\)" . 'font-lock-type-face)
 	("\\(a posterdati\\)\\|\\(mi porga\\)" . 'font-lock-builtin-face)
 	("\\(\\(\\(blinda\\)\\|\\(\\(b\\|p\\)rematurata\\)\\) la supercazzo\\(l\\|r\\)a\\)\\|\\(o scherziamo?\\)\\|\\(vaffanzum\\)" . 'font-lock-function-name-face)
@@ -42,6 +42,7 @@
 ;;;###autoload
 (define-derived-mode monicelli-mode prog-mode "monicelli"
   "major mode for editing code in Monicelli language"
+  (set-input-method 'italian-postfix)
   (setq font-lock-defaults '(monicelli-highlights)))
 
 ;; add the mode to the `features' list
