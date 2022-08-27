@@ -49,7 +49,7 @@
   (shell-output-mode)
   (setq-local shell-latest-command (substring command)) ; copy by value
   (setq-local default-directory
-	      (or (parse-folder-from-command command) default-directory))
+	      (or (parse-directory-from-command command) default-directory))
   (message
    (format "set local default-directory: %S from latest command: %S"
 	   default-directory shell-latest-command)))
