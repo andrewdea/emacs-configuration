@@ -46,7 +46,7 @@
 (defun execute-command (command)
   (let*
       ((output-buffer-name "*shell-command output*")
-       (output-buffer (my-switch-to-buffer output-buffer-name)))
+       (output-buffer (pop-to-buffer output-buffer-name)))
     (message (concat "\nexecuting command: " command " from execute-command,"
 		     " output-buffer: " (buffer-name output-buffer)))
     (end-of-buffer)
@@ -86,11 +86,6 @@
   (interactive)
   (let ((default-command shell-latest-command))
     (execute-command (read-from-minibuffer "shell command: " default-command))))
-
-(defun my-switch-to-buffer (arg)
-  (if (string-equal (buffer-name) arg)
-      (switch-to-buffer arg)
-    (switch-to-buffer-other-window arg)))
 
 (defun find-here ()
   (interactive)

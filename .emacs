@@ -471,7 +471,7 @@ until we reach a directory with no subdirectories"
     (setq line-move-visual nil)
     (point-to-register 'sr)
     (setq expanded-by 'depth)
-    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\+>.*"))
+    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\(-\\|\\+\\)>.*"))
       (move-beginning-of-line 1)
       (while (looking-at dir-regexp)
 	(speedbar-expand-line)
@@ -712,10 +712,10 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "6e65f6c8edc0393009a92d25c524d1d483f32477d23165231db46cb5cb6359a9" "674e84cd9c5957a54838a331ed2dfbebd1153b41ffe75c398fbf0c689087bb98" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
+   '("20a8ec387dde11cc0190032a9f838edcc647863c824eed9c8e80a4155f8c6037" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "6e65f6c8edc0393009a92d25c524d1d483f32477d23165231db46cb5cb6359a9" "674e84cd9c5957a54838a331ed2dfbebd1153b41ffe75c398fbf0c689087bb98" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(exec-path-from-shell use-package alda-mode darktooth-theme gruvbox-theme the-matrix-theme monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(cyberpunk-theme exec-path-from-shell use-package alda-mode darktooth-theme gruvbox-theme the-matrix-theme monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
