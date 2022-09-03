@@ -93,6 +93,7 @@
 		  find-default-options
 		  shell-default-options
 		  "-iname "
+		  "'' "
 		  shell-async)))
     (execute-command (read-from-minibuffer "shell command: " default-command))))
 
