@@ -1,4 +1,4 @@
-;;; find-output-mode.el --- shell-derived major mode for displaying the output of shell command 'find'. -*- coding: utf-8; lexical-binding: t; -*-
+;;; find-output-mode.el --- minor mode for displaying the output of shell commands, optimized for 'find' and 'grep'. -*- coding: utf-8; lexical-binding: t; -*-
 
 ;; Copyright © 2017, by you
 
@@ -29,17 +29,24 @@
 ;;; Code:
 
 (setq shell-command-dont-erase-buffer t)
-(setq shell-async "&") ; these will be buffer-local vars
+(setq shell-async "&")
 (setq shell-latest-command nil)
 (setq find-default-options " -maxdepth 3 ")
 (setq shell-default-options nil)
 (setq grep-default-options "-nr")
 
-;; look for file in current directory
+;; execute command
+;; and display output in a buffer called *shell-output-command*
+;; if the buffer already exists, switch to it
+;; (while leaving current buffer open)
+;; else, create it.
+;; Then, update the default-directory to be the directory
+;; in which the command was executed,
+;; and update latest-command
 (defun execute-command (command)
   (let*
       ((output-buffer-name "*shell-command output*")
-       (output-buffer (my-switch-to-buffer output-buffer-name)))
+       (output-buffer (pop-to-buffer output-buffer-name)))
     (message (concat "\nexecuting command: " command " from execute-command,"
 		     " output-buffer: " (buffer-name output-buffer)))
     (end-of-buffer)
@@ -80,11 +87,6 @@
   (let ((default-command shell-latest-command))
     (execute-command (read-from-minibuffer "shell command: " default-command))))
 
-(defun my-switch-to-buffer (arg)
-  (if (string-equal (buffer-name) arg)
-      (switch-to-buffer arg)
-    (switch-to-buffer-other-window arg)))
-
 (defun find-here ()
   (interactive)
   (let ((default-command
@@ -112,6 +114,7 @@
   (interactive "sshell command: ")
   (execute-command arg))
 
+;; get a file name from a line in the shell-output buffer
 (defun parse-file-at-line ()
   (interactive)
   (if mark-active
@@ -122,6 +125,9 @@
 	     (let ((right-margin (point)))
 	       (list
 		(buffer-substring (move-beginning-of-line 1) right-margin))))
+    ;; return list:
+    ;; first element is the parsed file,
+    ;; second element is the line-number (if present)
     (split-string (thing-at-point 'line 'no-properties) "\n\\|:")))
 
 (defun so-open-file-at-point ()
@@ -158,9 +164,8 @@
   :lighter "shell-output"
   :init-value nil
   :keymap shell-output-mode-map
-  ;; (setq-local font-lock-defaults '(grep-mode-font-lock-keywords))
   (message "set the shell-output-mode"))
 
 ;; add the mode to the `features' list
 (provide 'shell-output-mode)
-;;; 
+;;;

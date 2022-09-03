@@ -66,5 +66,4 @@
 
 ;; add the mode to the `features' list
 (provide 'monicelli-mode)
-
 ;;; 

@@ -3,9 +3,17 @@
 
 ;;; Code:
 
+;;;; NATIVE COMPILATION
+;;;;; use same environment as terminal
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
+
+;;;;; don't show compilation warnings
+;; keeping warnings on for now to monitor native comp til I'm familiar with it
+;; (setq native-comp-async-report-warnings-errors nil)
+
 ;;;; BENCHMARK
 ;; benchmark-init to check where init is slow to load
-
 (use-package benchmark-init
   :ensure t
   :config
@@ -147,8 +155,8 @@ and loads the optional argument"
 ;;;; ORG mode
 (use-package org
   :ensure t
+  :defer 3
   :config
-
   (setq org-hide-emphasis-markers t)
 
   ;; better bullet-points
@@ -246,6 +254,10 @@ the whole region is fontified (by automatically inserting character at mark)"
 (defun my-modes ()
   (interactive)
   (dired "~/.emacs.d/custom/modes"))
+;; open Crafting Interpreters
+(defun crafting-interpreters ()
+  (interactive)
+  (dired "~/CraftingInterpreters"))
 
 ;;;;; dired
 (add-hook 'dired-mode-hook
@@ -459,7 +471,7 @@ until we reach a directory with no subdirectories"
     (setq line-move-visual nil)
     (point-to-register 'sr)
     (setq expanded-by 'depth)
-    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\+>.*"))
+    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\(-\\|\\+\\)>.*"))
       (move-beginning-of-line 1)
       (while (looking-at dir-regexp)
 	(speedbar-expand-line)
@@ -532,8 +544,10 @@ open siblings (directories at its same depth)"
     "get list of git files from magit,
 for each open buffer with one of these files, refresh the version-control state"
     (mapcar #'vc-refresh-buffer
-	    (seq-intersection (mapcar #'buffer-name (buffer-list))
-			      (magit-list-files))))
+	    (seq-intersection
+	     (mapcar #'file-name-nondirectory (magit-list-files))
+	     (mapcar #'buffer-name (buffer-list))
+	     #'string-match)))
   ;; this might affect performance when there are many files
   ;; but it can always be turned off
   :hook (magit-refresh-buffer . vc-refresh-all-git-buffers))
@@ -572,31 +586,31 @@ else, first move to previous visible heading, then call it"
 
 ;;;;; helper functions
 ;; implemented my own, extremely dumb version of dumb jump
-;; possible enhancement:
+;; possible enhancements:
 ;; when not found, try to search outside the current file
 (defun find-symbol-first-occurrence ()
   "gets the symbol at the cursor's current location,
 moves to the beginning of the file and searches for that symbol"
   (interactive)
-  (setq my-word (thing-at-point 'symbol 'no-properties))
-  (message "looking for symbol: %s" my-word)
-  (if (null my-word)
-      (message "No symbol at point")
-    (progn (point-to-register 'r)
-	   (beginning-of-buffer)
-	   (goto-char (search-forward-regexp (isearch-symbol-regexp my-word)))
-	   (isearch-forward-symbol-at-point)
-	   ;; TODO: [check if final point is same as starting point*, then
-	   ;; add a function to ask whether we should use grep,
-	   ;; provide a default folder,
-	   ;; open a new shell and call grep on that folder.
-	   ;; also combine this with doc (eg javadoc) functionalities
-	   ;; to open the function's documentation in eww
-	   ;; if not found in local code]
-	   ;; * +/- length of symbol
-	   )))
+  (let ((my-symbol (thing-at-point 'symbol 'no-properties)))
+    (if (null my-symbol)
+	(message "No symbol at point")
+      (progn (point-to-register 'r)
+	     (beginning-of-buffer)
+	     (goto-char (search-forward-regexp (isearch-symbol-regexp my-symbol)))
+	     (isearch-forward-symbol-at-point)))))
 
-(global-set-key (kbd "M-.") #'find-symbol-first-occurrence)
+;; only use find-symbol-first occurrence as a weak alternative in cases
+;; where the backend for xref has not been set
+(defun my-find-definition ()
+  (interactive)
+  "if an xref-backend has been set, call xref-find-definitions,
+else, call find-symbol-first-occurrence"
+  (if (equal '(etags--xref-backend) xref-backend-functions)
+	     (find-symbol-first-occurrence)
+	   (execute-extended-command nil "xref-find-definitions")))
+
+(global-set-key (kbd "M-.") #'my-find-definition)
 
 ;; set appropriate default compile-command
 (defun set-compile-command (arg use-file &optional options)
@@ -689,7 +703,6 @@ and set its contents as the appropriate programming-language-template"
   )
 
 ;;;; RANDOM STUFF
-
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are inkpot (really good for org-files),
 ;; my-misterioso, my-monokai, monokai, and tango-dark.
@@ -699,10 +712,10 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("6e65f6c8edc0393009a92d25c524d1d483f32477d23165231db46cb5cb6359a9" "674e84cd9c5957a54838a331ed2dfbebd1153b41ffe75c398fbf0c689087bb98" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
+   '("20a8ec387dde11cc0190032a9f838edcc647863c824eed9c8e80a4155f8c6037" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "6e65f6c8edc0393009a92d25c524d1d483f32477d23165231db46cb5cb6359a9" "674e84cd9c5957a54838a331ed2dfbebd1153b41ffe75c398fbf0c689087bb98" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(the-matrix-theme monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
