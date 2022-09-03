@@ -85,7 +85,7 @@
 (defun shell-redo ()
   (interactive)
   (let ((default-command shell-latest-command))
-    (execute-command (read-from-minibuffer "shell command: " default-command))))
+    (execute-command (my-prompt default-command))))
 
 (defun find-here ()
   (interactive)
@@ -97,7 +97,7 @@
 		  "-iname "
 		  "'' "
 		  shell-async)))
-    (execute-command (read-from-minibuffer "shell command: " default-command))))
+    (execute-command (my-prompt default-command))))
 
 (defun grep-here ()
   (interactive)
@@ -108,7 +108,12 @@
 		  "'' "
 		  default-directory " "
 		  shell-async)))
-    (execute-command (read-from-minibuffer "shell command: " default-command))))
+    (execute-command (my-prompt default-command))))
+
+(defun my-prompt (default-command)
+  (read-from-minibuffer "shell command: "
+			`(,default-command . ; initial contents
+			  ,(+ 2 (string-match "'" default-command))))); cursor pos
 
 (defun my-shell-command (arg)
   (interactive "sshell command: ")
