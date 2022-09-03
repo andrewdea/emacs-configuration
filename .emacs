@@ -592,25 +592,24 @@ else, first move to previous visible heading, then call it"
   "gets the symbol at the cursor's current location,
 moves to the beginning of the file and searches for that symbol"
   (interactive)
-  (setq my-word (thing-at-point 'symbol 'no-properties))
-  (message "looking for symbol: %s" my-word)
-  (if (null my-word)
-      (message "No symbol at point")
-    (progn (point-to-register 'r)
-	   (beginning-of-buffer)
-	   (goto-char (search-forward-regexp (isearch-symbol-regexp my-word)))
-	   (isearch-forward-symbol-at-point)
-	   ;; TODO: [check if final point is same as starting point*, then
-	   ;; add a function to ask whether we should use grep,
-	   ;; provide a default folder,
-	   ;; open a new shell and call grep on that folder.
-	   ;; also combine this with doc (eg javadoc) functionalities
-	   ;; to open the function's documentation in eww
-	   ;; if not found in local code]
-	   ;; * +/- length of symbol
-	   )))
+  (let ((my-symbol (thing-at-point 'symbol 'no-properties)))
+    (if (null my-symbol)
+	(message "No symbol at point")
+      (progn (point-to-register 'r)
+	     (beginning-of-buffer)
+	     (goto-char (search-forward-regexp (isearch-symbol-regexp my-symbol)))
+	     (isearch-forward-symbol-at-point)))))
 
-(global-set-key (kbd "M-.") #'find-symbol-first-occurrence)
+;; only use find-symbol-first occurrence as a weak alternative in cases
+;; where the backend for xref has not been set
+(defun my-find-definition ()
+  (interactive)
+  (progn (if (equal '(etags--xref-backend)
+		    xref-backend-functions)
+	     (find-symbol-first-occurrence)
+	   (call-interactively 'xref-find-definitions))))
+
+(global-set-key (kbd "M-.") #'my-find-definition)
 
 ;; set appropriate default compile-command
 (defun set-compile-command (arg use-file &optional options)
@@ -715,7 +714,7 @@ and set its contents as the appropriate programming-language-template"
    '("20a8ec387dde11cc0190032a9f838edcc647863c824eed9c8e80a4155f8c6037" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "6e65f6c8edc0393009a92d25c524d1d483f32477d23165231db46cb5cb6359a9" "674e84cd9c5957a54838a331ed2dfbebd1153b41ffe75c398fbf0c689087bb98" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(cyberpunk-theme exec-path-from-shell use-package alda-mode darktooth-theme gruvbox-theme the-matrix-theme monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(speedbar-show-unknown-files t))
 
 (custom-set-faces
