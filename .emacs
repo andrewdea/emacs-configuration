@@ -586,7 +586,7 @@ else, first move to previous visible heading, then call it"
 
 ;;;;; helper functions
 ;; implemented my own, extremely dumb version of dumb jump
-;; possible enhancement:
+;; possible enhancements:
 ;; when not found, try to search outside the current file
 (defun find-symbol-first-occurrence ()
   "gets the symbol at the cursor's current location,
@@ -604,10 +604,11 @@ moves to the beginning of the file and searches for that symbol"
 ;; where the backend for xref has not been set
 (defun my-find-definition ()
   (interactive)
-  (progn (if (equal '(etags--xref-backend)
-		    xref-backend-functions)
+  "if an xref-backend has been set, call xref-find-definitions,
+else, call find-symbol-first-occurrence"
+  (if (equal '(etags--xref-backend) xref-backend-functions)
 	     (find-symbol-first-occurrence)
-	   (call-interactively 'xref-find-definitions))))
+	   (execute-extended-command nil "xref-find-definitions")))
 
 (global-set-key (kbd "M-.") #'my-find-definition)
 
