@@ -20,7 +20,7 @@
 
 ;;; Code:
 
-(setq monicelli-highlights
+(defvar monicelli-highlights
 	     '(
 	       ("\\(\\(bituma\\)\\|\\(#\\)\\).*$" . 'font-lock-comment-face)
 	       ("\\( e velocità di esecuzione\\)\\|\\(o tarapia tapioco\\)\\|\\(o magari\\)\\|\\(che cos'è\\)\\|\\(Lei ha clacsonato\\)\\|\\(voglio\\)\\|\\(come\\( se\\)? fosse\\)" . 'font-lock-keyword-face)
@@ -66,4 +66,4 @@
 
 ;; add the mode to the `features' list
 (provide 'monicelli-mode)
-;;; 
+;;; monicelli-mode.el ends here
