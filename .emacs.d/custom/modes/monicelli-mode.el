@@ -40,7 +40,7 @@
 
 ;;;###autoload
 (define-derived-mode monicelli-mode prog-mode "monicelli"
-  "major mode for editing code in Monicelli language"
+  "Major mode for editing code in Monicelli language."
   (set-input-method 'italian-postfix)
   (setq font-lock-defaults '(monicelli-highlights)))
 
