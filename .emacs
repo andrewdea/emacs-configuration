@@ -3,9 +3,17 @@
 
 ;;; Code:
 
+;;;; NATIVE COMPILATION
+;;;;; use same environment as terminal
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
+
+;;;;; don't show compilation warnings
+;; keeping warnings on for now to monitor native comp til I'm familiar with it
+;; (setq native-comp-async-report-warnings-errors nil)
+
 ;;;; BENCHMARK
 ;; benchmark-init to check where init is slow to load
-
 (use-package benchmark-init
   :ensure t
   :config
@@ -64,7 +72,7 @@
   (mood-line-mode t)
   (scroll-bar-mode -1)
   (global-visual-line-mode t)
-  (if arg (find-file)))
+  (if arg (find-file arg)))
 
 (add-hook 'after-init-hook #'startup-look)
 
@@ -91,8 +99,7 @@
 (defun right-frame ()
   (interactive)
   (let ((available-width
-	 (nth 3 (nth 1 (nth 0 (display-monitor-attributes-list)))))
-	(adj-frame-width (frame-outer-width)))
+	 (nth 3 (nth 1 (nth 0 (display-monitor-attributes-list))))))
     (set-frame-position
      (selected-frame) (- available-width (frame-outer-width)) 0)))
 
@@ -114,10 +121,10 @@
 
 ;;;;; themes and colors
 (defun un-theme (&optional arg)
-  "disables all custom themes
-and loads the optional argument"
+  "Disable all custom themes
+and load the optional ARG"
   (interactive "snew theme: ")
-  (mapcar #'disable-theme custom-enabled-themes)
+  (mapc #'disable-theme custom-enabled-themes)
   (if arg (load-theme (intern arg))))
 
 (defun my-misterioso ()
@@ -132,6 +139,9 @@ and loads the optional argument"
 (defun inkpot  ()
   (interactive)
   (un-theme "inkpot"))
+(defun cyberpunk  ()
+  (interactive)
+  (un-theme "cyberpunk"))
 
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
@@ -147,8 +157,8 @@ and loads the optional argument"
 ;;;; ORG mode
 (use-package org
   :ensure t
+  :defer 3
   :config
-
   (setq org-hide-emphasis-markers t)
 
   ;; better bullet-points
@@ -192,6 +202,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 	      (progn (exchange-point-and-mark)
 		     (insert last-command-event))))))
   (add-hook 'post-self-insert-hook 'electric-fontify)
+  (add-hook 'org-mode-hook 'turn-on-flyspell)
   :bind (("C-c s" . org-store-link)
 	 ("C-c l" . org-insert-link)
 	 ("C-c a" . org-agenda)
@@ -246,6 +257,10 @@ the whole region is fontified (by automatically inserting character at mark)"
 (defun my-modes ()
   (interactive)
   (dired "~/.emacs.d/custom/modes"))
+;; open Crafting Interpreters
+(defun crafting-interpreters ()
+  (interactive)
+  (dired "~/CraftingInterpreters"))
 
 ;;;;; dired
 (add-hook 'dired-mode-hook
@@ -283,7 +298,7 @@ point reaches the beginning or end of the buffer, stop there."
 (global-set-key (kbd "\C-a") #'smarter-move-beginning-of-line)
 
 (defun smart-yank ()
-  "when region is highlighted, kill current region and call yank"
+  "When region is highlighted, kill current region and call yank."
   (interactive)
   (if mark-active
       (progn (delete-region (region-beginning) (region-end)) (yank))
@@ -294,18 +309,25 @@ point reaches the beginning or end of the buffer, stop there."
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
+;;;;; flyspell
+(use-package flyspell
+  :ensure t
+  :bind (:map flyspell-mode-map
+	      ("<mouse-3>" . flyspell-correct-word-before-point)
+	      ("C-c f" . flyspell-correct-word-before-point)))
+
 ;;;;; search
 ;; from beginning of document
 (global-set-key (kbd "M-s")
 		(lambda () (interactive)
 		  (point-to-register 'r)
-		  (beginning-of-buffer) (isearch-forward)))
+		  (goto-char (point-min)) (isearch-forward)))
 
 ;; from end of document
 (global-set-key (kbd "M-r")
 		(lambda () (interactive)
 		  (point-to-register 'r)
-		  (end-of-buffer) (isearch-backward)))
+		  (goto-char (point-max)) (isearch-backward)))
 
 ;; get back to where search started
 ;; not sure why I have to press this twice
@@ -371,8 +393,8 @@ point reaches the beginning or end of the buffer, stop there."
 
 ;;;;; macros
 (defun save-macro (name)
-  "Save the current macro as named function definition inside
-your initialization file so you can reuse it anytime in the
+  "Save the current macro as named function definition
+inside your init file so you can reuse it anytime in the
 future."
   (interactive "SSave Macro as: ")
   (name-last-kbd-macro name)
@@ -385,7 +407,7 @@ future."
 
 ;;;; BUFFER AND FRAME movements
 (defun switch-to-minibuffer-window ()
-  "switch to minibuffer window (if active)"
+  "Switch to minibuffer window (if active)."
   (interactive)
   (when (active-minibuffer-window)
     (select-window (active-minibuffer-window))))
@@ -405,7 +427,7 @@ future."
 (defun buffer-name-matchp (arg-s arg-b)
   (string-match-p arg-s (buffer-name arg-b)))
 (defun get-matching-buffers (arg)
-  "find all buffers whose name contains the argument"
+  "Find all buffers whose name contains ARG."
   (seq-filter
    (apply-partially #'buffer-name-matchp arg) (buffer-list)))
 
@@ -448,6 +470,8 @@ future."
     (interactive)
     (sr-speedbar-refresh-turn-on))
 
+  (setq speedbar-show-unknown-files t)
+
   ;; expand functionalities:
   ;; these 3 functions, plus the built-in
   ;; speedbar-expand-line-descendants & speedbar-contract-line
@@ -459,7 +483,7 @@ until we reach a directory with no subdirectories"
     (setq line-move-visual nil)
     (point-to-register 'sr)
     (setq expanded-by 'depth)
-    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\+>.*"))
+    (let ((dir-regexp "\\([0-9]:\\)*\\s-*<\\(-\\|\\+\\)>.*"))
       (move-beginning-of-line 1)
       (while (looking-at dir-regexp)
 	(speedbar-expand-line)
@@ -574,31 +598,31 @@ else, first move to previous visible heading, then call it"
 
 ;;;;; helper functions
 ;; implemented my own, extremely dumb version of dumb jump
-;; possible enhancement:
+;; possible enhancements:
 ;; when not found, try to search outside the current file
 (defun find-symbol-first-occurrence ()
-  "gets the symbol at the cursor's current location,
+  "Gets the symbol at the cursor's current location,
 moves to the beginning of the file and searches for that symbol"
   (interactive)
-  (setq my-word (thing-at-point 'symbol 'no-properties))
-  (message "looking for symbol: %s" my-word)
-  (if (null my-word)
-      (message "No symbol at point")
-    (progn (point-to-register 'r)
-	   (beginning-of-buffer)
-	   (goto-char (search-forward-regexp (isearch-symbol-regexp my-word)))
-	   (isearch-forward-symbol-at-point)
-	   ;; TODO: [check if final point is same as starting point*, then
-	   ;; add a function to ask whether we should use grep,
-	   ;; provide a default folder,
-	   ;; open a new shell and call grep on that folder.
-	   ;; also combine this with doc (eg javadoc) functionalities
-	   ;; to open the function's documentation in eww
-	   ;; if not found in local code]
-	   ;; * +/- length of symbol
-	   )))
+  (let ((my-symbol (thing-at-point 'symbol 'no-properties)))
+    (if (null my-symbol)
+	(message "No symbol at point")
+      (progn (point-to-register 'r)
+	     (beginning-of-buffer)
+	     (goto-char (search-forward-regexp (isearch-symbol-regexp my-symbol)))
+	     (isearch-forward-symbol-at-point)))))
 
-(global-set-key (kbd "M-.") #'find-symbol-first-occurrence)
+;; only use find-symbol-first occurrence as a weak alternative in cases
+;; where the backend for xref has not been set
+(defun my-find-definition ()
+  (interactive)
+  "If an xref-backend has been set, call xref-find-definitions,
+else, call find-symbol-first-occurrence"
+  (if (equal '(etags--xref-backend) xref-backend-functions)
+	     (find-symbol-first-occurrence)
+	   (execute-extended-command nil "xref-find-definitions")))
+
+(global-set-key (kbd "M-.") #'my-find-definition)
 
 ;; set appropriate default compile-command
 (defun set-compile-command (arg use-file &optional options)
@@ -631,7 +655,7 @@ moves to the beginning of the file and searches for that symbol"
 (add-hook 'java-mode-hook #'subword-mode)
 
 ;; scala
-(add-to-list 'auto-mode-alist '("\.sc" . scala-mode))
+(add-to-list 'auto-mode-alist '("\\.sc\\'" . scala-mode))
 
 ;; lisp
 (setq inferior-lisp-program "/usr/local/bin/sbcl") ; slime
@@ -646,39 +670,39 @@ moves to the beginning of the file and searches for that symbol"
 
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
-  "find and replace file-path from FILE-NAME,
+  "Find and replace file-path from FILE-NAME,
 if provided find and replace FILE-EXT also"
   (replace-regexp-in-string ".*\/" ""
 			    (if file-ext
 				(string-replace file-ext "" file-name)
 			      file-name)))
 (defun template-write-to-buffer (contents-as-string)
-  "write CONTENTS-AS-STRING to the current buffer
+  "Write CONTENTS-AS-STRING to the current buffer
 (if the buffer is not empty, CONTENTS-AS-STRING will be appended to the end)"
   (with-current-buffer (buffer-name)
     (goto-char (point-max))
     (insert contents-as-string)))
 (defun template-file-to-string (file-name)
-  "return contents of FILE-NAME as string"
+  "Return contents of FILE-NAME as string."
   (with-temp-buffer
     (insert-file-contents file-name)
     (buffer-string)))
 (defun template-set-contents (file-name file-ext)
-  "read from the template file and writes to buffer the contents,
+  "Read from the template file and writes to buffer the contents,
 replacing 'Template' with FILE-NAME"
-  (setq file-contents
+  (let ((file-contents
 	(template-file-to-string
 	 (concat "~/.emacs.d/custom/programming-language-templates/Template"
-		 file-ext)))
+		 file-ext))))
   (template-write-to-buffer
    (string-replace "Template"
 		   (template-trim-name file-name file-ext)
-		   file-contents)))
+		   file-contents))))
 (defun get-file-ext (&optional file-name)
   (if (equal nil file-name) (setq file-name buffer-name))
   (substring file-name (string-match "\.[^.]*$" file-name)))
 (defun template-open ()
-  "prompt for file name, find the file, ask for confirmation,
+  "Prompt for file name, find the file, ask for confirmation,
 and set its contents as the appropriate programming-language-template"
   (interactive)
   (setq file-name (read-file-name "Enter the name of your file:"))
@@ -691,21 +715,19 @@ and set its contents as the appropriate programming-language-template"
   )
 
 ;;;; RANDOM STUFF
-
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are inkpot (really good for org-files),
-;; my-misterioso, my-monokai, monokai, and tango-dark.
+;; cyberpunk, the-matrix, my-misterioso, my-monokai, and tango-dark.
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("6e65f6c8edc0393009a92d25c524d1d483f32477d23165231db46cb5cb6359a9" "674e84cd9c5957a54838a331ed2dfbebd1153b41ffe75c398fbf0c689087bb98" "9abe2b502db3ed511fea7ab84b62096ba15a3a71cdb106fd989afa179ff8ab8d" "4ba5270b5be08b41e1429b66dc6a01d2627eef40173e68235ed549b77f5c3aaf" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" default))
+   '("2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(the-matrix-theme monokai-theme yascroll mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
- '(speedbar-show-unknown-files t))
+   '(flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

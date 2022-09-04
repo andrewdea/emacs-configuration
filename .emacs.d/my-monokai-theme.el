@@ -44,7 +44,8 @@
  '(highlight ((((class color) (min-colors 257)) (:background "#49483E")) (((class color) (min-colors 89)) (:background "#474747"))))
  '(lazy-highlight ((((class color) (min-colors 257)) (:inherit highlight :background "#8f5902")) (((class color) (min-colors 89)) (:inherit highlight :background "#3E3E3E"))))
  
- '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#49483E")) (((class color) (min-colors 89)) (:inherit highlight :background "#474747"))))
+ ;; '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#49483E")) (((class color) (min-colors 89)) (:inherit highlight :background "#474747"))))
+ '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#8f8c6d")) (((class color) (min-colors 89)) (:inherit highlight :background "#474747"))))
 
  
  '(secondary-selection ((((class color) (min-colors 257)) (:inherit region :background "#3E3D31")) (((class color) (min-colors 89)) (:inherit region :background "#3E3E3E"))))
