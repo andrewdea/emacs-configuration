@@ -643,7 +643,7 @@ else, call find-symbol-first-occurrence"
 (add-hook 'java-mode-hook #'subword-mode)
 
 ;; scala
-(add-to-list 'auto-mode-alist '("\.sc" . scala-mode))
+(add-to-list 'auto-mode-alist '("\.sc$" . scala-mode))
 
 ;; lisp
 (setq inferior-lisp-program "/usr/local/bin/sbcl") ; slime
