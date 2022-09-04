@@ -21,6 +21,14 @@
   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
+;;;; LOAD FASTER
+;; not sure if these work, keeping an eye on them for now
+;; (setq inhibit-startup-message t)
+(setq jit-lock-stealth-time nil)
+(setq jit-lock-defer-time nil)
+(setq jit-lock-defer-time 0.05)
+(setq jit-lock-stealth-load 200)
+
 ;;;; PACKAGES
 (add-to-list 'package-archives
              '("melpa-stable" . "https://stable.melpa.org/packages/") t)
@@ -75,6 +83,25 @@
   (if arg (find-file arg)))
 
 (add-hook 'after-init-hook #'startup-look)
+;; (startup-look)
+;;;;; dashboard
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-items '((recents  . 10)
+                          (projects . 5)
+			  ;; bookmarks
+                          (agenda . 5)))
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-footer-messages
+	'("'Heaps of black cherries
+glittering with drops of rain
+in the evening sun' \n\tRichard Wright"))
+  (setq dashboard-footer-icon "")
+  (setq dashboard-agenda-release-buffers t))
 
 ;;;;; resizing and movement
 ;; make current window bigger or smaller
@@ -169,10 +196,7 @@ and load the optional ARG"
 						  (match-end 1) "•"))))))
 
   (setq org-log-done t)
-
-  (defun org-refresh-agenda ()
-    (setq org-agenda-files (directory-files "~/org" nil "org$")))
-  (org-refresh-agenda)
+  (setq org-agenda-files '("~/org/TODO.org" "~/org/ToBuy.org"))
 
   (defun my-org-tab ()
     "if current line is a heading, call regular org-cycle;
@@ -202,7 +226,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 	      (progn (exchange-point-and-mark)
 		     (insert last-command-event))))))
   (add-hook 'post-self-insert-hook 'electric-fontify)
-  (add-hook 'org-mode-hook 'turn-on-flyspell)
+  ;; (add-hook 'org-mode-hook 'turn-on-flyspell)
   :bind (("C-c s" . org-store-link)
 	 ("C-c l" . org-insert-link)
 	 ("C-c a" . org-agenda)
@@ -213,7 +237,6 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("C-c o" . open-file-same-window)
 	 ("C-M-<backspace>" . org-cut-subtree)
 	 ("TAB" . my-org-tab)))
-
 
 ;;;; FILE utilities
 ;;;;; shortcuts
@@ -269,6 +292,15 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 ;;;;; find and grep
 (require 'shell-output-mode "~/.emacs.d/custom/modes/shell-output-mode.el")
+
+;;;;; recent files
+(use-package recentf
+      :bind ("C-c C-r" . recentf-open-files)
+      :config
+      (setq recentf-max-menu-items 25
+            recentf-max-saved-items 25)
+      (add-to-list 'recentf-exclude "ido.last")
+      :hook (after-init . recentf-mode))
 
 ;;;; TEXT EDITING
 ;;;;; utilities
@@ -727,7 +759,7 @@ and set its contents as the appropriate programming-language-template"
    '("2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime)))
+   '(projectile all-the-icons dashboard esup flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
