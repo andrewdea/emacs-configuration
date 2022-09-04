@@ -648,7 +648,7 @@ else, call find-symbol-first-occurrence"
 (add-hook 'java-mode-hook #'subword-mode)
 
 ;; scala
-(add-to-list 'auto-mode-alist '("\.sc$" . scala-mode))
+(add-to-list 'auto-mode-alist '("\\.sc\\'" . scala-mode))
 
 ;; lisp
 (setq inferior-lisp-program "/usr/local/bin/sbcl") ; slime
@@ -659,7 +659,7 @@ else, call find-symbol-first-occurrence"
 
 ;; loading monicelli mode
 (autoload 'monicelli-mode "~/.emacs.d/custom/modes/monicelli-mode.el")
-(add-to-list 'auto-mode-alist '("\\.mc\\'" . monicelli-mode))
+(add-to-list 'auto-mode-alist '("\\.mcc\\'" . monicelli-mode))
 
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
