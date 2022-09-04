@@ -135,24 +135,24 @@
     ;; second element is the line-number (if present)
     (split-string (thing-at-point 'line 'no-properties) "\n\\|:")))
 
-(defun so-open-file-at-point ()
+(defun shell-open-file-at-point ()
   (interactive)
   (let* ((parsed-file (parse-file-at-line))
-	 (line (cdr parsed-file)))
+	 (line (cadr parsed-file)))
     (find-file (car parsed-file))
-    (if line ; select the line
+    (if (> (length line) 0) ; if line -number present, select the line
 	(progn
-	  (goto-line (string-to-number (car line)))
+	  (goto-line (string-to-number line))
 	  (set-mark-command nil) (move-end-of-line nil)))))
 
-(defun so-flush ()
+(defun shell-flush ()
   (interactive)
   (erase-buffer))
 
 (defvar shell-output-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-<return>") #'so-open-file-at-point)
-    (define-key map (kbd "C-M-<backspace>") #'so-flush)
+    (define-key map (kbd "C-<return>") #'shell-open-file-at-point)
+    (define-key map (kbd "C-M-<backspace>") #'shell-flush)
     (define-key map (kbd "C-<up>") #'backward-paragraph) ; define paragraphs by file path mb?
     (define-key map (kbd "C-<down>") #'forward-paragraph)
     (define-key map (kbd "C-r") #'shell-redo) ; will have to think what key is best for this
