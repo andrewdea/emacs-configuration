@@ -23,7 +23,6 @@
 
 ;;;; LOAD FASTER
 ;; not sure if these work, keeping an eye on them for now
-;; (setq inhibit-startup-message t)
 (setq jit-lock-stealth-time nil)
 (setq jit-lock-defer-time nil)
 (setq jit-lock-defer-time 0.05)
@@ -48,8 +47,14 @@
 
 ;;;; appearance: SIZING, FRAMES, WINDOWS, THEMES
 ;;;;; startup
+;; don't show startup screen
+(setq inhibit-startup-screen t)
 ;; use updated source files
-(setq load-prefer-newer t)
+;; (setq load-prefer-newer t)
+
+;; scratch buffer in fundamental mode
+(setq initial-major-mode 'fundamental-mode)
+(setq initial-scratch-message "**Welcome to Emacs!**")
 
 ;; choose default theme based on time of day
 (defun default-theme ()
@@ -83,25 +88,78 @@
   (if arg (find-file arg)))
 
 (add-hook 'after-init-hook #'startup-look)
-;; (startup-look)
+
 ;;;;; dashboard
+(defun dashboard-open ()
+  "Open the *dashboard* buffer and jump to the first widget."
+  (interactive)
+  (delete-other-windows)
+  ;; Refresh dashboard buffer
+  (if (get-buffer dashboard-buffer-name)
+      (kill-buffer dashboard-buffer-name))
+  (dashboard-insert-startupify-lists)
+  (switch-to-buffer dashboard-buffer-name))
+
 (use-package dashboard
   :ensure t
+  ;; :init
+  ;; (add-hook 'after-init-hook 'dashboard-refresh-buffer)
+  ;; (add-hook 'dashboard-mode-hook 'my-dashboard-init)
   :config
-  (dashboard-setup-startup-hook)
+  (setq dashboard-init-info
+        (format "Emacs started in %s." (emacs-init-time)))
+  (add-hook 'dashboard-mode-hook (lambda () (projectile-mode +1)))
+  (
+   setq haiku-dataset-file "~/.emacs.d/custom/datasets/haiku-dataset.csv")
+
+  (defun get-random-haiku ()
+    (with-temp-buffer
+      (insert-file-contents haiku-dataset-file)
+      (goto-line (random (count-lines (point-min) (point-max))))
+      (let ((line (thing-at-point 'line 'no-properties)))
+	(string-join (butlast (split-string line ",") 4) "\n"))))
+
+  (defun find-haiku-in-file ()
+    (interactive)
+    (let ((line (string-trim (thing-at-point 'line 'no-properties))))
+      (switch-to-buffer (find-file-other-window haiku-dataset-file))
+      (search-forward line)
+      (set-mark-command nil)
+      (move-end-of-line nil)))
+
+  (setq dashboard-footer-icon (all-the-icons-octicon "book"
+						     :height 1.1
+						     :v-adjust -0.05
+						     :face 'font-lock-keyword-face))
+
+  (defun dashboard-insert-footer ()
+    "Insert custom haiku-footer for dashboard."
+    (let ((footer (and dashboard-set-footer (car dashboard-footer-messages)))
+	  (footer-heading "Today's haiku:\n\n"))
+      (when footer
+	(insert "\n")
+	;; (dashboard-center-line footer)
+	(insert dashboard-footer-icon)
+	(insert " ")
+	(insert (propertize footer-heading 'face 'dashboard-heading))
+	(insert (propertize footer 'face 'dashboard-footer))
+	(insert "\n"))))
+
+  (add-hook 'dashboard-mode-hook
+            (lambda () (local-set-key (kbd "C-<return>") #'find-haiku-in-file)))
+
+  ;; (dashboard-setup-startup-hook)
   (setq dashboard-items '((recents  . 10)
                           (projects . 5)
 			  ;; bookmarks
                           (agenda . 5)))
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
-  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-week-agenda t)
+  (setq dashboard-agenda-release-buffers t)
   (setq dashboard-footer-messages
-	'("'Heaps of black cherries
-glittering with drops of rain
-in the evening sun' \n\tRichard Wright"))
-  (setq dashboard-footer-icon "")
-  (setq dashboard-agenda-release-buffers t))
+	(list (get-random-haiku)))
+  (setq dashboard-startup-banner 'logo))
 
 ;;;;; resizing and movement
 ;; make current window bigger or smaller
@@ -285,22 +343,35 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (dired "~/CraftingInterpreters"))
 
-;;;;; dired
+;;;;; dired mode
 (add-hook 'dired-mode-hook
 	  (lambda ()
 	    (define-key dired-mode-map [mouse-2] 'dired-mouse-find-file)))
+(setq all-the-icons-dired-monochrome nil)
+(add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
 
 ;;;;; find and grep
 (require 'shell-output-mode "~/.emacs.d/custom/modes/shell-output-mode.el")
 
 ;;;;; recent files
 (use-package recentf
-      :bind ("C-c C-r" . recentf-open-files)
-      :config
-      (setq recentf-max-menu-items 25
-            recentf-max-saved-items 25)
-      (add-to-list 'recentf-exclude "ido.last")
-      :hook (after-init . recentf-mode))
+  :ensure t
+  :bind (:map recentf-mode-map
+	      ("C-c C-r" . recentf-open-files))
+  :config
+  (setq recentf-max-menu-items 25
+        recentf-max-saved-items 25)
+  (add-to-list 'recentf-exclude "ido.last")
+  :hook (after-init . recentf-mode)
+  )
+
+;;;;; projectile mode
+(use-package projectile
+  :ensure t
+  :config
+  ;; (setq projectile-ignored-projects '("~/"))
+  :bind (:map projectile-mode-map
+	      ("s-p" . projectile-command-map)))
 
 ;;;; TEXT EDITING
 ;;;;; utilities
@@ -651,8 +722,8 @@ moves to the beginning of the file and searches for that symbol"
   "If an xref-backend has been set, call xref-find-definitions,
 else, call find-symbol-first-occurrence"
   (if (equal '(etags--xref-backend) xref-backend-functions)
-	     (find-symbol-first-occurrence)
-	   (execute-extended-command nil "xref-find-definitions")))
+      (find-symbol-first-occurrence)
+    (execute-extended-command nil "xref-find-definitions")))
 
 (global-set-key (kbd "M-.") #'my-find-definition)
 
@@ -723,13 +794,13 @@ if provided find and replace FILE-EXT also"
   "Read from the template file and writes to buffer the contents,
 replacing 'Template' with FILE-NAME"
   (let ((file-contents
-	(template-file-to-string
-	 (concat "~/.emacs.d/custom/programming-language-templates/Template"
-		 file-ext))))
-  (template-write-to-buffer
-   (string-replace "Template"
-		   (template-trim-name file-name file-ext)
-		   file-contents))))
+	 (template-file-to-string
+	  (concat "~/.emacs.d/custom/programming-language-templates/Template"
+		  file-ext))))
+    (template-write-to-buffer
+     (string-replace "Template"
+		     (template-trim-name file-name file-ext)
+		     file-contents))))
 (defun get-file-ext (&optional file-name)
   (if (equal nil file-name) (setq file-name buffer-name))
   (substring file-name (string-match "\.[^.]*$" file-name)))
@@ -759,7 +830,8 @@ and set its contents as the appropriate programming-language-template"
    '("2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(projectile all-the-icons dashboard esup flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime)))
+   '(all-the-icons-dired projectile all-the-icons dashboard flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+ '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

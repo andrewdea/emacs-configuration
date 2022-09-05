@@ -150,11 +150,12 @@ If line-number is present, switch to line and highlight it"
     (if (> (length line) 0) ; if line -number present, select the line
 	(progn
 	  (forward-line (string-to-number line))
-	  (set-mark-command nil) (move-end-of-line nil)))))
+	  (set-mark-command nil)
+	  (move-end-of-line nil)))))
 
 (defun shell-flush ()
   "Erase all the contents of the shell-output buffer.
-\(can be undone with normal 'undo'\)"
+This can be undone with normal 'undo'"
   (interactive)
   (erase-buffer))
 
