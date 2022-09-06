@@ -260,6 +260,8 @@
   (speedbar-mode . centaur-tabs-disable-locally)
   (shell-mode . centaur-tabs-disable-locally))
 ;;;;; appearance for specific modes
+(add-hook 'recentf-dialog-mode-hook (lambda () (hl-line-mode t)))
+
 ;;;; ORG mode
 (use-package org
   :ensure t
@@ -300,7 +302,8 @@ else, first move to previous visible heading, then call it"
       (and transient-mark-mode mark-active
 	   (member last-command-event fontify-list)))))
     (let ((fontify-list '(?* ?/ ?_ ?= ?~ ?+)))
-      (and transient-mark-mode mark-active
+      (and (derived-mode-p 'org-mode)
+	transient-mark-mode mark-active
 	   (member last-command-event fontify-list))))
 
   (put 'insert-char 'delete-selection 'delete-selection-uses-region-p)
@@ -310,12 +313,11 @@ else, first move to previous visible heading, then call it"
 when a region is highlighted and we've inserted a character that fontifies text,
 the whole region is fontified (by automatically inserting character at mark)"
     (message "in electric fontify!")
-    (if (derived-mode-p 'org-mode)
-	(if (electric-fontify-will-use-region)
+    (if (electric-fontify-will-use-region)
 	    (progn (exchange-point-and-mark)
-		   (insert last-command-event)))))
+		   (insert last-command-event))))
 
-  (add-hook 'post-self-insert-hook #'electric-fontify-will-use-region)
+  ;; (add-hook 'post-self-insert-hook #'electric-fontify-will-use-region)
   (add-hook 'self-insert-uses-region-functions
 	    #'electric-fontify)
 

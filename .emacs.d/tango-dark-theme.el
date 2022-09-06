@@ -10,7 +10,7 @@ purple for better visibility; playing around with the mode-line colors")
  '(cursor ((((class color) (min-colors 89)) (:background "#fce94f"))))
  '(header-line ((((class color) (min-colors 89)) (:background "#666"))))
  '(fringe ((((class color) (min-colors 89)) (:background "#212526"))))
- '(highlight ((((class color) (min-colors 89)) (:foreground "#2e3436" :background "#c0c000"))))
+ '(highlight ((((class color) (min-colors 89)) (:foreground "#eeeeec" :background "#483d8b"))))
  ;; highlighted region deviates from tango palette: this ensures that
  ;; characters in the region are always easily readible
  '(region ((t (:background "#483d8b"))))
