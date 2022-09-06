@@ -45,16 +45,23 @@
 (add-hook 'package-menu-mode-hook
 	  (lambda () (hl-line-mode t) (visual-line-mode -1)))
 
+;;;; CHEATSHEET
+
+;; use updated source files since I'm working on this
+(setq load-prefer-newer t)
+(use-package cheatsheet
+  :ensure t
+  :config
+  (add-hook 'kill-emacs-hook #'cheatsheet--save-list-to-elisp-file))
+
 ;;;; appearance: SIZING, FRAMES, WINDOWS, THEMES
 ;;;;; startup
 ;; don't show startup screen
 (setq inhibit-startup-screen t)
-;; use updated source files
-;; (setq load-prefer-newer t)
 
 ;; scratch buffer in fundamental mode
 (setq initial-major-mode 'fundamental-mode)
-(setq initial-scratch-message "**Welcome to Emacs!**")
+(setq initial-scratch-message "**Welcome to Emacs!**\n\n\n")
 
 ;; choose default theme based on time of day
 (defun default-theme ()
@@ -91,7 +98,7 @@
 
 ;;;;; dashboard
 (defun dashboard-open ()
-  "Open the *dashboard* buffer and jump to the first widget."
+  "Open the *dashboard* buffer."
   (interactive)
   (delete-other-windows)
   ;; Refresh dashboard buffer
@@ -115,7 +122,7 @@
   (defun get-random-haiku ()
     (with-temp-buffer
       (insert-file-contents haiku-dataset-file)
-      (goto-line (random (count-lines (point-min) (point-max))))
+      (forward-line (random (count-lines (point-min) (point-max))))
       (let ((line (thing-at-point 'line 'no-properties)))
 	(string-join (butlast (split-string line ",") 4) "\n"))))
 
@@ -206,8 +213,7 @@
 
 ;;;;; themes and colors
 (defun un-theme (&optional arg)
-  "Disable all custom themes
-and load the optional ARG"
+  "Disable all custom themes ad load theme ARG."
   (interactive "snew theme: ")
   (mapc #'disable-theme custom-enabled-themes)
   (if arg (load-theme (intern arg))))
@@ -238,6 +244,21 @@ and load the optional ARG"
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;; tabs
+(use-package centaur-tabs
+  :ensure t
+  :config
+  (centaur-tabs-headline-match)
+
+  (defun centaur-tabs-disable-locally ()
+    (if centaur-tabs-mode (centaur-tabs-local-mode)))
+
+  (setq centaur-tabs-set-icons t)
+  (setq centaur-tabs-gray-out-icons 'buffer)
+  (setq centaur-tabs-set-bar 'left)
+  :hook
+  (speedbar-mode . centaur-tabs-disable-locally)
+  (shell-mode . centaur-tabs-disable-locally))
 ;;;;; appearance for specific modes
 ;;;; ORG mode
 (use-package org
@@ -272,19 +293,33 @@ else, first move to previous visible heading, then call it"
 	 (setf (cdr (assoc 'file org-link-frame-setup))
 	       #'find-file-other-window))
 
+  ;; tinkering with this to try to make it not clash with delete-selection-mode
+  (defun electric-fontify-will-use-region ()
+    (message "in el-fontify will use region")
+    (message (format "returning: %s" (let ((fontify-list '(?* ?/ ?_ ?= ?~ ?+)))
+      (and transient-mark-mode mark-active
+	   (member last-command-event fontify-list)))))
+    (let ((fontify-list '(?* ?/ ?_ ?= ?~ ?+)))
+      (and transient-mark-mode mark-active
+	   (member last-command-event fontify-list))))
+
+  (put 'insert-char 'delete-selection 'delete-selection-uses-region-p)
+
   (defun electric-fontify ()
     "If in org-mode (or a derived mode),
 when a region is highlighted and we've inserted a character that fontifies text,
 the whole region is fontified (by automatically inserting character at mark)"
-    ;; (interactive)
+    (message "in electric fontify!")
     (if (derived-mode-p 'org-mode)
-	(let ((fontify-list '(?* ?/ ?_ ?= ?~ ?+)))
-	  (if (and mark-active
-		   (member last-command-event fontify-list))
-	      (progn (exchange-point-and-mark)
-		     (insert last-command-event))))))
-  (add-hook 'post-self-insert-hook 'electric-fontify)
-  ;; (add-hook 'org-mode-hook 'turn-on-flyspell)
+	(if (electric-fontify-will-use-region)
+	    (progn (exchange-point-and-mark)
+		   (insert last-command-event)))))
+
+  (add-hook 'post-self-insert-hook #'electric-fontify-will-use-region)
+  (add-hook 'self-insert-uses-region-functions
+	    #'electric-fontify)
+
+  (add-hook 'org-mode-hook #'turn-on-flyspell)
   :bind (("C-c s" . org-store-link)
 	 ("C-c l" . org-insert-link)
 	 ("C-c a" . org-agenda)
@@ -400,14 +435,18 @@ point reaches the beginning or end of the buffer, stop there."
 ;; remap C-a to 'smarter-move-beginning-of-line'
 (global-set-key (kbd "\C-a") #'smarter-move-beginning-of-line)
 
-(defun smart-yank ()
-  "When region is highlighted, kill current region and call yank."
-  (interactive)
-  (if mark-active
-      (progn (delete-region (region-beginning) (region-end)) (yank))
-    (yank)))
+;; when typing in selected region, delete it
+(delete-selection-mode t)
+
+;; don't think this is needed any more because of the above
+;; (defun smart-yank ()
+;;   "When region is highlighted, kill current region and call yank."
+;;   (interactive)
+;;   (if mark-active
+;;       (progn (delete-region (region-beginning) (region-end)) (yank))
+;;     (yank)))
 ;; remap C-y to `smart-yank'
-(global-set-key (kbd "C-y") #'smart-yank)
+;; (global-set-key (kbd "C-y") #'smart-yank)
 
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
@@ -670,6 +709,7 @@ for each open buffer with one of these files, refresh the version-control state"
 ;;;;; appearance
 (defun my-prog-appearance ()
   (linum-mode t)
+  ;; (color-identifiers-mode t)
   (electric-pair-local-mode t))
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
@@ -827,10 +867,10 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
+   '("ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(all-the-icons-dired projectile all-the-icons dashboard flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(cheatsheet color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons dashboard flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
