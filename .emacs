@@ -5,8 +5,8 @@
 
 ;;;; NATIVE COMPILATION
 ;;;;; use same environment as terminal
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
+;; (when (memq window-system '(mac ns x))
+;;   (exec-path-from-shell-initialize))
 
 ;;;;; don't show compilation warnings
 ;; keeping warnings on for now to monitor native comp til I'm familiar with it
@@ -15,7 +15,6 @@
 ;;;; BENCHMARK
 ;; benchmark-init to check where init is slow to load
 (use-package benchmark-init
-  :ensure t
   :config
   ;; To disable collection of benchmark data after init is done.
   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
@@ -39,6 +38,9 @@
 (eval-when-compile
   (require 'use-package))
 
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
+
 (use-package package)
 (package-initialize)
 
@@ -49,8 +51,8 @@
 
 ;; use updated source files since I'm working on this
 (setq load-prefer-newer t)
+
 (use-package cheatsheet
-  :ensure t
   :config
   (add-hook 'kill-emacs-hook #'cheatsheet--save-list-to-elisp-file))
 
@@ -58,6 +60,9 @@
 ;;;;; startup
 ;; don't show startup screen
 (setq inhibit-startup-screen t)
+
+;; don't show tool bar
+(tool-bar-mode -1)
 
 ;; scratch buffer in fundamental mode
 (setq initial-major-mode 'fundamental-mode)
@@ -83,41 +88,45 @@
     (set-frame-size (selected-frame) 100 45))
   (set-frame-position (selected-frame) 0 0))
 
-(defun startup-look (&optional arg)
+(defun startup-look ()
   (interactive)
-  (tool-bar-mode -1) ; I've never needed the toolbar
   (setq column-number-mode t)
   (load-theme (default-theme))
   (big-frame)
   (mood-line-mode t)
   (scroll-bar-mode -1)
-  (global-visual-line-mode t)
-  (if arg (find-file arg)))
+  (global-visual-line-mode t))
 
 (add-hook 'after-init-hook #'startup-look)
 
 ;;;;; dashboard
-(defun dashboard-open ()
-  "Open the *dashboard* buffer."
-  (interactive)
-  (delete-other-windows)
-  ;; Refresh dashboard buffer
-  (if (get-buffer dashboard-buffer-name)
-      (kill-buffer dashboard-buffer-name))
-  (dashboard-insert-startupify-lists)
-  (switch-to-buffer dashboard-buffer-name))
 
 (use-package dashboard
-  :ensure t
-  ;; :init
-  ;; (add-hook 'after-init-hook 'dashboard-refresh-buffer)
-  ;; (add-hook 'dashboard-mode-hook 'my-dashboard-init)
+  :init
+
+  (defun dashboard-open ()
+    "Open the *dashboard* buffer."
+    (interactive)
+    (let ((time (current-time)))
+      ;; (delete-other-windows)
+      ;; Refresh dashboard buffer
+      (if (get-buffer dashboard-buffer-name)
+	  (kill-buffer dashboard-buffer-name))
+      (dashboard-insert-startupify-lists)
+      (switch-to-buffer dashboard-buffer-name)
+      (message
+       "Welcome! Dashboard opened in %.06f" (float-time (time-since time)))))
+
+  (defun my-dashboard-init ()
+    (setq dashboard-init-info
+          (format "Emacs started in %s." (emacs-init-time))))
+  (add-hook 'after-init-hook #'my-dashboard-init)
+
   :config
-  (setq dashboard-init-info
-        (format "Emacs started in %s." (emacs-init-time)))
+  (message "loading dashboard in config")
   (add-hook 'dashboard-mode-hook (lambda () (projectile-mode +1)))
-  (
-   setq haiku-dataset-file "~/.emacs.d/custom/datasets/haiku-dataset.csv")
+
+  (defvar haiku-dataset-file "~/.emacs.d/custom/datasets/haiku-dataset.csv")
 
   (defun get-random-haiku ()
     (with-temp-buffer
@@ -133,6 +142,10 @@
       (search-forward line)
       (set-mark-command nil)
       (move-end-of-line nil)))
+
+  (add-hook 'dashboard-mode-hook
+            (lambda ()
+	      (local-set-key (kbd "C-<return>") #'find-haiku-in-file)))
 
   (setq dashboard-footer-icon (all-the-icons-octicon "book"
 						     :height 1.1
@@ -152,10 +165,6 @@
 	(insert (propertize footer 'face 'dashboard-footer))
 	(insert "\n"))))
 
-  (add-hook 'dashboard-mode-hook
-            (lambda () (local-set-key (kbd "C-<return>") #'find-haiku-in-file)))
-
-  ;; (dashboard-setup-startup-hook)
   (setq dashboard-items '((recents  . 10)
                           (projects . 5)
 			  ;; bookmarks
@@ -236,7 +245,6 @@
 
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
-  :ensure t
   :config
   (setq whitespace-style '(face lines-tail trailing)))
 (defun wspace () (interactive) (whitespace-mode 'toggle))
@@ -246,7 +254,6 @@
 
 ;;;;; tabs
 (use-package centaur-tabs
-  :ensure t
   :config
   (centaur-tabs-headline-match)
 
@@ -264,7 +271,6 @@
 
 ;;;; ORG mode
 (use-package org
-  :ensure t
   :defer 3
   :config
   (setq org-hide-emphasis-markers t)
@@ -296,30 +302,20 @@ else, first move to previous visible heading, then call it"
 	       #'find-file-other-window))
 
   ;; tinkering with this to try to make it not clash with delete-selection-mode
-  (defun electric-fontify-will-use-region ()
-    (message "in el-fontify will use region")
-    (message (format "returning: %s" (let ((fontify-list '(?* ?/ ?_ ?= ?~ ?+)))
-      (and transient-mark-mode mark-active
-	   (member last-command-event fontify-list)))))
+  (defun electric-fontify-will-use-region-p ()
     (let ((fontify-list '(?* ?/ ?_ ?= ?~ ?+)))
-      (and (derived-mode-p 'org-mode)
-	transient-mark-mode mark-active
+      (and (derived-mode-p 'org-mode) mark-active
 	   (member last-command-event fontify-list))))
-
-  (put 'insert-char 'delete-selection 'delete-selection-uses-region-p)
+  (add-hook 'self-insert-uses-region-functions #'electric-fontify-will-use-region-p)
 
   (defun electric-fontify ()
     "If in org-mode (or a derived mode),
 when a region is highlighted and we've inserted a character that fontifies text,
 the whole region is fontified (by automatically inserting character at mark)"
-    (message "in electric fontify!")
-    (if (electric-fontify-will-use-region)
-	    (progn (exchange-point-and-mark)
-		   (insert last-command-event))))
-
-  ;; (add-hook 'post-self-insert-hook #'electric-fontify-will-use-region)
-  (add-hook 'self-insert-uses-region-functions
-	    #'electric-fontify)
+    (if (electric-fontify-will-use-region-p)
+	(progn (exchange-point-and-mark)
+	       (insert last-command-event))))
+  (add-hook 'post-self-insert-hook #'electric-fontify)
 
   (add-hook 'org-mode-hook #'turn-on-flyspell)
   :bind (("C-c s" . org-store-link)
@@ -392,19 +388,17 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 ;;;;; recent files
 (use-package recentf
-  :ensure t
   :bind (:map recentf-mode-map
 	      ("C-c C-r" . recentf-open-files))
   :config
   (setq recentf-max-menu-items 25
         recentf-max-saved-items 25)
   (add-to-list 'recentf-exclude "ido.last")
-  :hook (after-init . recentf-mode)
-  )
+  :hook (after-init . recentf-mode))
 
 ;;;;; projectile mode
 (use-package projectile
-  :ensure t
+  :defer 5
   :config
   ;; (setq projectile-ignored-projects '("~/"))
   :bind (:map projectile-mode-map
@@ -455,7 +449,6 @@ point reaches the beginning or end of the buffer, stop there."
 
 ;;;;; flyspell
 (use-package flyspell
-  :ensure t
   :bind (:map flyspell-mode-map
 	      ("<mouse-3>" . flyspell-correct-word-before-point)
 	      ("C-c f" . flyspell-correct-word-before-point)))
@@ -481,15 +474,15 @@ point reaches the beginning or end of the buffer, stop there."
 
 ;;;;; comments
 ;; copy line/region and comment it out
-(defun region-copy-comm (&optional arg) (interactive "p")
-       (kmacro-exec-ring-item (quote ("\M-w\C-x\C-x\M-;\n" 0 "%d")) arg)
+(defun region-copy-comm ()
+  (interactive)
+       (kill-ring-save nil nil 'region)
+       (comment-dwim nil)
        (message "commented region has been copied"))
-(defun line-copy-comm (&optional arg)
-  (interactive "p")
-  (kmacro-exec-ring-item (quote ([?\C-a ?\C-  ?\C-e ?\M-w ?\C-x ?\C-x
-					?\M-\; ?\C-e return]
-				 0 "%d"))
-			 arg)
+(defun line-copy-comm ()
+  (interactive)
+  (kill-ring-save (line-beginning-position) (line-end-position))
+  (comment-line 1)
   (message "commented line has been copied"))
 (defun copy-comm ()
   (interactive)
@@ -528,7 +521,6 @@ point reaches the beginning or end of the buffer, stop there."
 
 ;;;;; autocomplete
 (use-package company
-  :ensure t
   :config
   (setq company-dabbrev-downcase nil)
   :bind (:map company-mode-map
@@ -597,16 +589,16 @@ future."
 ;; (global-set-key (kbd "\C-xb") 'my-switch-to-buffer)
 
 ;;;; SPEEDBAR
-(defun bar-toggle ()
-  (interactive)
-  (sr-speedbar-toggle))
-(defun bar-open ()
-  (interactive)
-  (sr-speedbar-open))
-
 (use-package sr-speedbar
-  :ensure t
+  :init
+  (defun bar-toggle ()
+    (interactive)
+    (sr-speedbar-toggle))
+  (defun bar-open ()
+    (interactive)
+    (sr-speedbar-open))
   :config
+  (message "loading speedbar config")
   (defun bar-close ()
     (interactive)
     (sr-speedbar-close))
@@ -694,7 +686,6 @@ open siblings (directories at its same depth)"
   (vc-refresh-state))
 
 (use-package magit
-  :ensure t
   :config
   (defun vc-refresh-all-git-buffers ()
     "get list of git files from magit,
@@ -715,9 +706,8 @@ for each open buffer with one of these files, refresh the version-control state"
   (electric-pair-local-mode t))
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
-(use-package dash :ensure t)
+(use-package dash)
 (use-package outshine
-  :ensure t
   :config
   ;; collapse the current level even when I'm not at the heading
   (defun my-outline-tab ()
@@ -868,16 +858,19 @@ and set its contents as the appropriate programming-language-template"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
  '(custom-safe-themes
-   '("ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
+   '("7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
    '(cheatsheet color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons dashboard flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
- '(projectile-ignored-projects '("~/")))
+ '(projectile-ignored-projects '("~/"))
+ )
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ ;; '(default ((t (:family "DejaVu Sans Mono" :foundry "nil" :slant normal :weight normal :height 120 :width normal))))
  )
