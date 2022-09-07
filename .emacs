@@ -266,6 +266,7 @@
   :hook
   (speedbar-mode . centaur-tabs-disable-locally)
   (shell-mode . centaur-tabs-disable-locally))
+
 ;;;;; appearance for specific modes
 (add-hook 'recentf-dialog-mode-hook (lambda () (hl-line-mode t)))
 
@@ -511,13 +512,16 @@ point reaches the beginning or end of the buffer, stop there."
 
 (defun comment-out-all (arg)
   (interactive "sstring to comment out: ")
-  (replace-string arg (concat comment-start arg)))
+  (while (search-forward arg nil 'noerror)
+    (replace-match (concat comment-start arg)))
+  (message "commented-out all lines starting with %s" arg))
 
 (defun uncomment-all (arg)
   (interactive "sstring to uncomment: ")
   (let ((commented-arg (concat comment-start arg)))
-    (replace-string commented-arg
-		    (string-replace comment-start "" commented-arg))))
+    (while (search-forward commented-arg nil 'noerror)
+      (replace-match (string-replace comment-start "" commented-arg)))
+    (message "uncommented all lines starting with %s" commented-arg)))
 
 ;;;;; autocomplete
 (use-package company
