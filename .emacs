@@ -49,12 +49,24 @@
 
 ;;;; CHEATSHEET
 
-;; use updated source files since I'm working on this
-(setq load-prefer-newer t)
+;; ;; use updated source files since I'm working on this
+;; (setq load-prefer-newer t)
 
 (use-package cheatsheet
   :config
-  (add-hook 'kill-emacs-hook #'cheatsheet--save-list-to-elisp-file))
+  (add-hook 'kill-emacs-hook #'cheatsheet-save-list-to-file))
+
+;; quick ways to reload the updates:
+(defun delete-cheatsheet ()
+  (interactive)
+  (condition-case nil
+      (package-delete (cadr (assq 'cheatsheet package-alist)))
+    (error (message "error while deleting, most likely had already deleted"))))
+
+(defun reload-cheatsheet ()
+  (interactive)
+  (delete-cheatsheet)
+  (package-install-file "~/.emacs.d/custom/packages/cheatsheet/cheatsheet.el"))
 
 ;;;; appearance: SIZING, FRAMES, WINDOWS, THEMES
 ;;;;; startup
@@ -95,7 +107,8 @@
   (big-frame)
   (mood-line-mode t)
   (scroll-bar-mode -1)
-  (global-visual-line-mode t))
+  (global-visual-line-mode t)
+  (pixel-scroll-precision-mode t))
 
 (add-hook 'after-init-hook #'startup-look)
 
@@ -274,7 +287,8 @@
 (use-package org
   :defer 3
   :config
-  (setq org-hide-emphasis-markers t)
+  ;; this is a nice feature but I think it slows down org A LOT
+  ;; (setq org-hide-emphasis-markers t)
 
   ;; better bullet-points
   (font-lock-add-keywords #'org-mode
@@ -304,18 +318,21 @@ else, first move to previous visible heading, then call it"
 
   ;; tinkering with this to try to make it not clash with delete-selection-mode
   (defun electric-fontify-will-use-region-p ()
-    (let ((fontify-list '(?* ?/ ?_ ?= ?~ ?+)))
-      (and (derived-mode-p 'org-mode) mark-active
-	   (member last-command-event fontify-list))))
+    (setq to-fontify
+	  (let ((fontify-list '(?* ?/ ?_ ?= ?~ ?+)))
+	    (and (derived-mode-p 'org-mode) mark-active
+		 (member last-command-event fontify-list)))))
+
   (add-hook 'self-insert-uses-region-functions #'electric-fontify-will-use-region-p)
 
   (defun electric-fontify ()
     "If in org-mode (or a derived mode),
 when a region is highlighted and we've inserted a character that fontifies text,
 the whole region is fontified (by automatically inserting character at mark)"
-    (if (electric-fontify-will-use-region-p)
+    (if (and (boundp 'to-fontify) to-fontify)
 	(progn (exchange-point-and-mark)
-	       (insert last-command-event))))
+	       (insert last-command-event)
+	       (makunbound 'to-fontify))))
   (add-hook 'post-self-insert-hook #'electric-fontify)
 
   (add-hook 'org-mode-hook #'turn-on-flyspell)
@@ -435,15 +452,21 @@ point reaches the beginning or end of the buffer, stop there."
 ;; when typing in selected region, delete it
 (delete-selection-mode t)
 
-;; don't think this is needed any more because of the above
-;; (defun smart-yank ()
-;;   "When region is highlighted, kill current region and call yank."
-;;   (interactive)
-;;   (if mark-active
-;;       (progn (delete-region (region-beginning) (region-end)) (yank))
-;;     (yank)))
-;; remap C-y to `smart-yank'
-;; (global-set-key (kbd "C-y") #'smart-yank)
+(defun my-kill-whole-line (&optional arg)
+  "Delete the line and the preceding 1 char.
+This assumes that the preceding char is a newline,
+thus bringing the point to the end of the previous line.
+With positive ARG, delete whole of current line,
+delete following ARG lines and preceding 1 char.
+With negative ARG, delete current line *only up to current point*,
+delete preceding ARG lines and preceding 1 char."
+  (interactive "P")
+  (if (or (not arg) (> arg 1))
+      (move-beginning-of-line 1))
+  (kill-line arg)
+  (delete-backward-char 1))
+
+(global-set-key (kbd "C-k") #'my-kill-whole-line)
 
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
@@ -479,12 +502,12 @@ point reaches the beginning or end of the buffer, stop there."
   (interactive)
        (kill-ring-save nil nil 'region)
        (comment-dwim nil)
-       (message "commented region has been copied"))
+       (message "(un)commented region has been copied"))
 (defun line-copy-comm ()
   (interactive)
   (kill-ring-save (line-beginning-position) (line-end-position))
   (comment-line 1)
-  (message "commented line has been copied"))
+  (message "(un)commented line has been copied"))
 (defun copy-comm ()
   (interactive)
   (if mark-active
@@ -682,8 +705,11 @@ open siblings (directories at its same depth)"
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
-(setq ido-everywhere t)
-(ido-mode 1)
+(use-package ido
+  :config
+  (ido-mode 1)
+  (setq ido-everywhere t)
+  (setq ido-enable-flex-matching t))
 ;;;;; git
 (defun vc-refresh-buffer (arg)
   (set-buffer arg)
@@ -868,13 +894,11 @@ and set its contents as the appropriate programming-language-template"
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
    '(cheatsheet color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons dashboard flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
- '(projectile-ignored-projects '("~/"))
- )
+ '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- ;; '(default ((t (:family "DejaVu Sans Mono" :foundry "nil" :slant normal :weight normal :height 120 :width normal))))
  )
