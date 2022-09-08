@@ -14,15 +14,8 @@
 
 ;; Simple mode providing syntax highlight for the Monicelli programming language
 ;; see https://github.com/esseks/monicelli for more info on this great language
-
-;; Add this to your init file to have monicelli-mode available:
-;; (add-to-list 'load-path "<path to the folder where you have this file>")
-;; 			   ;eg ~/.emacs.d/custom/modes
-;; ;; loading monicelli mode
-;; (autoload 'monicelli-mode "<path to this file>")
-;; 			     ; eg ~/.emacs.d/custom/modes/monicelli-mode.el
 ;;
-;; ;; opening monicelli files with monicelli-mode
+;; to open monicelli files with monicelli-mode
 ;; (add-to-list 'auto-mode-alist '("\\.mc\\'" . monicelli-mode))
 
 
@@ -38,9 +31,14 @@
 	       ("voglio \\([^,]+\\), " . (1 'font-lock-constant-face))
 	       ))
 
+(defun monicelli-mode-variables ()
+  "Set up initial buffer-local variables for Monicelli mode."
+  (setq-local comment-start "# "))
+
 ;;;###autoload
 (define-derived-mode monicelli-mode prog-mode "monicelli"
   "Major mode for editing code in Monicelli language."
+  (monicelli-mode-variables)
   (set-input-method 'italian-postfix)
   (setq font-lock-defaults '(monicelli-highlights)))
 

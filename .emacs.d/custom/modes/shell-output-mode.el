@@ -1,4 +1,4 @@
-;;; find-output-mode.el --- minor mode for displaying the output of shell commands, optimized for 'find' and 'grep'. -*- coding: utf-8; lexical-binding: t; -*-
+;;; shell-output-mode.el --- minor mode for displaying the output of shell commands, optimized for 'find' and 'grep'. -*- coding: utf-8; lexical-binding: t; -*-
 
 ;; Copyright © 2017, by you
 
@@ -39,7 +39,7 @@
   "Execute COMMAND and display output in new buffer.
 The new buffer is called *shell-output-command*,
 if the buffer already exists, switch to it (while leaving current buffer open),
- else, create it.  Then, update the 'default-directory' to be the directory
+ else, create it.  Then, update the `default-directory' to be the directory
 in which the command was executed, and update latest-command"
   (let*
       ((output-buffer-name "*shell-command output*")
@@ -87,8 +87,9 @@ This assumes the path was provided as an argument"
   (let ((default-command shell-latest-command))
     (execute-command (my-prompt default-command))))
 
+;;;###autoload
 (defun find-here ()
-  "Run the POSIX command 'find' in the current folder."
+  "Run the POSIX command `find' in the current folder."
   (interactive)
   (let ((default-command
 	  (concat "find "
@@ -100,8 +101,9 @@ This assumes the path was provided as an argument"
 		  shell-async)))
     (execute-command (my-prompt default-command))))
 
+;;;###autoload
 (defun grep-here ()
-  "Run the POSIX command 'grep' in the current folder."
+  "Run the POSIX command `grep' in the current folder."
   (interactive)
   (let ((default-command
 	  (concat "grep "
@@ -155,7 +157,7 @@ If line-number is present, switch to line and highlight it"
 
 (defun shell-flush ()
   "Erase all the contents of the shell-output buffer.
-This can be undone with normal 'undo'"
+This can be undone with normal `undo'"
   (interactive)
   (erase-buffer))
 
@@ -169,14 +171,16 @@ This can be undone with normal 'undo'"
     map))
 
 (defcustom shell-output-mode-hook '()
-  "Hook for customizing find-output mode."
+  "Hook for customizing shell-output mode."
   :type 'hook
   :group 'shell-output)
 
 ;;;###autoload
 (define-minor-mode shell-output-mode
-  "Minor mode for shell output."
-  :lighter "shell-output"
+  "Minor mode for shell output.
+
+\\{shell-output-mode-map}"
+  :lighter " Shell Output"
   :init-value nil
   :keymap shell-output-mode-map
   (message "set the shell-output-mode"))
