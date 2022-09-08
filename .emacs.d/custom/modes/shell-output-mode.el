@@ -1,6 +1,6 @@
 ;;; shell-output-mode.el --- minor mode for displaying the output of shell commands, optimized for 'find' and 'grep'. -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2017, by you
+;; Copyright © 2022, by Andrew De Angelis
 
 ;; Author: Andrew De Angelis ( bobodeangelis@gmail.com )
 ;; Version: 0.0.1
@@ -35,7 +35,8 @@
 (defvar shell-default-options nil)
 (defvar grep-default-options "-nr")
 
-(defun execute-command (command)
+;;;###autoload
+(defun shell-output-execute-command (command)
   "Execute COMMAND and display output in new buffer.
 The new buffer is called *shell-output-command*,
 if the buffer already exists, switch to it (while leaving current buffer open),
@@ -44,18 +45,18 @@ in which the command was executed, and update latest-command"
   (let*
       ((output-buffer-name "*shell-command output*")
        (output-buffer (pop-to-buffer output-buffer-name)))
-    (message (concat "\nexecuting command: " command " from execute-command,"
-		     " output-buffer: " (buffer-name output-buffer)))
+    (message (concat "Shell-output: executing command: " command
+		     "\noutput-buffer: " (buffer-name output-buffer)))
     (goto-char (point-max))
     (shell-command command (buffer-name output-buffer))
-    (insert (concat "\n➡️➡️ result of " command
-		    "\n____________________________________________\n\n")))
+    (insert (concat "\n➡️➡️ result of '" command
+		    "'\n____________________________________________\n\n")))
   (shell-output-mode)
   (setq-local shell-latest-command (substring command)) ; copy by value
   (setq-local default-directory
 	      (or (parse-directory-from-command command) default-directory))
   (message
-   (format "set local default-directory: %S from latest command: %S"
+   (format "set this shell's default-directory: %S from latest command: %S"
 	   default-directory shell-latest-command)))
 
 (defun parse-directory-from-command (command)
@@ -85,7 +86,7 @@ This assumes the path was provided as an argument"
   "Put the latest command in the prompt to re-execute it."
   (interactive)
   (let ((default-command shell-latest-command))
-    (execute-command (my-prompt default-command))))
+    (shell-output-execute-command (my-prompt default-command))))
 
 ;;;###autoload
 (defun find-here ()
@@ -99,7 +100,7 @@ This assumes the path was provided as an argument"
 		  "-iname "
 		  "'' "
 		  shell-async)))
-    (execute-command (my-prompt default-command))))
+    (shell-output-execute-command (my-prompt default-command))))
 
 ;;;###autoload
 (defun grep-here ()
@@ -112,18 +113,13 @@ This assumes the path was provided as an argument"
 		  "'' "
 		  default-directory " "
 		  shell-async)))
-    (execute-command (my-prompt default-command))))
+    (shell-output-execute-command (my-prompt default-command))))
 
 (defun my-prompt (default-command)
   "Put DEFAULT-COMMAND in prompt and place cursor in expected position."
   (read-from-minibuffer "shell command: "
 			`(,default-command . ; initial contents
 			  ,(+ 2 (string-match "'" default-command))))); cursor pos
-
-(defun my-shell-command (arg)
-  "Execute the command ARG."
-  (interactive "sshell command: ")
-  (execute-command arg))
 
 ;; get a file name from a line in the shell-output buffer
 (defun parse-file-at-line ()
@@ -151,7 +147,9 @@ If line-number is present, switch to line and highlight it"
     (find-file (car parsed-file))
     (if (> (length line) 0) ; if line -number present, select the line
 	(progn
+	  (goto-char (point-min))
 	  (forward-line (string-to-number line))
+	  (move-beginning-of-line 0)
 	  (set-mark-command nil)
 	  (move-end-of-line nil)))))
 

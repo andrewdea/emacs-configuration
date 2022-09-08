@@ -122,6 +122,7 @@
 (add-hook 'after-init-hook #'startup-look)
 
 ;;;;; dashboard
+(use-package all-the-haikus)
 
 (use-package dashboard
   :init
@@ -129,46 +130,31 @@
   (defun dashboard-open ()
     "Open the *dashboard* buffer."
     (interactive)
-    (let ((time (current-time)))
-      ;; (delete-other-windows)
-      ;; Refresh dashboard buffer
-      (if (get-buffer dashboard-buffer-name)
+    (let ((time (current-time))
+	  ;; (delete-other-windows)
+	  ;; Refresh dashboard buffer
+	  (already-open (get-buffer dashboard-buffer-name)))
+      (if already-open
 	  (kill-buffer dashboard-buffer-name))
       (dashboard-insert-startupify-lists)
       (switch-to-buffer dashboard-buffer-name)
       (message
-       "Welcome! Dashboard opened in %.06f" (float-time (time-since time)))))
+       "%sDashboard opened in %.2f seconds"
+       (if (not already-open) "Welcome! " "")
+       (float-time (time-since time)))))
 
   (defun my-dashboard-init ()
     (setq dashboard-init-info
-          (format "Emacs started in %s." (emacs-init-time))))
+          (format "Emacs started in %s seconds." (emacs-init-time "%.2f"))))
   (add-hook 'after-init-hook #'my-dashboard-init)
 
   :config
-  (message "loading dashboard in config")
   (add-hook 'dashboard-mode-hook (lambda () (projectile-mode +1)))
-
-  (defvar haiku-dataset-file "~/.emacs.d/custom/datasets/haiku-dataset.csv")
-
-  (defun get-random-haiku ()
-    (with-temp-buffer
-      (insert-file-contents haiku-dataset-file)
-      (forward-line (random (count-lines (point-min) (point-max))))
-      (let ((line (thing-at-point 'line 'no-properties)))
-	(string-join (butlast (split-string line ",") 4) "\n"))))
-
-  (defun find-haiku-in-file ()
-    (interactive)
-    (let ((line (string-trim (thing-at-point 'line 'no-properties))))
-      (switch-to-buffer (find-file-other-window haiku-dataset-file))
-      (search-forward line)
-      (move-beginning-of-line 1)
-      (set-mark-command nil)
-      (move-end-of-line nil)))
 
   (add-hook 'dashboard-mode-hook
             (lambda ()
-	      (local-set-key (kbd "C-<return>") #'find-haiku-in-file)))
+	      (local-set-key (kbd "C-<return>")
+			     #'find-haiku-from-line-at-point)))
 
   (setq dashboard-footer-icon (all-the-icons-octicon "book"
 						     :height 1.1
@@ -197,7 +183,7 @@
   (setq dashboard-week-agenda t)
   (setq dashboard-agenda-release-buffers t)
   (setq dashboard-footer-messages
-	(list (get-random-haiku)))
+	(list (read-haiku-at-line 'random)))
   (setq dashboard-startup-banner 'logo))
 
 ;;;;; resizing and movement
@@ -901,7 +887,7 @@ and set its contents as the appropriate programming-language-template"
    '("7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(shell-output-mode monicelli-mode cheatsheet dashboard color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(all-the-haikus shell-output-mode monicelli-mode cheatsheet dashboard color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
  '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
