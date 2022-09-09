@@ -67,17 +67,23 @@ else (including if ARG is nil/not provided) reads from a random line-number"
   "Given list of HAIKU-DATA, return newline-separated string of poetry."
   (string-join (butlast haiku-data 5) "\n"))
 
-(defun read-poetry-at-line (&optional arg)
+;;;###autoload
+(defun find-me-a-haiku (&optional arg)
   "Read a haiku from haiku-dataset-file.  Return as string of poetry.
 If ARG is a number or a marker, it reads the haiku at that line-number,
-else (including if ARG is nil/not provided) reads from a random line-number"
-  (string-replace "\"" "" (format-haiku-just-text (get-haiku-at-line arg))))
-
-(defun send-me-a-haiku (&optional arg)
-  "Send a haiku to the message buffer.
-If ARG provided, get haiku at that line, else pick a random one."
+else (including if ARG is nil/not provided) reads from a random line-number."
   (interactive "P")
-  (message (read-poetry-at-line arg)))
+  (let ((haiku
+	 (string-replace "\"" ""
+			 (format-haiku-just-text (get-haiku-at-line arg)))))
+    (if (called-interactively-p 'any)
+	(message haiku)
+      haiku)))
+
+;; (defun send-me-a-haiku (&optional arg)
+;;   "Send a haiku to the message buffer.
+;; If ARG provided, get haiku at that line, else pick a random one."
+;;   (message (find-me-a-haiku arg)))
 
 (defun find-haiku-from-line-at-point ()
   "Read the line at point, open the haiku file and search for line."
@@ -106,7 +112,7 @@ If ARG provided, get haiku at that line, else pick a random one."
 	     (search-forward to-find nil t) ; try from here to the end
 	     (progn (goto-char (point-min)) ; else from beginning to here
 		    (search-forward to-find start-point t)))
-	    (read-poetry-at-line (line-number-at-pos)) ; format found
+	    (find-me-a-haiku (line-number-at-pos)) ; format found
 	  (format "no poem with format %s found :'(" to-find))))))
 
 (defun search-regexp-in-haiku-file (rgx)
@@ -139,6 +145,27 @@ If ARG provided, get haiku at that line, else pick a random one."
 	    (mapcar
 	     (lambda (arg) (nth (seq-position found-list arg) arg)) found-list)))
       (string-join just-the-right-lines "\n"))))
+
+;;;###autoload
+(defun write-me-a-haiku (&optional syllable-count)
+  "Writes a new poem.
+If SYLLABLE-COUNT provided, generate a poem with that format.
+Else, generate a poem by getting three random lines"
+  (interactive)
+  (if syllable-count
+      (generate-poem-with-format syllable-count)
+    (let* ((found-list
+	   (list
+	    (get-haiku-at-line)
+	    (get-haiku-at-line)
+	    (get-haiku-at-line)))
+	   (just-the-right-lines
+	    (mapcar
+	     (lambda (arg) (nth (seq-position found-list arg) arg)) found-list))
+	   (haiku (string-join just-the-right-lines "\n")))
+      (if (called-interactively-p 'any)
+	  (message haiku)
+	haiku))))
 
 ;; add the mode to the `features' list
 (provide 'all-the-haikus)

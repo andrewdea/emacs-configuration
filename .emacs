@@ -49,9 +49,9 @@
 
 ;; useful for when I'm working on my own packages and need to update
 (defun reload-package-from-file (&optional arg)
-	 (interactive "spackage name: ")
-	 (delete-package-quietly (intern arg))
-	 (call-interactively 'package-install-file))
+  (interactive "spackage name: ")
+  (delete-package-quietly (intern arg))
+  (call-interactively 'package-install-file))
 
 (defun delete-package-quietly (arg)
   (condition-case nil
@@ -173,6 +173,11 @@
 	(insert (propertize footer 'face 'dashboard-footer))
 	(insert "\n"))))
 
+  (defun find-or-write-haiku ()
+    (if (nth (random 2) (list nil t))
+	(find-me-a-haiku 'random)
+      (concat "(self-generated)\n"(write-me-a-haiku))))
+
   (setq dashboard-items '((recents  . 10)
                           (projects . 5)
 			  ;; bookmarks
@@ -181,8 +186,7 @@
   (setq dashboard-set-file-icons t)
   (setq dashboard-week-agenda t)
   (setq dashboard-agenda-release-buffers t)
-  (setq dashboard-footer-messages
-	(list (read-poetry-at-line 'random)))
+  (setq dashboard-footer-messages (list (find-or-write-haiku)))
   (setq dashboard-startup-banner 'logo))
 
 ;;;;; resizing and movement
@@ -495,9 +499,9 @@ delete preceding ARG lines and preceding 1 char."
 ;; copy line/region and comment it out
 (defun region-copy-comm ()
   (interactive)
-       (kill-ring-save nil nil 'region)
-       (comment-dwim nil)
-       (message "(un)commented region has been copied"))
+  (kill-ring-save nil nil 'region)
+  (comment-dwim nil)
+  (message "(un)commented region has been copied"))
 (defun line-copy-comm ()
   (interactive)
   (kill-ring-save (line-beginning-position) (line-end-position))
