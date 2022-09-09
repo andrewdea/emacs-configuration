@@ -99,15 +99,15 @@ If ARG provided, get haiku at that line, else pick a random one."
 		    syllable-count ",")))
     (with-temp-buffer
       (insert-file-contents haiku-dataset-file)
-      (let ((start-line-number
-	     (random ; start at random place so results are not always same
-	      (count-lines (point-min) (point-max)))))
-	(forward-line start-line-number)
+      (let ((start-point
+	     (random (point-max)))) ;random start so results are not always same
+	(goto-char start-point)
         (if (search-forward to-find nil t) ; try from here to the end
 	    (read-poetry-at-line (line-number-at-pos))
-	  (if (search-backward to-find nil t) ; else from here to beginning
-	      (read-poetry-at-line (line-number-at-pos))
-	    (format "%s not found :'(" to-find)))))))
+	  (progn (goto-char (point-min)) ; else from beginning to here
+		 (if (search-forward to-find start-point t)
+		     (read-poetry-at-line (line-number-at-pos))
+		   (format "no poem with format %s found :'(" to-find))))))))
 
 ;; add the mode to the `features' list
 (provide 'all-the-haikus)
