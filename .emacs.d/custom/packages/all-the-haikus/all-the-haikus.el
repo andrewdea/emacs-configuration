@@ -96,7 +96,8 @@ else (including if ARG is nil/not provided) reads from a random line-number."
     (move-end-of-line nil)))
 
 (defun get-haiku-with-format (syllable-count)
-  "Given a SYLLABLE-COUNT, find a random haiku with this format."
+  "Given a SYLLABLE-COUNT, find a random haiku with this format.
+TODO: Describe what syllable-count looks like."
   (let ((to-find
 	 (mapconcat (lambda (arg)
 		      (if (stringp arg)
@@ -144,7 +145,8 @@ else (including if ARG is nil/not provided) reads from a random line-number."
 	   (just-the-right-lines
 	    (mapcar
 	     (lambda (arg) (nth (seq-position found-list arg) arg)) found-list)))
-      (string-join just-the-right-lines "\n"))))
+      (string-replace "\"" ""
+		      (string-join just-the-right-lines "\n")))))
 
 ;;;###autoload
 (defun write-me-a-haiku (&optional syllable-count)
@@ -152,17 +154,18 @@ else (including if ARG is nil/not provided) reads from a random line-number."
 If SYLLABLE-COUNT provided, generate a poem with that format.
 Else, generate a poem by getting three random lines"
   (interactive)
-  (if syllable-count
+  (if (and syllable-count (listp syllable-count))
       (generate-poem-with-format syllable-count)
     (let* ((found-list
-	   (list
-	    (get-haiku-at-line)
-	    (get-haiku-at-line)
-	    (get-haiku-at-line)))
+	    (list
+	     (get-haiku-at-line)
+	     (get-haiku-at-line)
+	     (get-haiku-at-line)))
 	   (just-the-right-lines
 	    (mapcar
 	     (lambda (arg) (nth (seq-position found-list arg) arg)) found-list))
-	   (haiku (string-join just-the-right-lines "\n")))
+	   (haiku (string-replace "\"" ""
+				  (string-join just-the-right-lines "\n"))))
       (if (called-interactively-p 'any)
 	  (message haiku)
 	haiku))))
