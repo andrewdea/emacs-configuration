@@ -147,7 +147,6 @@
   (defun my-dashboard-init ()
     (setq dashboard-init-info
           (format "Emacs started in %s seconds." (emacs-init-time "%.2f"))))
-  (message "loading dashboard config")
   (add-hook 'dashboard-mode-hook (lambda () (projectile-mode +1)))
 
   (add-hook 'dashboard-mode-hook
@@ -176,7 +175,7 @@
   (defun find-or-write-haiku ()
     (if (nth (random 2) (list nil t))
 	(find-me-a-haiku 'random)
-      (concat "(self-generated)\n"(write-me-a-haiku))))
+      (concat "*(self-generated)*\n" (write-me-a-haiku))))
 
   (setq dashboard-items '((recents  . 10)
                           (projects . 5)
