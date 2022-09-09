@@ -144,6 +144,9 @@
        (if (not already-open) "Welcome! " "")
        (float-time (time-since time)))))
   :config
+  (defun my-dashboard-init ()
+    (setq dashboard-init-info
+          (format "Emacs started in %s seconds." (emacs-init-time "%.2f"))))
   (message "loading dashboard config")
   (add-hook 'dashboard-mode-hook (lambda () (projectile-mode +1)))
 
@@ -179,15 +182,12 @@
                           (projects . 5)
 			  ;; bookmarks
                           (agenda . 5)))
-  (setq dashboard-init-info
-          (format "Emacs started in %s seconds." (emacs-init-time "%.2f")))
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
   (setq dashboard-week-agenda t)
   (setq dashboard-agenda-release-buffers t)
   (setq dashboard-footer-messages (list (find-or-write-haiku)))
-  (setq dashboard-startup-banner 'logo)
-  )
+  (setq dashboard-startup-banner 'logo))
 
 ;;;;; resizing and movement
 ;; make current window bigger or smaller
