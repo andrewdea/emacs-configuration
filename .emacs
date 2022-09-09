@@ -126,7 +126,6 @@
 
 (use-package dashboard
   :init
-
   (defun dashboard-open ()
     "Open the *dashboard* buffer."
     (interactive)
@@ -183,7 +182,7 @@
   (setq dashboard-week-agenda t)
   (setq dashboard-agenda-release-buffers t)
   (setq dashboard-footer-messages
-	(list (read-haiku-at-line 'random)))
+	(list (read-poetry-at-line 'random)))
   (setq dashboard-startup-banner 'logo))
 
 ;;;;; resizing and movement

@@ -23,13 +23,28 @@
 
 (defcustom haiku-dataset-file
   "~/.emacs.d/custom/datasets/haiku-dataset.csv"
-  "Comma-separated file containing our list of haikus"
+  "Comma-separated file containing our list of haikus."
   :group 'all-the-haikus
   :type 'file)
 
+(defvar within-quotes nil
+  "Boolean to keep track of where we are while iterating a string.")
+
+(defun comma-to-newline-except-within-quotes (c)
+  "Return `char-to-string' of C or, if C is a comma, of newline.
+Keeps track of whether it has seen a quote before the current char:
+if we've seen a quote and no quote has closed it yet, don't convert to newline"
+  (if (eq c ?\")
+      (setq-local within-quotes ; toggle it
+		  (not within-quotes)))
+   (if (and (eq c ?,) ; char is comma
+	    (not within-quotes))
+       ?\n
+     c))
+
 ;;;###autoload
-(defun read-haiku-at-line (&optional arg)
-  "Read a haiku from haiku-dataset-file.
+(defun get-haiku-at-line (&optional arg)
+  "Read a haiku from haiku-dataset-file.  Return as list of haiku data.
 If ARG is a number or a marker, it reads the haiku at that line-number,
 else (including if ARG is nil/not provided) reads from a random line-number"
   (with-temp-buffer
@@ -38,11 +53,31 @@ else (including if ARG is nil/not provided) reads from a random line-number"
     (let ((line-number
 	   (if (integer-or-marker-p arg)
 	       arg
-	     (random (count-lines (point-min) (point-max))))))
-      (forward-line line-number))
+	     (+ 1 ; lowerbound of random: excludes the header
+		(random
+		   (count-lines (point-min) (point-max)))))))
+      (forward-line (- line-number 1)))
 
-    (let ((line (thing-at-point 'line 'no-properties)))
-      (string-join (butlast (split-string line ",") 4) "\n"))))
+    (let* ((line (thing-at-point 'line 'no-properties))
+	   (parsed
+	    (concat (mapcar 'comma-to-newline-except-within-quotes line))))
+      (split-string parsed "\n"))))
+
+(defun format-haiku-just-text (haiku-data)
+  "Given list of HAIKU-DATA, return newline-separated string of poetry."
+  (string-join (butlast haiku-data 5) "\n"))
+
+(defun read-poetry-at-line (&optional arg)
+    "Read a haiku from haiku-dataset-file.  Return as string of poetry.
+If ARG is a number or a marker, it reads the haiku at that line-number,
+else (including if ARG is nil/not provided) reads from a random line-number"
+  (format-haiku-just-text (get-haiku-at-line arg)))
+
+(defun send-me-a-haiku (&optional arg)
+  "Send a haiku to the message buffer.
+If ARG provided, get haiku at that line, else pick a random one."
+  (interactive "P")
+  (message (read-poetry-at-line arg)))
 
 (defun find-haiku-from-line-at-point ()
   "Read the line at point, open the haiku file and search for line."
@@ -53,6 +88,26 @@ else (including if ARG is nil/not provided) reads from a random line-number"
     (move-beginning-of-line 1)
     (set-mark-command nil)
     (move-end-of-line nil)))
+
+(defun get-haiku-with-format (syllable-count)
+  "Given a SYLLABLE-COUNT, find a random haiku with this format."
+  (let ((to-find
+	 (mapconcat (lambda (arg)
+		      (if (stringp arg)
+			  (concat "\"" arg "\"")
+			(number-to-string arg)))
+		    syllable-count ",")))
+    (with-temp-buffer
+      (insert-file-contents haiku-dataset-file)
+      (let ((start-line-number
+	     (random ; start at random place so results are not always same
+	      (count-lines (point-min) (point-max)))))
+	(forward-line start-line-number)
+        (if (search-forward to-find nil t) ; try from here to the end
+	    (read-poetry-at-line (line-number-at-pos))
+	  (if (search-backward to-find nil t) ; else from here to beginning
+	      (read-poetry-at-line (line-number-at-pos))
+	    (format "%s not found :'(" to-find)))))))
 
 ;; add the mode to the `features' list
 (provide 'all-the-haikus)
