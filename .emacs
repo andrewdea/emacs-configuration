@@ -405,13 +405,20 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 ;;;;; recent files
 (use-package recentf
-  :bind (:map recentf-mode-map
-	      ("C-c C-r" . recentf-open-files))
+  :init
+
+  (defun my-recentf-open-files ()
+    (interactive)
+    (recentf-mode +1)
+    (recentf-open-files))
+
+  :bind (("C-c C-r" . my-recentf-open-files))
   :config
   (setq recentf-max-menu-items 25
         recentf-max-saved-items 25)
   (add-to-list 'recentf-exclude "ido.last")
-  :hook (after-init . recentf-mode))
+  ;; :hook (after-init . recentf-mode)
+  )
 
 ;;;;; projectile mode
 (use-package projectile
