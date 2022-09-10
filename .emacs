@@ -591,27 +591,6 @@ future."
   (seq-filter
    (apply-partially #'buffer-name-matchp arg) (buffer-list)))
 
-;; might not be needed if I like the ido functionalities
-;; (defun my-switch-to-buffer (arg)
-;;   "find all buffers whose name contains the argument,
-;; if there is one match, open that buffer;
-;; if there are multiple matches, display them in a *Buffer List*;
-;; if there are no matches, open a new buffer and display *Buffer List*"
-;;   ;; TODO: figure out why I'm getting the format error here
-;;   ;; (interactive "sSwitch to buffer: (default %s)"
-;;   ;; 		       (buffer-name (other-buffer (current-buffer))))
-;;   (interactive "sSwitch to buffer: ")
-;;   (let ((matching (get-matching-buffers arg)))
-;;     (if (car matching)
-;; 	(if (cdr matching)
-;; 	    (display-buffer (list-buffers-noselect nil matching))
-;; 	  (switch-to-buffer (car matching)))
-;;       (progn (message "No buffer with name %S found: created a new one" arg)
-;; 	     (switch-to-buffer arg)
-;; 	     (display-buffer (list-buffers-noselect))))))
-;; ;; remap \C-xb to `my-switch-to-buffer'
-;; (global-set-key (kbd "\C-xb") 'my-switch-to-buffer)
-
 ;;;; SPEEDBAR
 (use-package sr-speedbar
   :init
