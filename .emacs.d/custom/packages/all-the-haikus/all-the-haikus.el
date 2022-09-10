@@ -105,7 +105,8 @@ search from beginning to start-point."
 	 (search-forward-regexp to-find nil t) ; try from here to the end
 	 (progn (goto-char (point-min)) ; else from beginning to here
 		(search-forward-regexp to-find start-point t)))
-	(get-haiku-line (line-number-at-pos)))))
+	(get-haiku-line (line-number-at-pos))
+      (progn (message "%s not found." to-find) nil))))
 
 (defun get-haiku-with-format (syllable-count)
   "Given a SYLLABLE-COUNT, find a random haiku with this format.
