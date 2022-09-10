@@ -43,12 +43,21 @@ if we've seen a quote and no quote has closed it yet, don't convert to newline"
       ?\n
     c))
 
+(defmacro with-temp-haiku-buffer (&rest body)
+  "Execute BODY inside of a temporary buffer with the haiku file.
+If we're already in a temp buffer, assume it is the haiku file,
+else open a new one and insert the file contents."
+  (if (string-match-p (regexp-quote "*temp*") (buffer-name (current-buffer)))
+      `(progn ,@body)
+    (progn
+      (push `(insert-file-contents-literally haiku-dataset-file) body)
+      `(with-temp-buffer ,@body))))
+
 (defun get-haiku-at-line (&optional arg)
   "Read a haiku from haiku-dataset-file.  Return as list of haiku data.
 If ARG is a number or a marker, it reads the haiku at that line-number,
 else (including if ARG is nil/not provided) reads from a random line-number"
-  (with-temp-buffer
-    (insert-file-contents-literally haiku-dataset-file)
+  (with-temp-haiku-buffer
     (let ((line-number
 	   (if (integer-or-marker-p arg)
 	       arg
@@ -87,8 +96,7 @@ TODO: Describe what syllable-count looks like."
 			  (concat "\"" arg "\"")
 			(number-to-string arg)))
 		    syllable-count ",")))
-    (with-temp-buffer
-      (insert-file-contents-literally haiku-dataset-file)
+    (with-temp-haiku-buffer
       (let ((start-point ;random start so results are not always the same
 	     (random (point-max))))
 	(goto-char start-point)
@@ -96,13 +104,12 @@ TODO: Describe what syllable-count looks like."
 	     (search-forward to-find nil t) ; try from here to the end
 	     (progn (goto-char (point-min)) ; else from beginning to here
 		    (search-forward to-find start-point t)))
-	    (find-me-a-haiku (line-number-at-pos)) ; format found
-	  (format "no poem with format %s found :'(" to-find))))))
+	    (get-haiku-at-line (line-number-at-pos)) ; format found
+	  (message "no poem with format (%s) found :(" to-find))))))
 
 (defun search-regexp-in-haiku-file (rgx)
   "From random point in haiku file, search RGX, return the first matching line."
-  (with-temp-buffer
-    (insert-file-contents-literally haiku-dataset-file)
+  (with-temp-haiku-buffer
     (let ((start-point ;random start so results are not always the same
 	   (random (point-max))))
       (goto-char start-point)
@@ -117,8 +124,7 @@ TODO: Describe what syllable-count looks like."
   "Given a SYLLABLE-COUNT, create a new poem with matching lines."
   (message "searching for this syllable count: %s"
 	   syllable-count)
-  (with-temp-buffer
-    (insert-file-contents-literally haiku-dataset-file)
+  (with-temp-haiku-buffer
     (let* ((first-regexp (format "[[:alpha:]],%S," (car syllable-count)))
 	   (second-regexp (format "[[:digit:]]\"?,%S,"(nth 1 syllable-count)))
 	   (third-regexp (format "[[:digit:]]\"?,%S$"(nth 2 syllable-count)))
@@ -134,6 +140,7 @@ TODO: Describe what syllable-count looks like."
   "Writes a new poem.
 If SYLLABLE-COUNT provided, generate a poem with that format.
 Else, generate a poem by getting three random lines.
+The returned poem starts with the string *self-generated*\n.
 When called interactively, the poem is displayed in the minibuffer."
   (interactive)
   (if (and syllable-count (listp syllable-count))
@@ -143,19 +150,26 @@ When called interactively, the poem is displayed in the minibuffer."
 	   (just-the-right-lines
 	    (cl-mapcar #'nth (number-sequence 0 2) found-list))
 	   (haiku (format-haiku-just-text just-the-right-lines)))
-      (if (called-interactively-p 'any)
-	  (message haiku) ; display in minibuffer
-	haiku))))
+      (concat "*self-generated*\n"
+	      (if (called-interactively-p 'any)
+		  (message haiku) ; display in minibuffer
+		haiku)))))
 
 ;;;###autoload
 (defun find-me-a-haiku (&optional arg)
   "Read a haiku from haiku-dataset-file.  Return as string of poetry.
-If ARG is a number or a marker, it reads the haiku at that line-number,
-else (including if ARG is nil) reads from a random line-number.
+If ARG is a number or a marker, read the haiku at that line-number.
+If arg is a non-nil list, look for a haiku with this syllable-count
+(see get-haiku-with-format).
+else (including if ARG is nil) read haiku from a random line-number.
 When called interactively, the poem is displayed in the minibuffer."
   (interactive "P")
-  (let ((haiku
-	 (format-haiku-just-text (butlast (get-haiku-at-line arg) 5))))
+  (let* ((haiku-line
+	 (if (and arg (listp arg))
+	     (get-haiku-with-format arg)
+	   (get-haiku-at-line arg)))
+	 (haiku
+	  (format-haiku-just-text (butlast haiku-line 5))))
     (if (called-interactively-p 'any)
 	(message haiku)
       haiku)))
