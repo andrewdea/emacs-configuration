@@ -90,6 +90,19 @@ Remove any \" characters."
     (set-mark-command nil)
     (move-end-of-line nil)))
 
+(defun find-random-matching-line (func to-find)
+  "Go to random point in file, apply the search FUNC with arg TO-FIND.
+If no results are found from start-point to end,
+search from beginning to start point"
+  (let ((start-point ;random start
+	 (random (point-max))))
+    (goto-char start-point)
+    (if (or
+	 (funcall #'func to-find nil t) ; try from here to the end
+	 (progn (goto-char (point-min)) ; else from beginning to here
+		(funcall #'func to-find start-point t)))
+	(get-haiku-at-line (line-number-at-pos)))))
+
 (defun get-haiku-with-format (syllable-count)
   "Given a SYLLABLE-COUNT, find a random haiku with this format.
 TODO: Describe what syllable-count looks like."
@@ -100,28 +113,10 @@ TODO: Describe what syllable-count looks like."
 			(number-to-string arg)))
 		    syllable-count ",")))
     (with-temp-haiku-buffer
-      (let ((start-point ;random start so results are not always the same
-	     (random (point-max))))
-	(goto-char start-point)
-        (if (or
-	     (search-forward to-find nil t) ; try from here to the end
-	     (progn (goto-char (point-min)) ; else from beginning to here
-		    (search-forward to-find start-point t)))
-	    (get-haiku-at-line (line-number-at-pos)) ; format found
-	  (message "no poem with format (%s) found :(" to-find))))))
-
-(defun search-regexp-in-haiku-file (rgx)
-  "From random point in haiku file, search RGX, return the first matching line."
-  (with-temp-haiku-buffer
-    (let ((start-point ;random start so results are not always the same
-	   (random (point-max))))
-      (goto-char start-point)
-      (if (or
-	   (search-forward-regexp rgx nil t) ; try from here to the end
-	   (progn (goto-char (point-min)) ; else from beginning to here
-		  (search-forward-regexp rgx start-point t)))
-	  (get-haiku-at-line (line-number-at-pos))
-	nil))))
+     (let ((found
+	    (find-random-matching-line #'search-foward to-find)))
+       (or found ; if found, return it
+	   (message "no poem with format (%s) found :(" to-find))))))
 
 (defun generate-poem-with-format (syllable-count)
   "Given a SYLLABLE-COUNT, create a new poem with matching lines."
@@ -133,7 +128,10 @@ TODO: Describe what syllable-count looks like."
 	   (third-regexp (format "[[:digit:]]\"?,%S$"(nth 2 syllable-count)))
 	   (to-find-list (list first-regexp second-regexp third-regexp))
 	   (found-list
-	    (mapcar #'search-regexp-in-haiku-file to-find-list))
+	    (mapcar (lambda (rgx)
+		      (find-random-matching-line
+		       #'search-forward-regexp rgx nil t))
+		    to-find-list))
 	   (just-the-right-lines
 	    (cl-mapcar #'nth (number-sequence 0 2) found-list)))
       (format-haiku-just-text just-the-right-lines))))
