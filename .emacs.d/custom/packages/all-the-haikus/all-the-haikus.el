@@ -134,9 +134,14 @@ TODO: Describe what syllable-count looks like."
 	  (second-regexp (format "[[:digit:]]\"?,%S,"(nth 1 syllable-count)))
 	  (third-regexp (format "[[:digit:]]\"?,%S$"(nth 2 syllable-count)))
 	  (to-find-list (list first-regexp second-regexp third-regexp))
-	  (found-list
+	  (found-list ; the three matching lines from the file
 	   (mapcar #'get-random-matching-line to-find-list))
-	  (just-the-right-lines
+	  (just-the-right-lines ; the three strings that will make our poem
+	   ;; preserve the order of the lines:
+	   ;; for the first line in our new poem,
+	   ;; take a line that was originally a first line in its poem
+	   ;; apply the same logic for second line, etc
+	   ;; this makes the sentences more coherent/meaningful
 	   (cl-mapcar #'nth (number-sequence 0 2) found-list)))
      (format-haiku-just-text just-the-right-lines))))
 
@@ -151,9 +156,14 @@ When called interactively, the poem is displayed in the minibuffer."
   (concat generated-poem-marker "\n"
 	  (if (and syllable-count (listp syllable-count))
 	      (generate-poem-with-format syllable-count)
-	    (let* ((found-list
+	    (let* ((found-list ; three random lines from file
 		    (mapcar 'funcall (make-list 3 'get-random-haiku-line)))
-		   (just-the-right-lines
+		   (just-the-right-lines ; three strings that will make our poem
+		    ;; preserve the order of the lines:
+		    ;; for the first line in our new poem,
+		    ;; take a line that was originally a first line
+		    ;; apply the same logic for second line, etc
+		    ;; this makes the sentences more coherent/meaningful
 		    (cl-mapcar #'nth (number-sequence 0 2) found-list))
 		   (haiku (format-haiku-just-text just-the-right-lines)))
 	      (if (called-interactively-p 'any)
