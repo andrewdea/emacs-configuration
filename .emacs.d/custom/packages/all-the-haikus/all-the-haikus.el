@@ -16,6 +16,7 @@
 ;; important to add description of dataset and format
 
 ;;; Code:
+(require 'cl-lib)
 
 (defgroup all-the-haikus nil
   "Read haikus from csv file."
@@ -42,14 +43,12 @@ if we've seen a quote and no quote has closed it yet, don't convert to newline"
       ?\n
     c))
 
-;;;###autoload
 (defun get-haiku-at-line (&optional arg)
   "Read a haiku from haiku-dataset-file.  Return as list of haiku data.
 If ARG is a number or a marker, it reads the haiku at that line-number,
 else (including if ARG is nil/not provided) reads from a random line-number"
   (with-temp-buffer
     (insert-file-contents haiku-dataset-file)
-
     (let ((line-number
 	   (if (integer-or-marker-p arg)
 	       arg
@@ -63,27 +62,11 @@ else (including if ARG is nil/not provided) reads from a random line-number"
 	    (concat (mapcar 'comma-to-newline-except-within-quotes line))))
       (split-string parsed "\n"))))
 
-(defun format-haiku-just-text (haiku-data)
-  "Given list of HAIKU-DATA, return newline-separated string of poetry."
-  (string-join (butlast haiku-data 5) "\n"))
-
-;;;###autoload
-(defun find-me-a-haiku (&optional arg)
-  "Read a haiku from haiku-dataset-file.  Return as string of poetry.
-If ARG is a number or a marker, it reads the haiku at that line-number,
-else (including if ARG is nil/not provided) reads from a random line-number."
-  (interactive "P")
-  (let ((haiku
-	 (string-replace "\"" ""
-			 (format-haiku-just-text (get-haiku-at-line arg)))))
-    (if (called-interactively-p 'any)
-	(message haiku)
-      haiku)))
-
-;; (defun send-me-a-haiku (&optional arg)
-;;   "Send a haiku to the message buffer.
-;; If ARG provided, get haiku at that line, else pick a random one."
-;;   (message (find-me-a-haiku arg)))
+(defun format-haiku-just-text (list-of-lines)
+  "Given a LIST-OF-LINES, return newline-separated single string.
+Remove any \" characters."
+  (string-replace "\"" ""
+		  (string-join list-of-lines "\n")))
 
 (defun find-haiku-from-line-at-point ()
   "Read the line at point, open the haiku file and search for line."
@@ -143,32 +126,39 @@ TODO: Describe what syllable-count looks like."
 	   (found-list
 	    (mapcar #'search-regexp-in-haiku-file to-find-list))
 	   (just-the-right-lines
-	    (mapcar
-	     (lambda (arg) (nth (seq-position found-list arg) arg)) found-list)))
-      (string-replace "\"" ""
-		      (string-join just-the-right-lines "\n")))))
+	    (cl-mapcar #'nth (number-sequence 0 2) found-list)))
+      (format-haiku-just-text just-the-right-lines))))
 
 ;;;###autoload
 (defun write-me-a-haiku (&optional syllable-count)
   "Writes a new poem.
 If SYLLABLE-COUNT provided, generate a poem with that format.
-Else, generate a poem by getting three random lines"
+Else, generate a poem by getting three random lines.
+When called interactively, the poem is displayed in the minibuffer."
   (interactive)
   (if (and syllable-count (listp syllable-count))
       (generate-poem-with-format syllable-count)
     (let* ((found-list
-	    (list
-	     (get-haiku-at-line)
-	     (get-haiku-at-line)
-	     (get-haiku-at-line)))
+	    (mapcar 'funcall (make-list 3 'get-haiku-at-line)))
 	   (just-the-right-lines
-	    (mapcar
-	     (lambda (arg) (nth (seq-position found-list arg) arg)) found-list))
-	   (haiku (string-replace "\"" ""
-				  (string-join just-the-right-lines "\n"))))
+	    (cl-mapcar #'nth (number-sequence 0 2) found-list))
+	   (haiku (format-haiku-just-text just-the-right-lines)))
       (if (called-interactively-p 'any)
-	  (message haiku)
+	  (message haiku) ; display in minibuffer
 	haiku))))
+
+;;;###autoload
+(defun find-me-a-haiku (&optional arg)
+  "Read a haiku from haiku-dataset-file.  Return as string of poetry.
+If ARG is a number or a marker, it reads the haiku at that line-number,
+else (including if ARG is nil) reads from a random line-number.
+When called interactively, the poem is displayed in the minibuffer."
+  (interactive "P")
+  (let ((haiku
+	 (format-haiku-just-text (get-haiku-at-line arg))))
+    (if (called-interactively-p 'any)
+	(message haiku)
+      haiku)))
 
 ;; add the mode to the `features' list
 (provide 'all-the-haikus)
