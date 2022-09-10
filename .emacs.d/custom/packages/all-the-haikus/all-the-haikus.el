@@ -31,6 +31,9 @@
 (defvar within-quotes nil
   "Boolean to keep track of where we are while iterating a string.")
 
+(defvar generated-poem-marker "*generated*"
+  "Boolean to keep track of where we are while iterating a string.")
+
 (defun comma-to-newline-except-within-quotes (c)
   "Return `char-to-string' of C or, if C is a comma, of newline.
 Keeps track of whether it has seen a quote before the current char:
@@ -140,7 +143,7 @@ TODO: Describe what syllable-count looks like."
   "Writes a new poem.
 If SYLLABLE-COUNT provided, generate a poem with that format.
 Else, generate a poem by getting three random lines.
-The returned poem starts with the string *self-generated*\n.
+The returned poem has an additional first line with the `generated-poem-marker'.
 When called interactively, the poem is displayed in the minibuffer."
   (interactive)
   (if (and syllable-count (listp syllable-count))
@@ -150,7 +153,7 @@ When called interactively, the poem is displayed in the minibuffer."
 	   (just-the-right-lines
 	    (cl-mapcar #'nth (number-sequence 0 2) found-list))
 	   (haiku (format-haiku-just-text just-the-right-lines)))
-      (concat "*self-generated*\n"
+      (concat generated-poem-marker "\n"
 	      (if (called-interactively-p 'any)
 		  (message haiku) ; display in minibuffer
 		haiku)))))
