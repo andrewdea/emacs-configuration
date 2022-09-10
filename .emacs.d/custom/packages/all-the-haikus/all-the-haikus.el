@@ -95,7 +95,7 @@ Remove any \" characters."
     (move-end-of-line nil)))
 
 (defun get-random-matching-line (to-find)
-  "Go to random point in file, search for regexp TO-FIND.
+  "Go to random point in file, search forward for regexp TO-FIND.
 If no results are found from start-point to end,
 search from beginning to start-point."
   (let ((start-point ;random start
@@ -136,7 +136,7 @@ TODO: Describe what syllable-count looks like."
 	  (to-find-list (list first-regexp second-regexp third-regexp))
 	  (found-list ; the three matching lines from the file
 	   (mapcar #'get-random-matching-line to-find-list))
-	  (just-the-right-lines ; the three strings that will make our poem
+	  (just-the-right-lines ; three strings that will make our poem
 	   ;; preserve the order of the lines:
 	   ;; for the first line in our new poem,
 	   ;; take a line that was originally a first line in its poem
@@ -189,7 +189,7 @@ When called interactively, the poem is displayed in the minibuffer."
 	 (haiku
 	  (format-haiku-just-text (butlast haiku-line 5))))
     (if (called-interactively-p 'any)
-	(message haiku)
+	(message haiku) ; display in minibuffer
       haiku)))
 
 ;; add package to the `features' list
