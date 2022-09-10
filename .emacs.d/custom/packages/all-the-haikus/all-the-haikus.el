@@ -48,7 +48,7 @@ if we've seen a quote and no quote has closed it yet, don't convert to newline"
 If ARG is a number or a marker, it reads the haiku at that line-number,
 else (including if ARG is nil/not provided) reads from a random line-number"
   (with-temp-buffer
-    (insert-file-contents haiku-dataset-file)
+    (insert-file-contents-literally haiku-dataset-file)
     (let ((line-number
 	   (if (integer-or-marker-p arg)
 	       arg
@@ -88,7 +88,7 @@ TODO: Describe what syllable-count looks like."
 			(number-to-string arg)))
 		    syllable-count ",")))
     (with-temp-buffer
-      (insert-file-contents haiku-dataset-file)
+      (insert-file-contents-literally haiku-dataset-file)
       (let ((start-point ;random start so results are not always the same
 	     (random (point-max))))
 	(goto-char start-point)
@@ -102,7 +102,7 @@ TODO: Describe what syllable-count looks like."
 (defun search-regexp-in-haiku-file (rgx)
   "From random point in haiku file, search RGX, return the first matching line."
   (with-temp-buffer
-    (insert-file-contents haiku-dataset-file)
+    (insert-file-contents-literally haiku-dataset-file)
     (let ((start-point ;random start so results are not always the same
 	   (random (point-max))))
       (goto-char start-point)
@@ -118,7 +118,7 @@ TODO: Describe what syllable-count looks like."
   (message "searching for this syllable count: %s"
 	   syllable-count)
   (with-temp-buffer
-    (insert-file-contents haiku-dataset-file)
+    (insert-file-contents-literally haiku-dataset-file)
     (let* ((first-regexp (format "[[:alpha:]],%S," (car syllable-count)))
 	   (second-regexp (format "[[:digit:]]\"?,%S,"(nth 1 syllable-count)))
 	   (third-regexp (format "[[:digit:]]\"?,%S$"(nth 2 syllable-count)))
