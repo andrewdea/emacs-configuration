@@ -32,7 +32,7 @@
   "Boolean to keep track of where we are while iterating a string.")
 
 (defvar generated-poem-marker "*generated*"
-  "Boolean to keep track of where we are while iterating a string.")
+  "String that will be placed at the beginning of a generated poem.")
 
 (defun comma-to-newline-except-within-quotes (c)
   "Return `char-to-string' of C or, if C is a comma, of newline.
@@ -50,11 +50,13 @@ if we've seen a quote and no quote has closed it yet, don't convert to newline"
   "Execute BODY inside of a temporary buffer with the haiku file.
 If we're already in a temp buffer, assume it is the haiku file,
 else open a new one and insert the file contents."
-  (if (string-match-p (regexp-quote "*temp*") (buffer-name (current-buffer)))
+  (if (boundp 'temp-haiku-buffer)
       `(progn ,@body)
     (progn
-      (push `(insert-file-contents-literally haiku-dataset-file) body)
-      `(with-temp-buffer ,@body))))
+      `(with-temp-buffer
+	 (insert-file-contents-literally haiku-dataset-file)
+	 (setq-local temp-haiku-buffer (current-buffer))
+	 ,@body))))
 
 (defun get-haiku-at-line (&optional arg)
   "Read a haiku from haiku-dataset-file.  Return as list of haiku data.
@@ -130,7 +132,7 @@ TODO: Describe what syllable-count looks like."
 	   (found-list
 	    (mapcar (lambda (rgx)
 		      (find-random-matching-line
-		       #'search-forward-regexp rgx nil t))
+		       #'search-forward-regexp rgx))
 		    to-find-list))
 	   (just-the-right-lines
 	    (cl-mapcar #'nth (number-sequence 0 2) found-list)))
