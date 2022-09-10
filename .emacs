@@ -175,7 +175,7 @@
   (defun find-or-write-haiku ()
     (if (nth (random 2) (list nil t))
 	(find-me-a-haiku 'random)
-      (concat "*(self-generated)*\n" (write-me-a-haiku))))
+      (concat "*self-generated*\n" (write-me-a-haiku))))
 
   (setq dashboard-items '((recents  . 10)
                           (projects . 5)
