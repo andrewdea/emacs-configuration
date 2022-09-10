@@ -155,7 +155,7 @@ else (including if ARG is nil) reads from a random line-number.
 When called interactively, the poem is displayed in the minibuffer."
   (interactive "P")
   (let ((haiku
-	 (format-haiku-just-text (get-haiku-at-line arg))))
+	 (format-haiku-just-text (butlast (get-haiku-at-line arg) 5))))
     (if (called-interactively-p 'any)
 	(message haiku)
       haiku)))
