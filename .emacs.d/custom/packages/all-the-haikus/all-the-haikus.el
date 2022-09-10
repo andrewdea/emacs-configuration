@@ -36,19 +36,20 @@
 
 (defun comma-to-newline-except-within-quotes (c)
   "Return `char-to-string' of C or, if C is a comma, of newline.
-Keeps track of whether it has seen a quote before the current char:
-if we've seen a quote and no quote has closed it yet, don't convert to newline"
+Use `within-quotes' to keep track of whether
+the string contains a quote before the current char:
+if a quote was read and no quote has closed it yet, don't convert to newline"
   (if (eq c ?\")
       (setq-local within-quotes ; toggle it
 		  (not within-quotes)))
   (if (and (eq c ?,) ; char is comma
-	   (not within-quotes))
+	   (not within-quotes)) ; we are currently outside of quotes
       ?\n
     c))
 
 (defmacro with-haiku-temp-buffer (&rest body)
   "Execute BODY inside of a temporary buffer with the haiku file.
-If we're already in a temp buffer, assume it is the haiku file,
+If we're already in the haiku temp buffer, just execute body
 else open a new one and insert the file contents."
   (if (boundp 'temp-haiku-buffer)
       `(progn ,@body)
@@ -70,18 +71,18 @@ Return it as a list of strings"
      (split-string parsed "\n"))))
 
 (defun get-random-haiku-line ()
-  "Read a random haiku-line from the haiku-dataset-file."
+  "Read a random line from the haiku-dataset-file."
   (with-haiku-temp-buffer
    (get-haiku-line
     (+ 1 ; lowerbound of random: excludes the header
        (random
 	(count-lines (point-min) (point-max)))))))
 
-(defun format-haiku-just-text (list-of-lines)
-  "Given a LIST-OF-LINES, return newline-separated single string.
+(defun format-haiku-just-text (list-of-strings)
+  "Given a LIST-OF-STRINGS, return a newline-separated single string.
 Remove any \" characters."
   (string-replace "\"" ""
-		  (string-join list-of-lines "\n")))
+		  (string-join list-of-strings "\n")))
 
 (defun find-haiku-from-line-at-point ()
   "Read the line at point, open the haiku file and search for line."
@@ -104,8 +105,7 @@ search from beginning to start-point."
 	 (search-forward-regexp to-find nil t) ; try from here to the end
 	 (progn (goto-char (point-min)) ; else from beginning to here
 		(search-forward-regexp to-find start-point t)))
-	(get-haiku-line (line-number-at-pos)))
-    nil))
+	(get-haiku-line (line-number-at-pos)))))
 
 (defun get-haiku-with-format (syllable-count)
   "Given a SYLLABLE-COUNT, find a random haiku with this format.
@@ -120,7 +120,9 @@ TODO: Describe what syllable-count looks like."
      (let ((found
 	    (get-random-matching-line (regexp-quote to-find))))
        (or found ; if found, return it
-	   (message "no poem with format (%s) found :(" to-find))))))
+	   (progn
+	     (message "no poem with format (%s) found :(" to-find)
+	     nil)))))) ; else return nothing
 
 (defun generate-poem-with-format (syllable-count)
   "Given a SYLLABLE-COUNT, create a new poem with matching lines."
