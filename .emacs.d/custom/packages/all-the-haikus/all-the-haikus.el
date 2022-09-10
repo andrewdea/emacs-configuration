@@ -103,8 +103,9 @@ search from beginning to start-point."
     (if (or
 	 (search-forward-regexp to-find nil t) ; try from here to the end
 	 (progn (goto-char (point-min)) ; else from beginning to here
-		(search-forward-regexp start-point t)))
-	(get-haiku-line (line-number-at-pos)))))
+		(search-forward-regexp to-find start-point t)))
+	(get-haiku-line (line-number-at-pos)))
+    nil))
 
 (defun get-haiku-with-format (syllable-count)
   "Given a SYLLABLE-COUNT, find a random haiku with this format.
@@ -131,8 +132,7 @@ TODO: Describe what syllable-count looks like."
 	  (third-regexp (format "[[:digit:]]\"?,%S$"(nth 2 syllable-count)))
 	  (to-find-list (list first-regexp second-regexp third-regexp))
 	  (found-list
-	   (mapcar #'get-random-matching-line
-		   to-find-list))
+	   (mapcar #'get-random-matching-line to-find-list))
 	  (just-the-right-lines
 	   (cl-mapcar #'nth (number-sequence 0 2) found-list)))
      (format-haiku-just-text just-the-right-lines))))
