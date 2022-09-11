@@ -88,38 +88,13 @@ This assumes the path was provided as an argument"
   (let ((default-command shell-latest-command))
     (shell-output-execute-command (my-prompt default-command))))
 
-;;;###autoload
-(defun find-here ()
-  "Run the POSIX command `find' in the current folder."
-  (interactive)
-  (let ((default-command
-	  (concat "find "
-		  default-directory
-		  find-default-options
-		  shell-default-options
-		  "-iname "
-		  "'' "
-		  shell-async)))
-    (shell-output-execute-command (my-prompt default-command))))
-
-;;;###autoload
-(defun grep-here ()
-  "Run the POSIX command `grep' in the current folder."
-  (interactive)
-  (let ((default-command
-	  (concat "grep "
-		  grep-default-options " "
-		  shell-default-options " "
-		  "'' "
-		  default-directory " "
-		  shell-async)))
-    (shell-output-execute-command (my-prompt default-command))))
-
 (defun my-prompt (default-command)
   "Put DEFAULT-COMMAND in prompt and place cursor in expected position."
+  (let* ((matched (string-match "'" default-command))
+	 (initial-position (if matched (+ 2 matched)))
+	 (command-and-position (cons default-command initial-position)))
   (read-from-minibuffer "shell command: "
-			`(,default-command . ; initial contents
-			  ,(+ 2 (string-match "'" default-command))))); cursor pos
+		        command-and-position)))
 
 ;; get a file name from a line in the shell-output buffer
 (defun parse-file-at-line ()
@@ -167,6 +142,34 @@ This can be undone with normal `undo'"
     (define-key map (kbd "C-<down>") #'forward-paragraph)
     (define-key map (kbd "C-r") #'shell-redo) ; will have to think what key is best for this
     map))
+
+;;;###autoload
+(defun find-here ()
+  "Run the POSIX command `find' in the current folder."
+  (interactive)
+  (let ((default-command
+	  (concat "find "
+		  default-directory
+		  find-default-options
+		  shell-default-options
+		  "-iname "
+		  "'' "
+		  shell-async)))
+    (shell-output-execute-command (my-prompt default-command))))
+
+;;;###autoload
+(defun grep-here ()
+  "Run the POSIX command `grep' in the current folder."
+  (interactive)
+  (let ((default-command
+	  (concat "grep "
+		  grep-default-options " "
+		  shell-default-options " "
+		  "'' "
+		  default-directory " "
+		  shell-async)))
+    (shell-output-execute-command (my-prompt default-command))))
+
 
 (defcustom shell-output-mode-hook '()
   "Hook for customizing shell-output mode."
