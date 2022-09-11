@@ -22,8 +22,7 @@
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 
-(use-package package)
-;; (package-initialize)
+(use-package package :defer t)
 
 (add-hook 'package-menu-mode-hook
 	  (lambda () (hl-line-mode t) (visual-line-mode -1)))
@@ -39,15 +38,8 @@
       (package-delete (cadr (assq arg package-alist)))
     (error (message "error while deleting, most likely had already deleted"))))
 
-;;;; BENCHMARK
-;; benchmark-init to check where init is slow to load
-(use-package benchmark-init
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
-  (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
-
 ;;;; PERFORMANCE
+;;;;; garbage collection
 ;; avoid garbage collection at startup
 (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
       gc-cons-percentage 0.6)
@@ -56,15 +48,28 @@
 (use-package gcmh
   :init
   (add-hook 'after-init-hook #'gcmh-mode)
+  :defer t
   :config
   (setq gcmh-idle-delay 'auto  ; default is 15s
-	gcmh-auto-idle-delay-factor 10
-	gcmh-high-cons-threshold (* 16 1024 1024)))  ; 16mb
+	gcmh-high-cons-threshold (* 16 1024 1024)  ; 16mb
+	gcmh-verbose nil
+	gcmh-auto-idle-delay-factor 10))
+
+
+;;;;; monitoring init
+;; ceck which packages are slow to load/config
+;; (setq use-package-verbose t)
+
+;; check where init is slow to load
+;; (use-package benchmark-init
+;;   :init
+;;   ;; To disable collection of benchmark data after init is done.
+;;   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
+;;   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
 ;;;; CHEATSHEET
 (use-package cheatsheet
-  :config
-  (add-hook 'kill-emacs-hook #'cheatsheet-save-list-to-file))
+  :hook (kill-emacs . cheatsheet-save-list-to-file))
 
 ;; quick ways to reload the updates:
 (defun delete-cheatsheet ()
@@ -121,7 +126,8 @@
 (add-hook 'after-init-hook #'startup-look)
 
 ;;;;; dashboard
-(use-package all-the-haikus)
+(use-package all-the-haikus
+  :defer t)
 
 ;; (setq load-prefer-newer t)
 (use-package dashboard
@@ -162,10 +168,11 @@
 	      (local-set-key (kbd "C-<return>")
 			     #'find-haiku-from-line-at-point)))
 
-  (setq dashboard-footer-icon (all-the-icons-octicon "book"
-						     :height 1.1
-						     :v-adjust -0.05
-						     :face 'font-lock-keyword-face))
+  (setq dashboard-footer-icon
+	(all-the-icons-octicon "book"
+			       :height 1.1
+			       :v-adjust -0.05
+			       :face 'font-lock-keyword-face))
 
   (defun dashboard-insert-footer ()
     "Insert custom haiku-footer for dashboard."
@@ -265,8 +272,17 @@
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
   :init
-  (defun wspace () (interactive) (whitespace-mode 'toggle))
+  (defun wspace ()
+    "Shortcut for (whitespace-mode 'toggle)"
+    (interactive)
+    (let ((action-taken
+	   (if (whitespace-mode 'toggle)
+	       "enabled"
+	     "disabled")))
+      (message "Whitespace mode %s in this buffer" action-taken)))
+  :defer t
   :config
+  ;; (message "in whitespace confg")
   (setq whitespace-style '(face lines-tail trailing)))
 
 ;; long line to test whitespace-mode:
@@ -274,7 +290,6 @@
 
 ;;;;; tabs
 (use-package centaur-tabs
-  :after (speedbar shell)
   :config
   (centaur-tabs-headline-match)
 
@@ -289,7 +304,8 @@
   (shell-mode . centaur-tabs-disable-locally))
 
 ;;;;; icons
-(use-package all-the-icons)
+(use-package all-the-icons
+  :defer t)
 
 ;;;;; appearance for specific modes
 
@@ -429,7 +445,8 @@ the whole region is fontified (by automatically inserting character at mark)"
   (setq all-the-icons-dired-monochrome nil))
 
 ;;;;; find and grep
-(use-package shell-output-mode)
+(use-package shell-output-mode
+  :defer t)
 
 ;;;;; recent files
 (use-package recentf
@@ -660,7 +677,6 @@ future."
     (interactive)
     (sr-speedbar-open))
   :config
-  (message "loading speedbar config")
   (defun bar-close ()
     (interactive)
     (sr-speedbar-close))
@@ -746,13 +762,13 @@ open siblings (directories at its same depth)"
   :config
   (setq ido-everywhere t)
   (setq ido-enable-flex-matching t))
+
 ;;;;; git
 (defun vc-refresh-buffer (arg)
   (set-buffer arg)
   (vc-refresh-state))
 
 (use-package magit
-  :after (vc-hooks)
   :config
   (defun vc-refresh-all-git-buffers ()
     "get list of git files from magit,
@@ -773,9 +789,8 @@ for each open buffer with one of these files, refresh the version-control state"
   (electric-pair-local-mode t))
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
-(use-package dash)
+(use-package dash :defer t)
 (use-package outshine
-  :after (outline dash)
   :config
   ;; collapse the current level even when I'm not at the heading
   (defun my-outline-tab ()
@@ -817,7 +832,7 @@ else, first move to previous visible heading, then call it"
 ;; only use find-symbol-first occurrence as a weak alternative in cases
 ;; where the backend for xref has not been set
 (defun my-find-definition ()
-    "If an xref-backend has been set, call `xref-find-definitions'.
+  "If an xref-backend has been set, call `xref-find-definitions'.
 Else, call find-symbol-first-occurrence"
   (interactive)
   (if (equal '(etags--xref-backend) xref-backend-functions)
@@ -834,6 +849,7 @@ Else, call find-symbol-first-occurrence"
 			  (shell-quote-argument
 			   (template-trim-name buffer-file-name)))
 		      options)))
+;; todo: move these to the appropriate section below
 (add-hook 'java-mode-hook
 	  (lambda () (set-compile-command "javac" t)))
 (add-hook 'scala-mode-hook
@@ -847,23 +863,32 @@ Else, call find-symbol-first-occurrence"
 (setq shell-file-name "/bin/zsh")
 ;;;;; programming-language specifics
 ;; java
-(global-set-key (kbd "C-h j") #'javadoc-lookup)
+(use-package javadoc-lookup
+  :bind (("C-c s" . org-store-link)))
 
-(defun on-java-loaded ()
-  (define-key java-mode-map (kbd "C-i") #'javadoc-add-import))
-
-(add-hook 'java-mode-hook #'on-java-loaded)
-
-(add-hook 'java-mode-hook #'subword-mode)
+(use-package cc-mode
+  :bind (:map java-mode-map
+	      ("C-i" . javadoc-add-import))
+  :hook (java-mode . subword-mode))
 
 ;; scala
-(add-to-list 'auto-mode-alist '("\\.sc\\'" . scala-mode))
+(use-package scala-mode
+  :mode "\\.sc\\'")
 
 ;; monicelli
 (use-package monicelli-mode
-  :after (files)
-  :config
-  (add-to-list 'auto-mode-alist '("\\.mc\\'" . monicelli-mode)))
+  :mode "\\.mc\\'")
+
+;; clojure
+(use-package clojure-mode
+  :defer t)
+
+(use-package cider
+  :defer t)
+
+;; go
+(use-package go-mode
+  :defer t)
 
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
@@ -873,17 +898,20 @@ If provided find and replace FILE-EXT also"
 			    (if file-ext
 				(string-replace file-ext "" file-name)
 			      file-name)))
+
 (defun template-write-to-buffer (contents-as-string)
   "Write CONTENTS-AS-STRING to the current buffer.
 \(if the buffer is not empty, CONTENTS-AS-STRING will be appended to the end)"
   (with-current-buffer (buffer-name)
     (goto-char (point-max))
     (insert contents-as-string)))
+
 (defun template-file-to-string (file-name)
   "Return contents of FILE-NAME as string."
   (with-temp-buffer
     (insert-file-contents file-name)
     (buffer-string)))
+
 (defun template-set-contents (file-name file-ext)
   "Read from the template file and write to buffer the contents.
 replacing 'Template' with FILE-NAME"
@@ -895,9 +923,12 @@ replacing 'Template' with FILE-NAME"
      (string-replace "Template"
 		     (template-trim-name file-name file-ext)
 		     file-contents))))
+
 (defun get-file-ext (&optional file-name)
   (if (equal nil file-name) (setq file-name buffer-name))
-  (substring file-name (string-match "\.[^.]*$" file-name)))
+  ;; (substring file-name (string-match "\.[^.]*$" file-name))
+  (concat "." (file-name-extension file-name)))
+
 (defun template-open ()
   "Prompt for file name, find the file, ask for confirmation,
 and set its contents as the appropriate programming-language-template"
@@ -907,9 +938,7 @@ and set its contents as the appropriate programming-language-template"
   (find-file file-name)
   (message "Opened %s" file-name)
   (if (equal "y" (read-string "Write your template? y/n: "))
-      (template-set-contents file-name file-ext)
-    )
-  )
+      (template-set-contents file-name file-ext)))
 
 ;;;; RANDOM STUFF
 ;;; CUSTOM-added variables and faces
