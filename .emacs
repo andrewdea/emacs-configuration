@@ -23,7 +23,7 @@
 (setq use-package-always-ensure t)
 
 (use-package package)
-(package-initialize)
+;; (package-initialize)
 
 (add-hook 'package-menu-mode-hook
 	  (lambda () (hl-line-mode t) (visual-line-mode -1)))
@@ -46,6 +46,20 @@
   ;; To disable collection of benchmark data after init is done.
   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
+
+;;;; PERFORMANCE
+;; avoid garbage collection at startup
+(setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
+      gc-cons-percentage 0.6)
+
+;; use gcmh to reset garbage collection
+(use-package gcmh
+  :init
+  (add-hook 'after-init-hook #'gcmh-mode)
+  :config
+  (setq gcmh-idle-delay 'auto  ; default is 15s
+	gcmh-auto-idle-delay-factor 10
+	gcmh-high-cons-threshold (* 16 1024 1024)))  ; 16mb
 
 ;;;; CHEATSHEET
 (use-package cheatsheet
@@ -250,15 +264,17 @@
 
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
+  :init
+  (defun wspace () (interactive) (whitespace-mode 'toggle))
   :config
   (setq whitespace-style '(face lines-tail trailing)))
-(defun wspace () (interactive) (whitespace-mode 'toggle))
 
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;; tabs
 (use-package centaur-tabs
+  :after (speedbar shell)
   :config
   (centaur-tabs-headline-match)
 
@@ -408,6 +424,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 (use-package all-the-icons-dired
   :init
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+  :after (all-the-icons dired)
   :config
   (setq all-the-icons-dired-monochrome nil))
 
@@ -577,11 +594,12 @@ delete preceding ARG lines and preceding 1 char."
 
 ;;;;; autocomplete
 (use-package company
+  :init
+  (global-company-mode t)
   :config
   (setq company-dabbrev-downcase nil)
   :bind (:map company-mode-map
 	      ("s-RET" . company-abort)))
-(global-company-mode t)
 
 ;;;;; macros
 (defun save-macro (name)
@@ -629,6 +647,7 @@ future."
 	 ("<mouse-1>" . ibuffer-visit-buffer)))
 
 (use-package all-the-icons-ibuffer
+  :after (all-the-icons ibuffer)
   :hook (ibuffer-mode . all-the-icons-ibuffer-mode))
 
 ;;;; SPEEDBAR
@@ -733,6 +752,7 @@ open siblings (directories at its same depth)"
   (vc-refresh-state))
 
 (use-package magit
+  :after (vc-hooks)
   :config
   (defun vc-refresh-all-git-buffers ()
     "get list of git files from magit,
@@ -755,6 +775,7 @@ for each open buffer with one of these files, refresh the version-control state"
 ;;;;; outline
 (use-package dash)
 (use-package outshine
+  :after (outline dash)
   :config
   ;; collapse the current level even when I'm not at the heading
   (defun my-outline-tab ()
@@ -840,6 +861,7 @@ Else, call find-symbol-first-occurrence"
 
 ;; monicelli
 (use-package monicelli-mode
+  :after (files)
   :config
   (add-to-list 'auto-mode-alist '("\\.mc\\'" . monicelli-mode)))
 
@@ -903,7 +925,7 @@ and set its contents as the appropriate programming-language-template"
    '("7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(cheatsheet monicelli-mode shell-output-mode all-the-haikus all-the-icons-ibuffer dashboard color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(gcmh cheatsheet monicelli-mode shell-output-mode all-the-haikus all-the-icons-ibuffer dashboard color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode))
  '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
