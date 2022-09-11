@@ -44,10 +44,18 @@
 (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
       gc-cons-percentage 0.6)
 
+(defun gc-restore-defaults ()
+  (setq gc-cons-threshold 800000
+	gc-cons-percentage 1.0)
+  (gcmh-mode -1))
+
 ;; use gcmh to reset garbage collection
 (use-package gcmh
   :init
   (add-hook 'after-init-hook #'gcmh-mode)
+  :hook
+  (after-init . gcmh-mode)
+  (tetris-mode . gc-restore-defaults)
   :defer t
   :config
   (setq gcmh-idle-delay 'auto  ; default is 15s
@@ -311,7 +319,7 @@
 
 ;;;; ORG mode
 (use-package org
-  :defer 5
+  ;; :defer 5
   :config
   ;; this is a nice feature
   ;; but it can slow emacs down with certain optimized JIT-lock settings
@@ -433,14 +441,12 @@ the whole region is fontified (by automatically inserting character at mark)"
   (dired "~/CraftingInterpreters"))
 
 ;;;;; dired mode
-(add-hook 'dired-mode-hook
-	  (lambda ()
-	    (define-key dired-mode-map [mouse-2] 'dired-mouse-find-file)))
-
 (use-package all-the-icons-dired
   :init
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
-  :after (all-the-icons dired)
+  :bind
+  (:map dired-mode-map
+	("<mouse-2>" . dired-mouse-find-file))
   :config
   (setq all-the-icons-dired-monochrome nil))
 
@@ -533,6 +539,16 @@ delete preceding ARG lines and preceding 1 char."
 
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
+
+;; disable mouse-wheel-text-scale, as it can get in the way and is rarely needed
+(defun my-scroll (e)
+  (interactive "e")
+  (if pixel-scroll-precision-mode
+      (pixel-scroll-precision e)
+    (mwheel-scroll e)))
+
+(global-set-key (kbd "C-<wheel-down>") #'my-scroll)
+(global-set-key (kbd "C-<wheel-up>") #'my-scroll)
 
 ;;;;; flyspell
 (use-package flyspell
@@ -703,6 +719,7 @@ until we reach a directory with no subdirectories"
 	(speedbar-expand-line)
 	(forward-line 1)
 	(move-beginning-of-line 1))))
+
   (defun breadth-expand ()
     "Open the directory at line, and open all its subsequent siblings
 (directories that are at its same depth)"
@@ -717,6 +734,7 @@ until we reach a directory with no subdirectories"
 	(speedbar-restricted-move 1)
 	(move-beginning-of-line 1)))
     (message "opened all directories at this level"))
+
   (defun breadth-contract ()
     "Collapse the directory at line, and close all its subsequent
 open siblings (directories at its same depth)"
@@ -789,7 +807,8 @@ for each open buffer with one of these files, refresh the version-control state"
   (electric-pair-local-mode t))
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
-(use-package dash :defer t)
+(use-package dash
+  :defer t)
 (use-package outshine
   :config
   ;; collapse the current level even when I'm not at the heading
