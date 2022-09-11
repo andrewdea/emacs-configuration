@@ -482,6 +482,14 @@ delete preceding ARG lines and preceding 1 char."
 
 (global-set-key (kbd "C-k") #'my-kill-whole-line)
 
+(defun count-total-visible-lines ()
+  (interactive)
+  (message "Buffer %s has %d total lines"
+	   (buffer-name (current-buffer))
+	   (count-lines (point-min) (point-max))))
+
+(global-set-key (kbd "C-x l" #'count-total-visible-lines))
+
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
