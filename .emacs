@@ -138,7 +138,7 @@
        (if (not already-open) "Welcome! " "")
        (float-time (time-since time)))))
 
-  :defer 3
+  :defer 4
 
   :config
   (add-hook 'dashboard-mode-hook (lambda () (projectile-mode +1)))
@@ -272,11 +272,14 @@
   (speedbar-mode . centaur-tabs-disable-locally)
   (shell-mode . centaur-tabs-disable-locally))
 
+;;;;; icons
+(use-package all-the-icons)
+
 ;;;;; appearance for specific modes
 
 ;;;; ORG mode
 (use-package org
-  :defer 3
+  :defer 5
   :config
   ;; this is a nice feature
   ;; but it can slow emacs down with certain optimized JIT-lock settings
@@ -401,8 +404,12 @@ the whole region is fontified (by automatically inserting character at mark)"
 (add-hook 'dired-mode-hook
 	  (lambda ()
 	    (define-key dired-mode-map [mouse-2] 'dired-mouse-find-file)))
-(setq all-the-icons-dired-monochrome nil)
-(add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+
+(use-package all-the-icons-dired
+  :init
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+  :config
+  (setq all-the-icons-dired-monochrome nil))
 
 ;;;;; find and grep
 (use-package shell-output-mode)
@@ -430,7 +437,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 ;;;;; projectile mode
 (use-package projectile
-  :defer 5
+  :defer 6
   :config
   ;; (setq projectile-ignored-projects '("~/"))
   :bind (:map projectile-mode-map
@@ -478,17 +485,17 @@ delete preceding ARG lines and preceding 1 char."
   (if (or (not arg) (> arg 1))
       (move-beginning-of-line 1))
   (kill-line arg)
-  (delete-backward-char 1))
+  (delete-char -1))
 
 (global-set-key (kbd "C-k") #'my-kill-whole-line)
 
 (defun count-total-visible-lines ()
   (interactive)
-  (message "Buffer %s has %d total lines"
+  (message "Buffer '%s' has %d total lines"
 	   (buffer-name (current-buffer))
 	   (count-lines (point-min) (point-max))))
 
-(global-set-key (kbd "C-x l" #'count-total-visible-lines))
+(global-set-key (kbd "C-x l") #'count-total-visible-lines)
 
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
@@ -616,6 +623,14 @@ future."
   (seq-filter
    (apply-partially #'buffer-name-matchp arg) (buffer-list)))
 
+(use-package ibuffer
+  :bind (("C-x C-b" . ibuffer)
+	 :map ibuffer-name-map
+	 ("<mouse-1>" . ibuffer-visit-buffer)))
+
+(use-package all-the-icons-ibuffer
+  :hook (ibuffer-mode . all-the-icons-ibuffer-mode))
+
 ;;;; SPEEDBAR
 (use-package sr-speedbar
   :init
@@ -651,7 +666,7 @@ until we reach a directory with no subdirectories"
       (move-beginning-of-line 1)
       (while (looking-at dir-regexp)
 	(speedbar-expand-line)
-	(next-line)
+	(forward-line 1)
 	(move-beginning-of-line 1))))
   (defun breadth-expand ()
     "Open the directory at line, and open all its subsequent siblings
@@ -768,23 +783,22 @@ else, first move to previous visible heading, then call it"
 ;; possible enhancements:
 ;; when not found, try to search outside the current file
 (defun find-symbol-first-occurrence ()
-  "Gets the symbol at the cursor's current location,
-moves to the beginning of the file and searches for that symbol"
+  "Search for symbol at point within the file."
   (interactive)
   (let ((my-symbol (thing-at-point 'symbol 'no-properties)))
     (if (null my-symbol)
 	(message "No symbol at point")
       (progn (point-to-register 'r)
-	     (beginning-of-buffer)
+	     (goto-char (point-min))
 	     (goto-char (search-forward-regexp (isearch-symbol-regexp my-symbol)))
 	     (isearch-forward-symbol-at-point)))))
 
 ;; only use find-symbol-first occurrence as a weak alternative in cases
 ;; where the backend for xref has not been set
 (defun my-find-definition ()
+    "If an xref-backend has been set, call `xref-find-definitions'.
+Else, call find-symbol-first-occurrence"
   (interactive)
-  "If an xref-backend has been set, call xref-find-definitions,
-else, call find-symbol-first-occurrence"
   (if (equal '(etags--xref-backend) xref-backend-functions)
       (find-symbol-first-occurrence)
     (execute-extended-command nil "xref-find-definitions")))
@@ -831,15 +845,15 @@ else, call find-symbol-first-occurrence"
 
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
-  "Find and replace file-path from FILE-NAME,
-if provided find and replace FILE-EXT also"
+  "Find and replace file-path from FILE-NAME.
+If provided find and replace FILE-EXT also"
   (replace-regexp-in-string ".*\/" ""
 			    (if file-ext
 				(string-replace file-ext "" file-name)
 			      file-name)))
 (defun template-write-to-buffer (contents-as-string)
-  "Write CONTENTS-AS-STRING to the current buffer
-(if the buffer is not empty, CONTENTS-AS-STRING will be appended to the end)"
+  "Write CONTENTS-AS-STRING to the current buffer.
+\(if the buffer is not empty, CONTENTS-AS-STRING will be appended to the end)"
   (with-current-buffer (buffer-name)
     (goto-char (point-max))
     (insert contents-as-string)))
@@ -849,7 +863,7 @@ if provided find and replace FILE-EXT also"
     (insert-file-contents file-name)
     (buffer-string)))
 (defun template-set-contents (file-name file-ext)
-  "Read from the template file and writes to buffer the contents,
+  "Read from the template file and write to buffer the contents.
 replacing 'Template' with FILE-NAME"
   (let ((file-contents
 	 (template-file-to-string
@@ -889,7 +903,7 @@ and set its contents as the appropriate programming-language-template"
    '("7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(dashboard all-the-haikus shell-output-mode monicelli-mode cheatsheet color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(cheatsheet monicelli-mode shell-output-mode all-the-haikus all-the-icons-ibuffer dashboard color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode))
  '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
@@ -898,3 +912,6 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+(provide '.emacs)
+;;; .emacs ends here

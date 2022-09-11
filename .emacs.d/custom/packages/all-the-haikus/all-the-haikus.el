@@ -89,6 +89,7 @@ Remove any \" characters."
   (interactive)
   (let ((line (string-trim (thing-at-point 'line 'no-properties))))
     (switch-to-buffer (find-file-other-window haiku-dataset-file))
+    (goto-char (point-min))
     (search-forward line)
     (move-beginning-of-line 1)
     (set-mark-command nil)
