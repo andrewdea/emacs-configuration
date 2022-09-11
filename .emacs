@@ -8,21 +8,6 @@
 ;; keeping warnings on for now to monitor native comp til I'm familiar with it
 ;; (setq native-comp-async-report-warnings-errors nil)
 
-;;;; BENCHMARK
-;; benchmark-init to check where init is slow to load
-(use-package benchmark-init
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
-  (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
-
-;;;; LOAD FASTER
-;; not sure if these work, keeping an eye on them for now
-(setq jit-lock-stealth-time nil)
-(setq jit-lock-defer-time nil)
-(setq jit-lock-defer-time 0.05)
-(setq jit-lock-stealth-load 200)
-
 ;;;; PACKAGES
 (add-to-list 'package-archives
              '("melpa-stable" . "https://stable.melpa.org/packages/") t)
@@ -53,6 +38,14 @@
   (condition-case nil
       (package-delete (cadr (assq arg package-alist)))
     (error (message "error while deleting, most likely had already deleted"))))
+
+;;;; BENCHMARK
+;; benchmark-init to check where init is slow to load
+(use-package benchmark-init
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
+  (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
 ;;;; CHEATSHEET
 (use-package cheatsheet
@@ -280,14 +273,14 @@
   (shell-mode . centaur-tabs-disable-locally))
 
 ;;;;; appearance for specific modes
-(add-hook 'recentf-dialog-mode-hook (lambda () (hl-line-mode t)))
 
 ;;;; ORG mode
 (use-package org
   :defer 3
   :config
-  ;; this is a nice feature but I think it slows down org A LOT
-  ;; (setq org-hide-emphasis-markers t)
+  ;; this is a nice feature
+  ;; but it can slow emacs down with certain optimized JIT-lock settings
+  (setq org-hide-emphasis-markers t)
 
   ;; better bullet-points
   (font-lock-add-keywords #'org-mode
@@ -347,6 +340,17 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("TAB" . my-org-tab)))
 
 ;;;; FILE utilities
+;;;;; load faster
+;; these are useful especially in VERY large files
+;; and to prevent linum-mode from slowing everything down
+(defun jit-lock-optimize-settings ()
+  (interactive)
+  (setq jit-lock-defer-time 0.05))
+
+(defun jit-lock-default-settings ()
+  (interactive)
+  (setq jit-lock-defer-time nil))
+
 ;;;;; shortcuts
 ;; open init file
 (defun init ()
@@ -412,11 +416,15 @@ the whole region is fontified (by automatically inserting character at mark)"
     (recentf-mode +1)
     (recentf-open-files))
 
-  :bind (("C-c C-r" . my-recentf-open-files))
+  :defer 3
+
+  :bind* (("C-c C-r" . my-recentf-open-files))
   :config
   (setq recentf-max-menu-items 25
         recentf-max-saved-items 25)
   (add-to-list 'recentf-exclude "ido.last")
+  (recentf-mode)
+  :hook (recentf-dialog-mode . hl-line-mode)
   ;; :hook (after-init . recentf-mode)
   )
 
