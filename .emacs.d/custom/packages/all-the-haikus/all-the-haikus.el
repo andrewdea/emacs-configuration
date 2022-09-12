@@ -188,7 +188,7 @@ When called interactively, the poem is displayed in the minibuffer."
 		(t
 		 (get-random-haiku-line))))
 	 (haiku
-	  (format-haiku-just-text (butlast haiku-line 5))))
+	  (format-haiku-just-text (take 3 haiku-line))))
     (if (called-interactively-p 'any)
 	(message haiku) ; display in minibuffer
       haiku)))
