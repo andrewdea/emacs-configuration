@@ -58,7 +58,7 @@
 
 
 ;;;;; monitoring init
-;; ;; check which packages are slow to load/config
+;; check which packages are slow to load/config
 ;; (setq use-package-verbose t
 ;;       use-package-minimum-reported-time 0.005)
 
@@ -146,18 +146,17 @@
     (interactive)
     (my-dashboard-init)
     (let ((time (current-time))
-	  ;; Refresh dashboard buffer
+	  ;; Refresh dashboard buffer or just switch to it?
 	  (already-open (and (boundp 'dashboard-buffer-name)
 			     (get-buffer dashboard-buffer-name))))
-      (if already-open
-	  (kill-buffer dashboard-buffer-name))
-      ;; make sure you autoload this function (see above):
-      (dashboard-insert-startupify-lists)
-      (switch-to-buffer dashboard-buffer-name)
-      (message
-       "%sDashboard opened in %.2f seconds"
-       (if (not already-open) "Welcome! " "")
-       (float-time (time-since time)))))
+      (if (not already-open)
+	  (progn
+	    ;; make sure you autoload this function (see above):
+	    (dashboard-insert-startupify-lists)
+	    (message
+	     "Welcome! Dashboard opened in %.2f seconds"
+	     (float-time (time-since time)))))
+      (switch-to-buffer dashboard-buffer-name)))
 
   :defer 4
 
@@ -958,7 +957,7 @@ and set its contents as the appropriate programming-language-template"
 ;;;; RANDOM STUFF
 ;; implementing a simple web search for quick questions
 (setq my-search-engine "searx.bar")
-(defun web-search (&optional arg)
+(defun websearch (&optional arg)
   (interactive "P")
   (let ((url
 	 (thread-last
