@@ -166,7 +166,7 @@
   (add-hook 'dashboard-mode-hook
             (lambda ()
 	      (local-set-key (kbd "C-<return>")
-			     #'find-haiku-from-line-at-point)))
+			     #'show-haiku-from-line-at-point)))
 
   (setq dashboard-footer-icon
 	(all-the-icons-octicon "book"

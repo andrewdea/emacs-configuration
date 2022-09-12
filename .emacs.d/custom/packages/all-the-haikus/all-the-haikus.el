@@ -28,6 +28,12 @@
   :group 'all-the-haikus
   :type 'file)
 
+(defcustom haiku-favorites-file
+  "~/.emacs.d/custom/datasets/haiku-favorites.csv"
+  "Comma-separated file containing our favorite haikus."
+  :group 'all-the-haikus
+  :type 'file)
+
 (defvar within-quotes nil
   "Boolean to keep track of where we are while iterating a string.")
 
@@ -84,8 +90,8 @@ Remove any \" characters."
   (string-replace "\"" ""
 		  (string-join list-of-strings "\n")))
 
-(defun find-haiku-from-line-at-point ()
-  "Read the line at point, open the haiku file and search for line."
+(defun show-haiku-from-line-at-point ()
+  "Read the line at point, open the haiku file and show the matching line."
   (interactive)
   (let ((line (string-trim (thing-at-point 'line 'no-properties))))
     (switch-to-buffer (find-file-other-window haiku-dataset-file))
@@ -93,7 +99,29 @@ Remove any \" characters."
     (search-forward line)
     (move-beginning-of-line 1)
     (set-mark-command nil)
-    (move-end-of-line nil)))
+    (move-end-of-line nil))
+  (thing-at-point 'line 'no-properties))
+
+(defun return-haiku-from-line-at-point ()
+  "Read the line at point, return the line from haiku file matching it."
+  (interactive)
+  (let ((line (string-trim (thing-at-point 'line 'no-properties))))
+    (with-haiku-temp-buffer
+     (goto-char (point-min))
+     (search-forward line)
+     (thing-at-point 'line 'no-properties))))
+
+(defun haiku-save-to-favorites ()
+  ;; TODO: add a way to check if the poem was self generated
+  ;; and if the file hasn't been created yet, create it
+  (interactive)
+  (let ((haiku (return-haiku-from-line-at-point)))
+    (with-temp-buffer
+      (insert-file-contents-literally haiku-favorites-file)
+      (set-visited-file-name haiku-favorites-file)
+      (goto-char (point-max))
+      (insert haiku)
+      (save-buffer))))
 
 (defun get-random-matching-line (to-find)
   "Go to random point in file, search forward for regexp TO-FIND.
