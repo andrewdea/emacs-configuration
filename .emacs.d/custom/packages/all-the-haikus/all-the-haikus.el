@@ -34,6 +34,10 @@
   :group 'all-the-haikus
   :type 'file)
 
+(defvar haiku-file-header
+  "0,1,2,source,0_syllables,1_syllables,2_syllables\n"
+  "String used as header for our csv haiku files.")
+
 (defvar within-quotes nil
   "Boolean to keep track of where we are while iterating a string.")
 
@@ -113,11 +117,12 @@ Remove any \" characters."
 
 (defun haiku-save-to-favorites ()
   ;; TODO: add a way to check if the poem was self generated
-  ;; and if the file hasn't been created yet, create it
   (interactive)
   (let ((haiku (return-haiku-from-line-at-point)))
     (with-temp-buffer
-      (insert-file-contents-literally haiku-favorites-file)
+      (if (file-exists-p haiku-favorites-file)
+	  (insert-file-contents-literally haiku-favorites-file)
+	(insert haiku-file-header))
       (set-visited-file-name haiku-favorites-file)
       (goto-char (point-max))
       (insert haiku)
