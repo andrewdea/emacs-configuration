@@ -115,6 +115,9 @@
     (set-frame-size (selected-frame) 100 45))
   (set-frame-position (selected-frame) 0 0))
 
+(use-package mood-line
+  :defer t)
+
 (defun startup-look ()
   (interactive)
   (setq column-number-mode t)
@@ -131,15 +134,18 @@
 (use-package all-the-haikus
   :defer t)
 
+(use-package bookmark
+  :defer t)
+
 (use-package dashboard
   :init
   (defun my-dashboard-init ()
     (setq dashboard-init-info
           (format "Emacs started in %s seconds." (emacs-init-time "%.2f"))))
 
-  (autoload
+  (autoload ; avoid loading the whole dashboad package unless needed
     #'dashboard-insert-startupify-lists
-    "/Users/andrewdeangelis/.emacs.d/elpa/dashboard-20220907.759/dashboard.el")
+    "~/.emacs.d/elpa/dashboard-20220907.759/dashboard.el")
 
   (defun dashboard-open ()
     "Open the *dashboard* buffer."
@@ -194,7 +200,7 @@
 
   (setq dashboard-items '((recents  . 10)
                           (projects . 5)
-			  ;; bookmarks
+			  (bookmarks . 5)
                           (agenda . 5)))
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
@@ -205,12 +211,14 @@
 
 ;;;;; resizing and movement
 ;; make current window bigger or smaller
-(defun wbig (&optional arg) (interactive "P")
+(defun wbig (&optional arg)
+  (interactive "P")
        (if arg () (setq arg 25))
        (enlarge-window-horizontally arg)
        (message (concat "expanded window by " (number-to-string arg))))
 
-(defun wsmall (&optional arg) (interactive "P")
+(defun wsmall (&optional arg)
+  (interactive "P")
        (if arg () (setq arg 25))
        (shrink-window-horizontally arg)
        (message (concat "reduced window by " (number-to-string arg))))
@@ -282,7 +290,6 @@
       (message "Whitespace mode %s in this buffer" action-taken)))
   :defer t
   :config
-  ;; (message "in whitespace confg")
   (setq whitespace-style '(face lines-tail trailing)))
 
 ;; long line to test whitespace-mode:
@@ -982,7 +989,7 @@ and set its contents as the appropriate programming-language-template"
    '("7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(all-the-haikus shell-output-mode gcmh cheatsheet monicelli-mode all-the-icons-ibuffer dashboard color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(dashboard all-the-haikus shell-output-mode gcmh cheatsheet monicelli-mode all-the-icons-ibuffer color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode))
  '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
