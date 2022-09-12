@@ -22,8 +22,6 @@
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 
-(use-package package :defer t)
-
 ;; useful for when I'm working on my own packages and need to update
 (defun reload-package-from-file (&optional arg)
   (interactive "spackage name: ")
@@ -48,8 +46,6 @@
 
 ;; use gcmh to reset garbage collection
 (use-package gcmh
-  :init
-  (add-hook 'after-init-hook #'gcmh-mode)
   :hook
   (after-init . gcmh-mode)
   (tetris-mode . gc-restore-defaults)
@@ -67,11 +63,11 @@
 ;;       use-package-minimum-reported-time 0.005)
 
 ;; check where init is slow to load
-(use-package benchmark-init
-  :init
-  ;; To disable collection of benchmark data after init is done.
-  ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
-  (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
+;; (use-package benchmark-init
+;;   :init
+;;   ;; To disable collection of benchmark data after init is done.
+;;   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
+;;   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
 ;;;; CHEATSHEET
 (use-package cheatsheet
@@ -960,6 +956,19 @@ and set its contents as the appropriate programming-language-template"
       (template-set-contents file-name file-ext)))
 
 ;;;; RANDOM STUFF
+;; implementing a simple web search for quick questions
+(setq my-search-engine "searx.bar")
+(defun web-search (&optional arg)
+  (interactive "P")
+  (let ((url
+	 (thread-last
+	   (read-from-minibuffer
+	    (format "use %s to search: " my-search-engine))
+	   (string-replace " " "+")
+	   (concat "https://" my-search-engine "/search?q=")))
+	(new-session (if arg t nil)))
+    (message "xwidgeting this: %s" url)
+    (xwidget-webkit-browse-url url new-session)))
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are inkpot (really good for org-files),
