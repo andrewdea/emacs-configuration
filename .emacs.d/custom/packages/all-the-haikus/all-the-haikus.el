@@ -16,7 +16,7 @@
 ;; important to add description of dataset and format
 
 ;;; Code:
-(require 'cl-lib)
+(eval-when-compile (require 'cl-lib))
 
 (defgroup all-the-haikus nil
   "Read haikus from csv file."
@@ -89,6 +89,7 @@ Remove any \" characters."
   (interactive)
   (let ((line (string-trim (thing-at-point 'line 'no-properties))))
     (switch-to-buffer (find-file-other-window haiku-dataset-file))
+    (goto-char (point-min))
     (search-forward line)
     (move-beginning-of-line 1)
     (set-mark-command nil)

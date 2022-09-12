@@ -4,28 +4,9 @@
 ;;; Code:
 
 ;;;; NATIVE COMPILATION
-;;;;; use same environment as terminal
-;; (when (memq window-system '(mac ns x))
-;;   (exec-path-from-shell-initialize))
-
 ;;;;; don't show compilation warnings
 ;; keeping warnings on for now to monitor native comp til I'm familiar with it
 ;; (setq native-comp-async-report-warnings-errors nil)
-
-;;;; BENCHMARK
-;; benchmark-init to check where init is slow to load
-(use-package benchmark-init
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
-  (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
-
-;;;; LOAD FASTER
-;; not sure if these work, keeping an eye on them for now
-(setq jit-lock-stealth-time nil)
-(setq jit-lock-defer-time nil)
-(setq jit-lock-defer-time 0.05)
-(setq jit-lock-stealth-load 200)
 
 ;;;; PACKAGES
 (add-to-list 'package-archives
@@ -41,12 +22,6 @@
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 
-(use-package package)
-(package-initialize)
-
-(add-hook 'package-menu-mode-hook
-	  (lambda () (hl-line-mode t) (visual-line-mode -1)))
-
 ;; useful for when I'm working on my own packages and need to update
 (defun reload-package-from-file (&optional arg)
   (interactive "spackage name: ")
@@ -58,14 +33,45 @@
       (package-delete (cadr (assq arg package-alist)))
     (error (message "error while deleting, most likely had already deleted"))))
 
-;;;; CHEATSHEET
+;;;; PERFORMANCE
+;;;;; garbage collection
+;; avoid garbage collection at startup
+(setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
+      gc-cons-percentage 0.6)
 
-;; ;; use updated source files since I'm working on this
-;; (setq load-prefer-newer t)
+(defun gc-restore-defaults ()
+  (setq gc-cons-threshold 800000
+	gc-cons-percentage 1.0)
+  (gcmh-mode -1))
 
-(use-package cheatsheet
+;; use gcmh to reset garbage collection
+(use-package gcmh
+  :hook
+  (after-init . gcmh-mode)
+  (tetris-mode . gc-restore-defaults)
+  :defer t
   :config
-  (add-hook 'kill-emacs-hook #'cheatsheet-save-list-to-file))
+  (setq gcmh-idle-delay 'auto  ; default is 15s
+	gcmh-high-cons-threshold (* 16 1024 1024)  ; 16mb
+	gcmh-verbose nil
+	gcmh-auto-idle-delay-factor 10))
+
+
+;;;;; monitoring init
+;; check which packages are slow to load/config
+;; (setq use-package-verbose t
+;;       use-package-minimum-reported-time 0.005)
+
+;; check where init is slow to load
+;; (use-package benchmark-init
+;;   :init
+;;   ;; To disable collection of benchmark data after init is done.
+;;   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
+;;   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
+
+;;;; CHEATSHEET
+(use-package cheatsheet
+  :hook (kill-emacs . cheatsheet-save-list-to-file))
 
 ;; quick ways to reload the updates:
 (defun delete-cheatsheet ()
@@ -122,30 +128,39 @@
 (add-hook 'after-init-hook #'startup-look)
 
 ;;;;; dashboard
-(use-package all-the-haikus)
+(use-package all-the-haikus
+  :defer t)
 
 (use-package dashboard
   :init
+  (defun my-dashboard-init ()
+    (setq dashboard-init-info
+          (format "Emacs started in %s seconds." (emacs-init-time "%.2f"))))
+
+  (autoload
+    #'dashboard-insert-startupify-lists
+    "/Users/andrewdeangelis/.emacs.d/elpa/dashboard-20220907.759/dashboard.el")
+
   (defun dashboard-open ()
     "Open the *dashboard* buffer."
     (interactive)
     (my-dashboard-init)
     (let ((time (current-time))
-	  ;; (delete-other-windows)
-	  ;; Refresh dashboard buffer
-	  (already-open (get-buffer dashboard-buffer-name)))
-      (if already-open
-	  (kill-buffer dashboard-buffer-name))
-      (dashboard-insert-startupify-lists)
-      (switch-to-buffer dashboard-buffer-name)
-      (message
-       "%sDashboard opened in %.2f seconds"
-       (if (not already-open) "Welcome! " "")
-       (float-time (time-since time)))))
+	  ;; Refresh dashboard buffer or just switch to it?
+	  (already-open (and (boundp 'dashboard-buffer-name)
+			     (get-buffer dashboard-buffer-name))))
+      (if (not already-open)
+	  (progn
+	    ;; make sure you autoload this function (see above):
+	    (dashboard-insert-startupify-lists)
+	    (message
+	     "Welcome! Dashboard opened in %.2f seconds"
+	     (float-time (time-since time)))))
+      (switch-to-buffer dashboard-buffer-name)))
+
+  :defer 4
+
   :config
-  (defun my-dashboard-init ()
-    (setq dashboard-init-info
-          (format "Emacs started in %s seconds." (emacs-init-time "%.2f"))))
   (add-hook 'dashboard-mode-hook (lambda () (projectile-mode +1)))
 
   (add-hook 'dashboard-mode-hook
@@ -153,10 +168,11 @@
 	      (local-set-key (kbd "C-<return>")
 			     #'find-haiku-from-line-at-point)))
 
-  (setq dashboard-footer-icon (all-the-icons-octicon "book"
-						     :height 1.1
-						     :v-adjust -0.05
-						     :face 'font-lock-keyword-face))
+  (setq dashboard-footer-icon
+	(all-the-icons-octicon "book"
+			       :height 1.1
+			       :v-adjust -0.05
+			       :face 'font-lock-keyword-face))
 
   (defun dashboard-insert-footer ()
     "Insert custom haiku-footer for dashboard."
@@ -255,9 +271,19 @@
 
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
+  :init
+  (defun wspace ()
+    "Shortcut for (whitespace-mode 'toggle)"
+    (interactive)
+    (let ((action-taken
+	   (if (whitespace-mode 'toggle)
+	       "enabled"
+	     "disabled")))
+      (message "Whitespace mode %s in this buffer" action-taken)))
+  :defer t
   :config
+  ;; (message "in whitespace confg")
   (setq whitespace-style '(face lines-tail trailing)))
-(defun wspace () (interactive) (whitespace-mode 'toggle))
 
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -277,15 +303,22 @@
   (speedbar-mode . centaur-tabs-disable-locally)
   (shell-mode . centaur-tabs-disable-locally))
 
+;;;;; icons
+(use-package all-the-icons
+  :defer t)
+
 ;;;;; appearance for specific modes
-(add-hook 'recentf-dialog-mode-hook (lambda () (hl-line-mode t)))
+
+(add-hook 'package-menu-mode-hook
+	  (lambda () (hl-line-mode t) (visual-line-mode -1)))
 
 ;;;; ORG mode
 (use-package org
-  :defer 3
+  ;; :defer 5
   :config
-  ;; this is a nice feature but I think it slows down org A LOT
-  ;; (setq org-hide-emphasis-markers t)
+  ;; this is a nice feature
+  ;; but it can slow emacs down with certain optimized JIT-lock settings
+  (setq org-hide-emphasis-markers t)
 
   ;; better bullet-points
   (font-lock-add-keywords #'org-mode
@@ -345,6 +378,17 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("TAB" . my-org-tab)))
 
 ;;;; FILE utilities
+;;;;; load faster
+;; these are useful especially in VERY large files
+;; and to prevent linum-mode from slowing everything down
+(defun jit-lock-optimize-settings ()
+  (interactive)
+  (setq jit-lock-defer-time 0.05))
+
+(defun jit-lock-default-settings ()
+  (interactive)
+  (setq jit-lock-defer-time nil))
+
 ;;;;; shortcuts
 ;; open init file
 (defun init ()
@@ -392,28 +436,43 @@ the whole region is fontified (by automatically inserting character at mark)"
   (dired "~/CraftingInterpreters"))
 
 ;;;;; dired mode
-(add-hook 'dired-mode-hook
-	  (lambda ()
-	    (define-key dired-mode-map [mouse-2] 'dired-mouse-find-file)))
-(setq all-the-icons-dired-monochrome nil)
-(add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+(use-package all-the-icons-dired
+  :init
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+  :bind
+  (:map dired-mode-map
+	("<mouse-2>" . dired-mouse-find-file))
+  :config
+  (setq all-the-icons-dired-monochrome nil))
 
 ;;;;; find and grep
-(use-package shell-output-mode)
+(use-package shell-output-mode
+  :defer t)
 
 ;;;;; recent files
 (use-package recentf
-  :bind (:map recentf-mode-map
-	      ("C-c C-r" . recentf-open-files))
+  :init
+
+  (defun my-recentf-open-files ()
+    (interactive)
+    (recentf-mode +1)
+    (recentf-open-files))
+
+  :defer 3
+
+  :bind* (("C-c C-r" . my-recentf-open-files))
   :config
   (setq recentf-max-menu-items 25
         recentf-max-saved-items 25)
   (add-to-list 'recentf-exclude "ido.last")
-  :hook (after-init . recentf-mode))
+  (recentf-mode)
+  :hook (recentf-dialog-mode . hl-line-mode)
+  ;; :hook (after-init . recentf-mode)
+  )
 
 ;;;;; projectile mode
 (use-package projectile
-  :defer 5
+  :defer 6
   :config
   ;; (setq projectile-ignored-projects '("~/"))
   :bind (:map projectile-mode-map
@@ -461,12 +520,31 @@ delete preceding ARG lines and preceding 1 char."
   (if (or (not arg) (> arg 1))
       (move-beginning-of-line 1))
   (kill-line arg)
-  (delete-backward-char 1))
+  (delete-char -1))
 
 (global-set-key (kbd "C-k") #'my-kill-whole-line)
 
+(defun count-total-visible-lines ()
+  (interactive)
+  (message "Buffer '%s' has %d total lines"
+	   (buffer-name (current-buffer))
+	   (count-lines (point-min) (point-max))))
+
+(global-set-key (kbd "C-x l") #'count-total-visible-lines)
+
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
+
+;; disable mouse-wheel-text-scale, as it can get in the way and is rarely needed
+(defun my-scroll (e)
+  (interactive "e")
+  (if (and (boundp 'pixel-scroll-precision-mode)
+	   pixel-scroll-precision-mode)
+      (pixel-scroll-precision e)
+    (mwheel-scroll e)))
+
+(global-set-key (kbd "C-<wheel-down>") #'my-scroll)
+(global-set-key (kbd "C-<wheel-up>") #'my-scroll)
 
 ;;;;; flyspell
 (use-package flyspell
@@ -545,11 +623,12 @@ delete preceding ARG lines and preceding 1 char."
 
 ;;;;; autocomplete
 (use-package company
+  :init
+  (global-company-mode t)
   :config
   (setq company-dabbrev-downcase nil)
   :bind (:map company-mode-map
 	      ("s-RET" . company-abort)))
-(global-company-mode t)
 
 ;;;;; macros
 (defun save-macro (name)
@@ -591,6 +670,15 @@ future."
   (seq-filter
    (apply-partially #'buffer-name-matchp arg) (buffer-list)))
 
+(use-package ibuffer
+  :bind (("C-x C-b" . ibuffer)
+	 :map ibuffer-name-map
+	 ("<mouse-1>" . ibuffer-visit-buffer)))
+
+(use-package all-the-icons-ibuffer
+  :after (all-the-icons ibuffer)
+  :hook (ibuffer-mode . all-the-icons-ibuffer-mode))
+
 ;;;; SPEEDBAR
 (use-package sr-speedbar
   :init
@@ -601,7 +689,6 @@ future."
     (interactive)
     (sr-speedbar-open))
   :config
-  (message "loading speedbar config")
   (defun bar-close ()
     (interactive)
     (sr-speedbar-close))
@@ -626,8 +713,9 @@ until we reach a directory with no subdirectories"
       (move-beginning-of-line 1)
       (while (looking-at dir-regexp)
 	(speedbar-expand-line)
-	(next-line)
+	(forward-line 1)
 	(move-beginning-of-line 1))))
+
   (defun breadth-expand ()
     "Open the directory at line, and open all its subsequent siblings
 (directories that are at its same depth)"
@@ -642,6 +730,7 @@ until we reach a directory with no subdirectories"
 	(speedbar-restricted-move 1)
 	(move-beginning-of-line 1)))
     (message "opened all directories at this level"))
+
   (defun breadth-contract ()
     "Collapse the directory at line, and close all its subsequent
 open siblings (directories at its same depth)"
@@ -687,6 +776,7 @@ open siblings (directories at its same depth)"
   :config
   (setq ido-everywhere t)
   (setq ido-enable-flex-matching t))
+
 ;;;;; git
 (defun vc-refresh-buffer (arg)
   (set-buffer arg)
@@ -743,23 +833,22 @@ else, first move to previous visible heading, then call it"
 ;; possible enhancements:
 ;; when not found, try to search outside the current file
 (defun find-symbol-first-occurrence ()
-  "Gets the symbol at the cursor's current location,
-moves to the beginning of the file and searches for that symbol"
+  "Search for symbol at point within the file."
   (interactive)
   (let ((my-symbol (thing-at-point 'symbol 'no-properties)))
     (if (null my-symbol)
 	(message "No symbol at point")
       (progn (point-to-register 'r)
-	     (beginning-of-buffer)
+	     (goto-char (point-min))
 	     (goto-char (search-forward-regexp (isearch-symbol-regexp my-symbol)))
 	     (isearch-forward-symbol-at-point)))))
 
 ;; only use find-symbol-first occurrence as a weak alternative in cases
 ;; where the backend for xref has not been set
 (defun my-find-definition ()
+  "If an xref-backend has been set, call `xref-find-definitions'.
+Else, call find-symbol-first-occurrence"
   (interactive)
-  "If an xref-backend has been set, call xref-find-definitions,
-else, call find-symbol-first-occurrence"
   (if (equal '(etags--xref-backend) xref-backend-functions)
       (find-symbol-first-occurrence)
     (execute-extended-command nil "xref-find-definitions")))
@@ -774,6 +863,7 @@ else, call find-symbol-first-occurrence"
 			  (shell-quote-argument
 			   (template-trim-name buffer-file-name)))
 		      options)))
+;; todo: move these to the appropriate section below
 (add-hook 'java-mode-hook
 	  (lambda () (set-compile-command "javac" t)))
 (add-hook 'scala-mode-hook
@@ -787,47 +877,57 @@ else, call find-symbol-first-occurrence"
 (setq shell-file-name "/bin/zsh")
 ;;;;; programming-language specifics
 ;; java
-(global-set-key (kbd "C-h j") #'javadoc-lookup)
+(use-package javadoc-lookup
+  :bind (("C-c s" . org-store-link)))
 
-(defun on-java-loaded ()
-  (define-key java-mode-map (kbd "C-i") #'javadoc-add-import))
-
-(add-hook 'java-mode-hook #'on-java-loaded)
-
-(add-hook 'java-mode-hook #'subword-mode)
+(use-package cc-mode
+  :bind (:map java-mode-map
+	      ("C-i" . javadoc-add-import))
+  :hook (java-mode . subword-mode))
 
 ;; scala
-(add-to-list 'auto-mode-alist '("\\.sc\\'" . scala-mode))
-
-;; lisp
-(setq inferior-lisp-program "/usr/local/bin/sbcl") ; slime
+(use-package scala-mode
+  :mode "\\.sc\\'")
 
 ;; monicelli
 (use-package monicelli-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.mc\\'" . monicelli-mode)))
+  :mode "\\.mc\\'")
+
+;; clojure
+(use-package clojure-mode
+  :defer t)
+
+(use-package cider
+  :defer t)
+
+;; go
+(use-package go-mode
+  :defer t)
 
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
-  "Find and replace file-path from FILE-NAME,
-if provided find and replace FILE-EXT also"
+  "Find and replace file-path from FILE-NAME.
+If provided find and replace FILE-EXT also"
   (replace-regexp-in-string ".*\/" ""
 			    (if file-ext
 				(string-replace file-ext "" file-name)
 			      file-name)))
+
 (defun template-write-to-buffer (contents-as-string)
-  "Write CONTENTS-AS-STRING to the current buffer
-(if the buffer is not empty, CONTENTS-AS-STRING will be appended to the end)"
+  "Write CONTENTS-AS-STRING to the current buffer.
+\(if the buffer is not empty, CONTENTS-AS-STRING will be appended to the end)"
   (with-current-buffer (buffer-name)
     (goto-char (point-max))
     (insert contents-as-string)))
+
 (defun template-file-to-string (file-name)
   "Return contents of FILE-NAME as string."
   (with-temp-buffer
     (insert-file-contents file-name)
     (buffer-string)))
+
 (defun template-set-contents (file-name file-ext)
-  "Read from the template file and writes to buffer the contents,
+  "Read from the template file and write to buffer the contents.
 replacing 'Template' with FILE-NAME"
   (let ((file-contents
 	 (template-file-to-string
@@ -837,9 +937,12 @@ replacing 'Template' with FILE-NAME"
      (string-replace "Template"
 		     (template-trim-name file-name file-ext)
 		     file-contents))))
+
 (defun get-file-ext (&optional file-name)
   (if (equal nil file-name) (setq file-name buffer-name))
-  (substring file-name (string-match "\.[^.]*$" file-name)))
+  ;; (substring file-name (string-match "\.[^.]*$" file-name))
+  (concat "." (file-name-extension file-name)))
+
 (defun template-open ()
   "Prompt for file name, find the file, ask for confirmation,
 and set its contents as the appropriate programming-language-template"
@@ -849,11 +952,23 @@ and set its contents as the appropriate programming-language-template"
   (find-file file-name)
   (message "Opened %s" file-name)
   (if (equal "y" (read-string "Write your template? y/n: "))
-      (template-set-contents file-name file-ext)
-    )
-  )
+      (template-set-contents file-name file-ext)))
 
 ;;;; RANDOM STUFF
+;; implementing a simple web search for quick questions
+(setq my-search-engine "searx.bar")
+(defun websearch (&optional arg)
+  (interactive "P")
+  (let ((url
+	 (thread-last
+	   (read-from-minibuffer
+	    (format "use %s to search: " my-search-engine))
+	   (string-replace " " "+")
+	   (concat "https://" my-search-engine "/search?q=")))
+	(new-session (if arg t nil)))
+    (message "xwidgeting this: %s" url)
+    (xwidget-webkit-browse-url url new-session)))
+
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are inkpot (really good for org-files),
 ;; cyberpunk, the-matrix, my-misterioso, my-monokai, and tango-dark.
@@ -867,7 +982,7 @@ and set its contents as the appropriate programming-language-template"
    '("7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(all-the-haikus dashboard shell-output-mode monicelli-mode cheatsheet color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme exec-path-from-shell use-package alda-mode the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode slime))
+   '(shell-output-mode gcmh cheatsheet monicelli-mode all-the-haikus all-the-icons-ibuffer dashboard color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode))
  '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
@@ -876,3 +991,6 @@ and set its contents as the appropriate programming-language-template"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+(provide '.emacs)
+;;; .emacs ends here

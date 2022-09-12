@@ -35,7 +35,6 @@
 (defvar shell-default-options nil)
 (defvar grep-default-options "-nr")
 
-;;;###autoload
 (defun shell-output-execute-command (command)
   "Execute COMMAND and display output in new buffer.
 The new buffer is called *shell-output-command*,
@@ -173,7 +172,7 @@ This can be undone with normal `undo'"
   :type 'hook
   :group 'shell-output)
 
-;;;###autoload
+;;
 (define-minor-mode shell-output-mode
   "Minor mode for shell output.
 
