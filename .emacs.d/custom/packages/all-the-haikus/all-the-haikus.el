@@ -16,7 +16,7 @@
 ;; important to add description of dataset and format
 
 ;;; Code:
-(require 'cl-lib)
+(eval-when-compile (require 'cl-lib))
 
 (defgroup all-the-haikus nil
   "Read haikus from csv file."
