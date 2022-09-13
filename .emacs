@@ -489,6 +489,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;;;;; utilities
 (defun smarter-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
+`move-beginning-of-line' but smarter.
 
 Move point to the first non-whitespace character on this line.
 If point is already there, move to the beginning of the line.
