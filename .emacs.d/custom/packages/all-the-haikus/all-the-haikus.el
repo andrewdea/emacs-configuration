@@ -123,21 +123,20 @@ If ARG is not provided, use the line at point."
      (search-forward line)
      (thing-at-point 'line 'no-properties))))
 
-(defun haiku-find-poem-line (string number)
+(defun haiku-get-syllable-count (string line-number)
   (let* ((to-find
-	  (cond ((eq number 0) (format "^%s,.*,.*,.*,.*,.*,.*$" string))
-		((eq number 1) (format "^.*,%s,.*,.*,.*,.*,.*$" string))
-		((eq number 2) (format "^.*,.*,%s,.*,.*,.*,.*$" string))))
+	  (cond ((eq line-number 0) (format "^%s,.*,.*,.*,.*,.*,.*$" string))
+		((eq line-number 1) (format "^.*,%s,.*,.*,.*,.*,.*$" string))
+		((eq line-number 2) (format "^.*,.*,%s,.*,.*,.*,.*$" string))))
 	 (found
 	  (with-haiku-temp-buffer
-	   (get-random-matching-line to-find))))
-    (message "searched %s, found: %s" to-find found)
-    (nth number (last found 4))))
+	   (get-random-matching-line to-find)))) ; TODO: there's no need for this to be random
+    (nth line-number (last found 4))))
 
 (defun haiku-generate-properties (poem) ; a string
   (let* ((parsed (split-string poem "\n"))
 	 (syllable-count
-	  (cl-mapcar #'haiku-find-poem-line parsed (number-sequence 0 2))))
+	  (cl-mapcar #'haiku-get-syllable-count parsed (number-sequence 0 2))))
     (string-join
      (append parsed (list generated-poem-marker) syllable-count) ",")))
 
@@ -156,52 +155,27 @@ If ARG is not provided, use the line at point."
 			 (buffer-substring-no-properties (point) pos)))))))))
 
 (defun haiku-save-to-favorites (&optional arg)
+  "Given a string ARG, find its haiku properties and save it to favorites.
+When called interactively, read the line at point."
   (interactive)
   (let* ((line (or arg
 		   (thing-at-point 'line 'no-properties)))
 	 (full-poem-if-generated (generated-poem-p arg))
-	 (haiku-with-properties (progn
-				  (message "full-poem-if-generated: %s"
-					   full-poem-if-generated)
-				  (if full-poem-if-generated
-				    (haiku-generate-properties full-poem-if-generated)
-				  (return-haiku-from-line line)))))
-    (message "haiku with properties: %s" haiku-with-properties)
+	 (haiku-with-propertie 
+	  (if full-poem-if-generated
+	      (haiku-generate-properties full-poem-if-generated)
+	    (return-haiku-from-line line))))
     (with-temp-buffer
       (if (file-exists-p haiku-favorites-file)
 	  (insert-file-contents-literally haiku-favorites-file)
 	(insert haiku-file-header))
       (set-visited-file-name haiku-favorites-file)
       (goto-char (point-max))
-      (if (not (eq (char-before) ?\n))
+      (if (not (eq ?\n (char-before)))
 	  (insert ?\n))
       (insert haiku-with-properties)
-      (if (not (eq (substring haiku-with-properties -1) ?\n))
-	  (insert ?\n))
+      (insert ?\n)
       (save-buffer))))
-
-(defun haiku-save-generated-to-favorites (poem) ; a list of strings
-  (let ((first-regexp
-	 ;; TODO: need a way to make regex ignore quotes in target string
-	 (format "^%s,.*,.*,.*,[[:digit:]],[[:digit:]],[[:digit:]]$" (nth 0 poem)))
-	(second-regexp
-	 (format "^.*,%s,.*,.*,[[:digit:]],[[:digit:]],[[:digit:]]$" (nth 1 poem)))
-	(third-regexp
-	 (format "^.*,.*,%s,.*,[[:digit:]],[[:digit:]],[[:digit:]]$" (nth 2 poem))))
-    (with-haiku-temp-buffer
-     (let ((first-found
-	    (get-random-matching-line first-regexp))
-	   (second-found
-	    (get-random-matching-line second-regexp))
-	   (third-found
-	    (get-random-matching-line third-regexp)))
-       (message "searched %s, found: %s" first-regexp first-found)
-       (message "searched %s, found: %s" second-regexp second-found)
-       (message "searched %s, found: %s" third-regexp third-found)
-       (list
-	(nth 0 (last first-found 4))
-	(nth 1 (last second-found 4))
-	(nth 2 (last third-found 4)))))))
 
 (defun get-random-matching-line (to-find)
   "Go to random point in file, search forward for regexp TO-FIND.
