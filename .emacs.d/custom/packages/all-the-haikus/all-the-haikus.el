@@ -56,6 +56,7 @@ else, open a new buffer and insert the file contents."
 	 (setq-local temp-haiku-buffer (current-buffer))
 	 ,@body))))
 
+;;;; Formatting haikus
 (defun comma-to-newline-except-within-quotes (char)
   "Convert a CHAR to newline if it doesn't appear within quotes in a string.
 Use `within-quotes' to keep track of whether
@@ -69,6 +70,17 @@ if a quote was read and no quote has closed it yet, don't convert to newline"
       ?\n
     char))
 
+(defun format-haiku-just-text (list-of-strings)
+  "Given a LIST-OF-STRINGS, return a newline-separated single string.
+Add an empty line to end the poem.
+Maybe remove any \" characters."
+  ;; (string-replace "\"" ""
+		  (concat
+		   (string-join list-of-strings "\n")
+		   "\n"))
+
+;;;; Fetching haikus
+;;;;; get/create haikus from query
 (defun get-haiku-line (line-number)
   "From the `haiku-dataset-file', read line at LINE-NUMBER.
 Return it as a list of strings"
@@ -88,15 +100,40 @@ Return it as a list of strings"
        (random
 	(count-lines (point-min) (point-max)))))))
 
-(defun format-haiku-just-text (list-of-strings)
-  "Given a LIST-OF-STRINGS, return a newline-separated single string.
-Add an empty line to end the poem.
-Maybe remove any \" characters."
-  ;; (string-replace "\"" ""
-		  (concat
-		   (string-join list-of-strings "\n")
-		   "\n"))
+(defun get-random-matching-line (to-find)
+  "Go to random point in file, search forward for regexp TO-FIND.
+If no results are found from start-point to end,
+search from beginning to start-point."
+  (message "looking for: %s" to-find)
+  (let ((start-point ;random start
+	 (random (point-max))))
+    (goto-char start-point)
+    (if (or
+	 (search-forward-regexp to-find nil t) ; try from here to the end
+	 (progn (goto-char (point-min)) ; else from beginning to here
+		(search-forward-regexp to-find start-point t)))
+	(get-haiku-line (line-number-at-pos))
+      (progn (message "%s not found." to-find) nil))))
 
+(defun get-haiku-with-format (syllable-count)
+  "Given a SYLLABLE-COUNT, find a random haiku with this format.
+TODO: Describe what syllable-count looks like."
+  (let ((to-find
+	 (concat ","
+		 (mapconcat (lambda (arg)
+			      (if (stringp arg)
+				  (concat "\"" arg "\"")
+				(number-to-string arg)))
+			    syllable-count ","))))
+    (with-haiku-temp-buffer
+     (let ((found
+	    (get-random-matching-line (regexp-quote to-find))))
+       (or found ; if found, return it
+	   (progn ; else send message and return nothing
+	     (message "no poem with format %s found :(" to-find)
+	     nil))))))
+
+;;;;; show/return haikus from data
 (defun show-haiku-from-line-at-point ()
   "Read the line at point, open `haiku-dataset-file', highlight matching line."
   (interactive)
@@ -123,6 +160,56 @@ If ARG is not provided, use the line at point."
 	 (thing-at-point 'line 'no-properties)
        (progn (message "%s not found :(" line) nil)))))
 
+;;;; Creating haikus
+(defun generate-poem-with-format (syllable-count)
+  "Given a SYLLABLE-COUNT, create a new poem with matching lines."
+  (message "searching for this syllable count: %s"
+	   syllable-count)
+  (with-haiku-temp-buffer
+   (let* ((first-regexp (format "[[:alpha:]],%S," (car syllable-count)))
+	  (second-regexp (format "[[:digit:]]\"?,%S,"(nth 1 syllable-count)))
+	  (third-regexp (format "[[:digit:]]\"?,%S$"(nth 2 syllable-count)))
+	  (to-find-list (list first-regexp second-regexp third-regexp))
+	  (found-list ; the three matching lines from the file
+	   (mapcar #'get-random-matching-line to-find-list))
+	  (just-the-right-lines ; three strings that will make our poem
+	   ;; preserve the order of the lines:
+	   ;; for the first line in our new poem,
+	   ;; take a line that was originally a first line in its poem
+	   ;; apply the same logic for second line, etc
+	   ;; this makes the sentences more coherent/meaningful
+	   (cl-mapcar #'nth (number-sequence 0 2) found-list)))
+     (format-haiku-just-text just-the-right-lines))))
+
+;;;; Saving haikus
+(defun haiku-save-to-favorites (&optional arg)
+  "Find ARG's data and save it to `haiku-favorites-file'.
+When called interactively or ARG not provided, check the text at point.
+Parse `haiku-dataset-file' to find ARG's data (source and syllable-count)."
+  (interactive)
+  (let* ((line (or
+	       arg
+	       (string-trim (thing-at-point 'line 'no-properties))))
+	(haiku-with-data
+	 (or (generated-poem-p arg)
+	     (return-haiku-from-line line))))
+    (message "haiku-with-data: %s" haiku-with-data)
+    (with-temp-buffer
+      (if (file-exists-p haiku-favorites-file)
+	  (insert-file-contents-literally haiku-favorites-file)
+	(insert haiku-file-header))
+      (set-visited-file-name haiku-favorites-file)
+      (goto-char (point-max))
+      ;; unless the file already ends in newline, insert one
+      (if (not (eq ?\n (char-before)))
+	  (insert ?\n))
+      (insert haiku-with-data)
+      ;; unless the last character in the inserted line is a newline, insert one
+      (if (not (eq ?\n (char-before)))
+	  (insert ?\n))
+      (save-buffer))))
+
+;;;;; Finding haikus' information
 (defun haiku-get-syllable-count (string line-number)
   "Given a STRING and a LINE-NUMBER, determine STRINGS's syllable count.
 This is done by looking for a poem in `haiku-dataset-file'
@@ -187,86 +274,8 @@ check the text around the point."
 	      (if poetry-lines
 		  (haiku-generate-data poetry-lines))))))))
 
-(defun haiku-save-to-favorites (&optional arg)
-  "Find ARG's data and save it to `haiku-favorites-file'.
-When called interactively or ARG not provided, check the text at point.
-Parse `haiku-dataset-file' to find ARG's data (source and syllable-count)."
-  (interactive)
-  (let* ((line (or
-	       arg
-	       (string-trim (thing-at-point 'line 'no-properties))))
-	(haiku-with-data
-	 (or (generated-poem-p arg)
-	     (return-haiku-from-line line))))
-    (message "haiku-with-data: %s" haiku-with-data)
-    (with-temp-buffer
-      (if (file-exists-p haiku-favorites-file)
-	  (insert-file-contents-literally haiku-favorites-file)
-	(insert haiku-file-header))
-      (set-visited-file-name haiku-favorites-file)
-      (goto-char (point-max))
-      ;; unless the file already ends in newline, insert one
-      (if (not (eq ?\n (char-before)))
-	  (insert ?\n))
-      (insert haiku-with-data)
-      ;; unless the last character in the inserted line is a newline, insert one
-      (if (not (eq ?\n (char-before)))
-	  (insert ?\n))
-      (save-buffer))))
 
-(defun get-random-matching-line (to-find)
-  "Go to random point in file, search forward for regexp TO-FIND.
-If no results are found from start-point to end,
-search from beginning to start-point."
-  (message "looking for: %s" to-find)
-  (let ((start-point ;random start
-	 (random (point-max))))
-    (goto-char start-point)
-    (if (or
-	 (search-forward-regexp to-find nil t) ; try from here to the end
-	 (progn (goto-char (point-min)) ; else from beginning to here
-		(search-forward-regexp to-find start-point t)))
-	(get-haiku-line (line-number-at-pos))
-      (progn (message "%s not found." to-find) nil))))
-
-(defun get-haiku-with-format (syllable-count)
-  "Given a SYLLABLE-COUNT, find a random haiku with this format.
-TODO: Describe what syllable-count looks like."
-  (let ((to-find
-	 (concat ","
-		 (mapconcat (lambda (arg)
-			      (if (stringp arg)
-				  (concat "\"" arg "\"")
-				(number-to-string arg)))
-			    syllable-count ","))))
-    (with-haiku-temp-buffer
-     (let ((found
-	    (get-random-matching-line (regexp-quote to-find))))
-       (or found ; if found, return it
-	   (progn ; else send message and return nothing
-	     (message "no poem with format %s found :(" to-find)
-	     nil))))))
-
-(defun generate-poem-with-format (syllable-count)
-  "Given a SYLLABLE-COUNT, create a new poem with matching lines."
-  (message "searching for this syllable count: %s"
-	   syllable-count)
-  (with-haiku-temp-buffer
-   (let* ((first-regexp (format "[[:alpha:]],%S," (car syllable-count)))
-	  (second-regexp (format "[[:digit:]]\"?,%S,"(nth 1 syllable-count)))
-	  (third-regexp (format "[[:digit:]]\"?,%S$"(nth 2 syllable-count)))
-	  (to-find-list (list first-regexp second-regexp third-regexp))
-	  (found-list ; the three matching lines from the file
-	   (mapcar #'get-random-matching-line to-find-list))
-	  (just-the-right-lines ; three strings that will make our poem
-	   ;; preserve the order of the lines:
-	   ;; for the first line in our new poem,
-	   ;; take a line that was originally a first line in its poem
-	   ;; apply the same logic for second line, etc
-	   ;; this makes the sentences more coherent/meaningful
-	   (cl-mapcar #'nth (number-sequence 0 2) found-list)))
-     (format-haiku-just-text just-the-right-lines))))
-
+;;;; Interface
 ;;;###autoload
 (defun write-me-a-haiku (&optional syllable-count)
   "Writes a new poem.
