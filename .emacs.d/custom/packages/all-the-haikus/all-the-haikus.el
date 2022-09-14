@@ -19,7 +19,7 @@
 (eval-when-compile (require 'cl-lib))
 
 (defgroup all-the-haikus nil
-  "Read haikus from csv file."
+  "Read and write haikus from csv file."
   :group 'convenience) ; leisure/art/something like that?
 
 (defcustom haiku-dataset-file
@@ -44,23 +44,10 @@
 (defvar generated-poem-marker "*generated*"
   "String that will be placed at the beginning of a generated poem.")
 
-(defun comma-to-newline-except-within-quotes (c)
-  "Return `char-to-string' of C or, if C is a comma, of newline.
-Use `within-quotes' to keep track of whether
-the string contains a quote before the current char:
-if a quote was read and no quote has closed it yet, don't convert to newline"
-  (if (eq c ?\")
-      (setq-local within-quotes ; toggle it
-		  (not within-quotes)))
-  (if (and (eq c ?,) ; char is comma
-	   (not within-quotes)) ; we are currently outside of quotes
-      ?\n
-    c))
-
 (defmacro with-haiku-temp-buffer (&rest body)
   "Execute BODY inside of a temporary buffer with the haiku file.
-If we're already in the haiku temp buffer, just execute body
-else open a new one and insert the file contents."
+If we're already in the haiku temp buffer, just execute body;
+else, open a new buffer and insert the file contents."
   (if (boundp 'temp-haiku-buffer)
       `(progn ,@body)
     (progn
@@ -69,8 +56,21 @@ else open a new one and insert the file contents."
 	 (setq-local temp-haiku-buffer (current-buffer))
 	 ,@body))))
 
+(defun comma-to-newline-except-within-quotes (char)
+  "Convert a CHAR to newline if it doesn't appear within quotes in a string.
+Use `within-quotes' to keep track of whether
+the string contains a quote before the current char:
+if a quote was read and no quote has closed it yet, don't convert to newline"
+  (if (eq char ?\")
+      (setq-local within-quotes ; toggle it
+		  (not within-quotes)))
+  (if (and (eq char ?,) ; char is comma
+	   (not within-quotes))
+      ?\n
+    char))
+
 (defun get-haiku-line (line-number)
-  "From the haiku-dataset-file, read line at LINE-NUMBER.
+  "From the `haiku-dataset-file', read line at LINE-NUMBER.
 Return it as a list of strings"
   (with-haiku-temp-buffer
    (goto-char (point-min))
@@ -90,7 +90,7 @@ Return it as a list of strings"
 
 (defun format-haiku-just-text (list-of-strings)
   "Given a LIST-OF-STRINGS, return a newline-separated single string.
-The string is terminated by an empty line.
+Add an empty line to end the poem.
 Maybe: Remove any \" characters."
   ;; (string-replace "\"" ""
   (concat
@@ -98,7 +98,7 @@ Maybe: Remove any \" characters."
    "\n"))
 
 (defun show-haiku-from-line-at-point ()
-  "Read the line at point, open the haiku file and show the matching line."
+  "Read the line at point, open `haiku-dataset-file', highlight matching line."
   (interactive)
   (let ((line (string-trim (thing-at-point 'line 'no-properties))))
     (switch-to-buffer (find-file-other-window haiku-dataset-file))
@@ -106,34 +106,42 @@ Maybe: Remove any \" characters."
     (search-forward line)
     (move-beginning-of-line 1)
     (set-mark-command nil)
-    (move-end-of-line nil))
-  (thing-at-point 'line 'no-properties))
+    (move-end-of-line nil)))
 
 (defun return-haiku-from-line (&optional arg)
-  "Return the line from haiku file matching ARG.
+  "Return the line from `haiku-dataset-file' matching ARG.
 If ARG is not provided, use the line at point."
   (interactive)
   (let ((line
-	 (string-trim
-	  (or
-	   arg
-	   (thing-at-point 'line 'no-properties)))))
+	 (string-trim (or
+		       arg
+		       (thing-at-point 'line 'no-properties)))))
     (with-haiku-temp-buffer
      (goto-char (point-min))
      (search-forward line)
      (thing-at-point 'line 'no-properties))))
 
 (defun haiku-get-syllable-count (string line-number)
+  "Given a STRING and a LINE-NUMBER, determine STRINGS's syllable count.
+This is done by looking for a poem in `haiku-dataset-file'
+that contains STRING at the position given by LINE-NUMBER,
+and then returning the syllable-count of that same position."
   (let* ((to-find
+	  ;; use a regexp depending on what position to find the line
 	  (cond ((eq line-number 0) (format "^%s,.*,.*,.*,.*,.*,.*$" string))
 		((eq line-number 1) (format "^.*,%s,.*,.*,.*,.*,.*$" string))
 		((eq line-number 2) (format "^.*,.*,%s,.*,.*,.*,.*$" string))))
 	 (found
 	  (with-haiku-temp-buffer
 	   (get-random-matching-line to-find)))) ; TODO: there's no need for this to be random
+    ;; the last 4 elements are the syllable counts (and nil termination)
     (nth line-number (last found 4))))
 
-(defun haiku-generate-properties (poem) ; a string
+(defun haiku-generate-data (poem)
+  "Add syllable-count and source to the generated POEM.
+To determine their syllable count,
+search for each of POEM's lines in `haiku-dataset-file'.
+Add the `generated-poem-marker' as the source."
   (let* ((parsed (split-string poem "\n"))
 	 (syllable-count
 	  (cl-mapcar #'haiku-get-syllable-count parsed (number-sequence 0 2))))
@@ -141,30 +149,48 @@ If ARG is not provided, use the line at point."
      (append parsed (list generated-poem-marker) syllable-count) ",")))
 
 (defun generated-poem-p (&optional arg)
+  "Given a string ARG, determine if it's a generated poem.
+If it is, return the three lines of the poem and its data.
+This is done by checking if the string contains `generated-poem-marker'
+If called interactively or string is not provided,
+check the text around the point."
   (interactive)
   (let ((to-find (concat "^" (regexp-quote generated-poem-marker) "\n")))
-    (if (and arg (string-match-p to-find arg))
-	(replace-regexp-in-string to-find "" arg)
+    (if arg
+	;; if ARG is provided & matches, replace the marker and return the poem
+	(if (string-match-p to-find arg)
+	    (replace-regexp-in-string to-find "" arg))
+      ;; if ARG is not provided, check the text around point
       (progn
 	(move-beginning-of-line 1)
-	(if (search-forward-regexp "^$" nil t)
-	    (let ((pos (point)))
-	      (forward-line -4)
-	      (if (string-match-p to-find (thing-at-point 'line 'no-properties))
-		  (progn (forward-line 1)
-			 (buffer-substring-no-properties (point) pos)))))))))
+	(if (search-forward-regexp "^$" nil t) ; go to the end of the poem
+	    (let* ((pos (point))
+		   (poetry-lines
+		    (forward-line -4) ; go back 4 lines to find the marker
+		    (if (string-match-p to-find
+					(thing-at-point 'line 'no-properties))
+			;; if marker found, ignore marker line
+			(progn (forward-line 1)
+			       ;; return last 3 lines
+			       (buffer-substring-no-properties (point) pos)))))
+	      ;; return the poem along with its data
+	      (haiku-generate-data poetry-lines)))))))
 
 (defun haiku-save-to-favorites (&optional arg)
-  "Given a string ARG, find its haiku properties and save it to favorites.
-When called interactively, read the line at point."
+  "Find ARG's data and save it to `haiku-favorites-file'.
+When called interactively or ARG not provided, check the text at point.
+Parse `haiku-dataset-file' to find ARG's data (source and syllable-count)."
   (interactive)
-  (let* ((line (or arg
-		   (thing-at-point 'line 'no-properties)))
-	 (full-poem-if-generated (generated-poem-p arg))
-	 (haiku-with-propertie 
-	  (if full-poem-if-generated
-	      (haiku-generate-properties full-poem-if-generated)
-	    (return-haiku-from-line line))))
+  (let ((haiku-with-data
+	 (or
+	  ;; if the poem is generated, we'll have to search for each line
+	  (generated-poem-p arg)
+	  ;; else we can search a single line
+	  (return-haiku-from-line
+	   ;; the line to search: if provided, arg, else the line at point
+	   (or
+	    arg
+	    (string-trim (thing-at-point 'line 'no-properties)))))))
     (with-temp-buffer
       (if (file-exists-p haiku-favorites-file)
 	  (insert-file-contents-literally haiku-favorites-file)
@@ -173,7 +199,7 @@ When called interactively, read the line at point."
       (goto-char (point-max))
       (if (not (eq ?\n (char-before)))
 	  (insert ?\n))
-      (insert haiku-with-properties)
+      (insert haiku-with-data)
       (insert ?\n)
       (save-buffer))))
 
@@ -204,9 +230,9 @@ TODO: Describe what syllable-count looks like."
      (let ((found
 	    (get-random-matching-line (regexp-quote to-find))))
        (or found ; if found, return it
-	   (progn
+	   (progn ; else send message and return nothing
 	     (message "no poem with format (%s) found :(" to-find)
-	     nil)))))) ; else return nothing
+	     nil))))))
 
 (defun generate-poem-with-format (syllable-count)
   "Given a SYLLABLE-COUNT, create a new poem with matching lines."
@@ -233,6 +259,7 @@ TODO: Describe what syllable-count looks like."
   "Writes a new poem.
 If SYLLABLE-COUNT provided, generate a poem with that format.
 Else, generate a poem by getting three random lines.
+The file used to copy lines from is `haiku-dataset-file'.
 The returned poem has an additional first line with the `generated-poem-marker'.
 When called interactively, the poem is displayed in the minibuffer."
   (interactive)
@@ -240,7 +267,7 @@ When called interactively, the poem is displayed in the minibuffer."
 	  (if (and syllable-count (listp syllable-count))
 	      (generate-poem-with-format syllable-count)
 	    (let* ((found-list ; three random lines from file
-		    (mapcar 'funcall (make-list 3 'get-random-haiku-line)))
+		    (mapcar #'funcall (make-list 3 #'get-random-haiku-line)))
 		   (just-the-right-lines ; three strings that will make our poem
 		    ;; preserve the order of the lines:
 		    ;; for the first line in our new poem,
@@ -255,10 +282,10 @@ When called interactively, the poem is displayed in the minibuffer."
 
 ;;;###autoload
 (defun find-me-a-haiku (&optional arg)
-  "Read a haiku from haiku-dataset-file.  Return as string of poetry.
+  "Read a haiku from `haiku-dataset-file'.  Return as string of poetry.
 If ARG is a number or a marker, read the haiku at that line-number.
-If arg is a non-nil list, look for a haiku with this syllable-count
-\(see get-haiku-with-format).
+If ARG is a non-nil list, look for a haiku with this syllable-count
+\(see `get-haiku-with-format').
 else (including if ARG is nil) read haiku from a random line-number.
 When called interactively, the poem is displayed in the minibuffer."
   (interactive "P")
