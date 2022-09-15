@@ -207,7 +207,8 @@ Parse `haiku-dataset-file' to find ARG's data (source and syllable-count)."
       ;; unless the last character in the inserted line is a newline, insert one
       (if (not (eq ?\n (char-before)))
 	  (insert ?\n))
-      (save-buffer))))
+      (save-buffer))
+    (message "saved %s to `haiku-favorites-file'" haiku-with-data)))
 
 ;;;;; Finding haikus' information
 (defun haiku-get-syllable-count (string line-number)
