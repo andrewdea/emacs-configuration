@@ -89,7 +89,7 @@ Return it as a list of strings"
    (forward-line (- line-number 1))
    (let* ((line (thing-at-point 'line 'no-properties))
 	  (parsed
-	   (concat (mapcar 'comma-to-newline-except-within-quotes line))))
+	   (concat (mapcar #'comma-to-newline-except-within-quotes line))))
      (split-string parsed "\n"))))
 
 (defun get-random-haiku-line ()
@@ -188,17 +188,16 @@ When called interactively or ARG not provided, check the text at point.
 Parse `haiku-dataset-file' to find ARG's data (source and syllable-count)."
   (interactive)
   (let* ((line (or
-	       arg
-	       (string-trim (thing-at-point 'line 'no-properties))))
-	(haiku-with-data
-	 (or (generated-poem-p arg)
-	     (return-haiku-from-line line))))
+		arg
+		(string-trim (thing-at-point 'line 'no-properties))))
+	 (haiku-with-data
+	  (or (generated-poem-p arg)
+	      (return-haiku-from-line line))))
     (message "haiku-with-data: %s" haiku-with-data)
-    (with-temp-buffer
+    (with-temp-file haiku-favorites-file
       (if (file-exists-p haiku-favorites-file)
 	  (insert-file-contents-literally haiku-favorites-file)
 	(insert haiku-file-header))
-      (set-visited-file-name haiku-favorites-file)
       (goto-char (point-max))
       ;; unless the file already ends in newline, insert one
       (if (not (eq ?\n (char-before)))
@@ -206,9 +205,8 @@ Parse `haiku-dataset-file' to find ARG's data (source and syllable-count)."
       (insert haiku-with-data)
       ;; unless the last character in the inserted line is a newline, insert one
       (if (not (eq ?\n (char-before)))
-	  (insert ?\n))
-      (save-buffer))
-    (message "saved %s to `haiku-favorites-file'" haiku-with-data)))
+	  (insert ?\n)))
+    (message "saved \n\"%s\"\n to `haiku-favorites-file'" haiku-with-data)))
 
 ;;;;; Finding haikus' information
 (defun haiku-get-syllable-count (string line-number)
