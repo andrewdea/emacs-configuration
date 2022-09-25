@@ -100,7 +100,7 @@
   (let ((hour (nth 2 (decode-time (current-time)))))
     (if (or (> hour 21) (< hour 8))
 	'my-misterioso ; at night
-      'tango-dark))) ; during the day
+      'my-monokai))) ; during the day
 
 ;; my daily default theme is based on standard tango-dark;
 ;; with some small edits in ~/.emacs.d/tango-dark-theme.el
@@ -321,7 +321,7 @@
 
 ;;;; ORG mode
 (use-package org
-  ;; :defer 5
+  :defer 5
   :config
   ;; this is a nice feature
   ;; but it can slow emacs down with certain optimized JIT-lock settings
