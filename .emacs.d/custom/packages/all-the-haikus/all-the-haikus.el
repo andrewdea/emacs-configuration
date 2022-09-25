@@ -222,7 +222,9 @@ and then returning the syllable-count of that same position."
 		(`2 (format "^.*,.*,%s,.*,.*,.*,.*$" string))))
 	 (found
 	  (with-haiku-temp-buffer
-	   (get-random-matching-line to-find)))) ; TODO: there's no need for this to be random
+	   (if (search-forward-regexp to-find nil t)
+	       (get-haiku-line (line-number-at-pos))
+	     (progn (message "%s not found." to-find) nil)))))
     ;; the last 4 elements are the syllable counts (and nil termination)
     (nth line-number (last found 4))))
 
