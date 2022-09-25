@@ -93,7 +93,7 @@ Return it as a list of strings"
      (split-string parsed "\n"))))
 
 (defun get-random-haiku-line ()
-  "Read a random line from the haiku-dataset-file."
+  "Read a random line from the `haiku-dataset-file'."
   (with-haiku-temp-buffer
    (get-haiku-line
     (+ 1 ; lowerbound of random: excludes the header
