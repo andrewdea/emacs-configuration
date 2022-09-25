@@ -387,7 +387,6 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;;;; FILE utilities
 ;;;;; load faster
 ;; these are useful especially in VERY large files
-;; and to prevent linum-mode from slowing everything down
 (defun jit-lock-optimize-settings ()
   (interactive)
   (setq jit-lock-defer-time 0.05))
@@ -809,9 +808,15 @@ for each open buffer with one of these files, refresh the version-control state"
 
 ;;;;; appearance
 (defun my-prog-appearance ()
-  (linum-mode t)
+  (interactive)
+  (message "in my-prog-appearance")
+  (display-line-numbers-mode t)
   ;; (color-identifiers-mode t)
-  (electric-pair-local-mode t))
+  (electric-pair-local-mode t)
+  (message "selected window: %S" (selected-window))
+  (set-window-fringes (selected-window) 0)
+  (message "ran set-window-fringes on %S" (selected-window)))
+
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
 (use-package dash)
