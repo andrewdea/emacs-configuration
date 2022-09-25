@@ -57,16 +57,15 @@ else, open a new buffer and insert the file contents."
 (defun haiku-break-into-lines (string within-quotes)
   "Replace every comma in STRING with a newline, unless it's within quotes.
 Use WITHIN-QUOTES to keep track
-of whether the string contains a quotes before current char,
-and call recursively"
+of whether the string contains a quote before the current character;
+apply recursively to each charater in the string"
   (if (not (string-empty-p string))
       (progn
 	(let* ((char (aref string 0))
 	       (within-quotes
 		(if (eq char ?\") (not within-quotes) within-quotes))
 	       (res
-		(if (and (eq char ?,)
-			 (not within-quotes))
+		(if (and (eq char ?,) (not within-quotes))
 		    ?\n
 		  char)))
 	  (concat (string res) (haiku-break-into-lines (substring string 1) within-quotes))))))
