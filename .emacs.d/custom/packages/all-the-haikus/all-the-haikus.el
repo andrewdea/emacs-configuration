@@ -38,9 +38,6 @@
   "0,1,2,source,0_syllables,1_syllables,2_syllables\n"
   "String used as header for our csv haiku files.")
 
-(defvar within-quotes nil
-  "Boolean to keep track of where we are while iterating a string.")
-
 (defvar generated-poem-marker "*generated*"
   "String that will be placed at the beginning of a generated poem.")
 
@@ -57,18 +54,22 @@ else, open a new buffer and insert the file contents."
 	 ,@body))))
 
 ;;;; Formatting haikus
-(defun comma-to-newline-except-within-quotes (char)
-  "Convert a CHAR to newline if it doesn't appear within quotes in a string.
-Use `within-quotes' to keep track of whether
-the string contains a quote before the current char:
-if a quote was read and no quote has closed it yet, don't convert to newline"
-  (if (eq char ?\")
-      (setq-local within-quotes ; toggle it
-		  (not within-quotes)))
-  (if (and (eq char ?,) ; char is comma
-	   (not within-quotes))
-      ?\n
-    char))
+(defun haiku-break-into-lines (string within-quotes)
+  "Replace every comma in STRING with a newline, unless it's within quotes.
+Use WITHIN-QUOTES to keep track
+of whether the string contains a quotes before current char,
+and call recursively"
+  (if (not (string-empty-p string))
+      (progn
+	(let* ((char (aref string 0))
+	       (within-quotes
+		(if (eq char ?\") (not within-quotes) within-quotes))
+	       (res
+		(if (and (eq char ?,)
+			 (not within-quotes))
+		    ?\n
+		  char)))
+	  (concat (string res) (haiku-break-into-lines (substring string 1) within-quotes))))))
 
 (defun format-haiku-just-text (list-of-strings)
   "Given a LIST-OF-STRINGS, return a newline-separated single string.
@@ -81,12 +82,10 @@ Maybe remove any \" characters."
 
 (defun format-haiku-line (arg)
   "Trim the string ARG.  If it contains a comma, surround ARG with quotes."
-  (let* ((trimmed (string-trim arg))
-	 (formatted
-	  (if (string-match-p (regexp-quote ",") trimmed)
-	      (concat "\"" trimmed "\"")
-	    trimmed)))
-    formatted))
+  (let ((trimmed (string-trim arg)))
+    (if (string-match-p (regexp-quote ",") trimmed)
+	(concat "\"" trimmed "\"")
+      trimmed)))
 
 ;;;; Fetching haikus
 ;;;;; get/create haikus from query
@@ -98,7 +97,7 @@ Return it as a list of strings"
    (forward-line (- line-number 1))
    (let* ((line (thing-at-point 'line 'no-properties))
 	  (parsed
-	   (concat (mapcar #'comma-to-newline-except-within-quotes line))))
+	   (haiku-break-into-lines line nil)))
      (split-string parsed "\n"))))
 
 (defun get-random-haiku-line ()
