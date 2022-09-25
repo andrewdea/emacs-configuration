@@ -216,9 +216,10 @@ that contains STRING at the position given by LINE-NUMBER,
 and then returning the syllable-count of that same position."
   (let* ((to-find
 	  ;; use a regexp depending on what position to find the line
-	  (cond ((eq line-number 0) (format "^%s,.*,.*,.*,.*,.*,.*$" string))
-		((eq line-number 1) (format "^.*,%s,.*,.*,.*,.*,.*$" string))
-		((eq line-number 2) (format "^.*,.*,%s,.*,.*,.*,.*$" string))))
+	  (pcase line-number
+	    (`0 (format "^%s,.*,.*,.*,.*,.*,.*$" string))
+		(`1 (format "^.*,%s,.*,.*,.*,.*,.*$" string))
+		(`2 (format "^.*,.*,%s,.*,.*,.*,.*$" string))))
 	 (found
 	  (with-haiku-temp-buffer
 	   (get-random-matching-line to-find)))) ; TODO: there's no need for this to be random
