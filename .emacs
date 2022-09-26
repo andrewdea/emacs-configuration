@@ -813,9 +813,8 @@ for each open buffer with one of these files, refresh the version-control state"
   (display-line-numbers-mode t)
   ;; (color-identifiers-mode t)
   (electric-pair-local-mode t)
-  (message "selected window: %S" (selected-window))
-  (set-window-fringes (selected-window) 0)
-  (message "ran set-window-fringes on %S" (selected-window)))
+  ;; (set-window-fringes (selected-window) 0)
+  )
 
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
