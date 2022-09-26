@@ -111,7 +111,7 @@
 (defun big-frame ()
   (interactive)
   (if (< (frame-parameter (selected-frame) 'width) 200)
-      (set-frame-size (selected-frame) 203 55)
+      (set-frame-size (selected-frame) 204 55) ; used to be 203 55
     (set-frame-size (selected-frame) 100 45))
   (set-frame-position (selected-frame) 0 0))
 
@@ -126,6 +126,7 @@
   (mood-line-mode t)
   (scroll-bar-mode -1)
   (global-visual-line-mode t)
+  (set-fringe-style '(2 . nil))
   (pixel-scroll-precision-mode t))
 
 (add-hook 'after-init-hook #'startup-look)
