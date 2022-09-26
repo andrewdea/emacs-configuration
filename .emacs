@@ -164,6 +164,8 @@
 	     (float-time (time-since time)))))
       (switch-to-buffer dashboard-buffer-name)))
 
+  ;; (add-hook 'after-init-hook #'dashboard-open)
+
   :defer 4
 
   :config
@@ -270,9 +272,6 @@
 (defun tango-dark ()
   (interactive)
   (un-theme "tango-dark"))
-(defun inkpot  ()
-  (interactive)
-  (un-theme "inkpot"))
 (defun cyberpunk  ()
   (interactive)
   (un-theme "cyberpunk"))
@@ -986,8 +985,8 @@ and set its contents as the appropriate programming-language-template"
     (xwidget-webkit-browse-url url new-session)))
 
 ;;; CUSTOM-added variables and faces
-;; my custom-safe-themes are inkpot (really good for org-files),
-;; cyberpunk, the-matrix, my-misterioso, my-monokai, and tango-dark.
+;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
+;; cyberpunk, and my-misterioso
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -995,10 +994,10 @@ and set its contents as the appropriate programming-language-template"
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
  '(custom-safe-themes
-   '("7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "2f7247b7aa8aeccbc385ed2dd6c3576ac82c00ef0d530422969727110426044c" "f9bd650eff0cf6c64eb4cf7b2f5d00819ff687198d90ab37aca02f2234524ac7" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "c2f4b626fdab4b17dc0e5fb488f4f831382f78c526744839113efc8d5e9a75cb" "86c6fccf6f3f969a0cce5e08748830f7bfdcfc14cea2e4b70f7cb03d4ea12843" default))
+   '("e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(cheatsheet all-the-haikus avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init inkpot-theme go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(cheatsheet all-the-haikus avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode))
  '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces

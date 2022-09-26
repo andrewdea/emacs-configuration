@@ -45,7 +45,8 @@
  '(lazy-highlight ((((class color) (min-colors 257)) (:inherit highlight :background "#8f5902")) (((class color) (min-colors 89)) (:inherit highlight :background "#3E3E3E"))))
  
  ;; '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#49483E")) (((class color) (min-colors 89)) (:inherit highlight :background "#474747"))))
- '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#8f8c6d")) (((class color) (min-colors 89)) (:inherit highlight :background "#474747"))))
+ ;; '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#8f8c6d")) (((class color) (min-colors 89)) (:inherit highlight :background "#474747"))))
+  '(region ((((class color) (min-colors 257)) (:inherit highlight :background "#7a0530")) (((class color) (min-colors 89)) (:inherit highlight :background "#474747"))))
 
  
  '(secondary-selection ((((class color) (min-colors 257)) (:inherit region :background "#3E3D31")) (((class color) (min-colors 89)) (:inherit region :background "#3E3E3E"))))
@@ -530,7 +531,7 @@
  '(js2-warning ((((class color) (min-colors 257)) (:underline "#FD971F")) (((class color) (min-colors 89)) (:underline "#FF8C00"))))
  '(jedi:highlight-function-argument ((((class color) (min-colors 257)) (:inherit bold)) (((class color) (min-colors 89)) (:inherit bold))))
  '(linum ((((class color) (min-colors 257)) (:foreground "#8F908A" :background "#202020" :inherit default :underline nil)) (((class color) (min-colors 89)) (:foreground "#8F908A" :background "#1B1E1C" :inherit default :underline nil))))
- '(line-number ((((class color) (min-colors 257)) (:foreground "#8F908A" :background "#202020" :inherit default :underline nil)) (((class color) (min-colors 89)) (:foreground "#8F908A" :background "#1B1E1C" :inherit default :underline nil))))
+ '(line-number ((((class color) (min-colors 257)) (:foreground "#8F908A" :background "#272822" :inherit default :underline nil)) (((class color) (min-colors 89)) (:foreground "#8F908A" :background "#1B1E1C" :inherit default :underline nil))))
  '(line-number-current-line ((((class color) (min-colors 257)) (:foreground "#F8F8F2" :background "#202020" :inherit default :underline nil)) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C" :inherit default :underline nil))))
  '(linum-relative-current-face ((((class color) (min-colors 257)) (:foreground "#8F908A" :background "#3C3D37" :underline nil)) (((class color) (min-colors 89)) (:foreground "#8F908A" :background "#000000" :underline nil))))
  '(lusty-directory-face ((((class color) (min-colors 257)) (:inherit dimonokai-red-directory)) (((class color) (min-colors 89)) (:inherit dimonokai-red-directory))))
