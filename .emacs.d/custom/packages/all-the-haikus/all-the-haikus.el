@@ -8,7 +8,7 @@
 
 ;;; License:
 
-;; You can redistribute this program and/or modify it under the terms of the GNU General Public License version 2.
+;; You can redistribute this program and/or modify it under the terms of the GNU General Public License version 3.
 
 ;;; Commentary:
 
@@ -63,12 +63,16 @@ apply recursively to each charater in the string"
       (progn
 	(let* ((char (aref string 0))
 	       (within-quotes
-		(if (eq char ?\") (not within-quotes) within-quotes))
+		(if (eq char ?\")
+		    (not within-quotes) ; toggle it
+		  within-quotes)) ; keep as is
 	       (res
 		(if (and (eq char ?,) (not within-quotes))
-		    ?\n
+		    ?\n ; 'convert' char to newline
 		  char)))
-	  (concat (string res) (haiku-break-into-lines (substring string 1) within-quotes))))))
+	  (concat (string res)
+		  (haiku-break-into-lines
+		   (substring string 1) within-quotes))))))
 
 (defun format-haiku-just-text (list-of-strings)
   "Given a LIST-OF-STRINGS, return a newline-separated single string.
@@ -79,7 +83,7 @@ Remove all \" characters, and add an empty line to end the poem."
 		   "\n")))
 
 (defun format-haiku-line (arg)
-  "Trim the string ARG.  If it contains a comma, surround ARG with quotes."
+  "Trim the string ARG.  If ARG contains a comma, surround ARG with quotes."
   (let ((trimmed (string-trim arg)))
     (if (string-match-p (regexp-quote ",") trimmed)
 	(concat "\"" trimmed "\"")
@@ -99,7 +103,8 @@ Return it as a list of strings"
      (split-string parsed "\n"))))
 
 (defun get-random-haiku-line ()
-  "Read a random line from the `haiku-dataset-file'."
+  "Read a random line from the `haiku-dataset-file'.
+Uses `get-haiku-line'"
   (with-haiku-temp-buffer
    (get-haiku-line
     (+ 1 ; lowerbound of random: excludes the header
