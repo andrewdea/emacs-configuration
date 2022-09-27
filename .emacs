@@ -230,7 +230,7 @@
 (defun yt-frame ()
   (interactive)
   (delete-other-windows)
-  (set-frame-size (selected-frame) 83 52)
+  (set-frame-size (selected-frame) 84 54)
   (set-frame-position (selected-frame) 838 24))
 (add-hook 'tetris-mode-hook #'yt-frame)
 
@@ -809,7 +809,6 @@ for each open buffer with one of these files, refresh the version-control state"
 ;;;;; appearance
 (defun my-prog-appearance ()
   (interactive)
-  (message "in my-prog-appearance")
   (display-line-numbers-mode t)
   ;; (color-identifiers-mode t)
   (electric-pair-local-mode t)
