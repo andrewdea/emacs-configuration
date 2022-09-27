@@ -203,7 +203,7 @@ Parse `haiku-dataset-file' to find ARG's data (source and syllable-count)."
 	      (return-haiku-from-line line))))
     (message "haiku-with-data: %s" haiku-with-data)
     (with-temp-file haiku-favorites-file
-      (if (file-exists-p haiku-favorites-file) ;; TODO could probably do this just with find-file?
+      (if (file-exists-p haiku-favorites-file)
 	  (insert-file-contents-literally haiku-favorites-file)
 	(insert haiku-file-header))
       (goto-char (point-max))
