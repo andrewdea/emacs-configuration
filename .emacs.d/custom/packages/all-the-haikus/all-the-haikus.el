@@ -72,8 +72,7 @@ apply recursively to each charater in the string"
 
 (defun format-haiku-just-text (list-of-strings)
   "Given a LIST-OF-STRINGS, return a newline-separated single string.
-Add an empty line to end the poem.
-Maybe remove any \" characters."
+Remove all \" characters, and add an empty line to end the poem."
   (string-replace "\"" ""
 		  (concat
 		   (string-join list-of-strings "\n")
