@@ -126,19 +126,36 @@ search from beginning to start-point."
 	(get-haiku-line (line-number-at-pos))
       (progn (message "%s not found." to-find) nil))))
 
-(defun get-haiku-with-format (syllable-count)
+(defun get-haiku-with-format (&optional arg syllable-count)
   "Given a SYLLABLE-COUNT, find a random haiku with this format.
-TODO: Describe what syllable-count looks like."
-  (let ((to-find
-	 (concat ","
-		 (mapconcat (lambda (arg)
-			      (if (stringp arg)
-				  (concat "\"" arg "\"")
-				(number-to-string arg)))
-			    syllable-count ","))))
+TODO: refactor this to be more elegant and cleaner."
+  (let* ((words-to-find
+	  (cond
+	   ((null arg) ".*,")
+	   ((stringp arg)
+	    (concat ".*" arg ".*"))
+	   ((listp arg)
+	    (concat "^.*" (nth 0 arg) ".*,.*"
+		    (nth 1 arg) ".*,.*"
+		    (nth 2 arg)  ".*,.*,"))
+	   (t
+	    (message "arg is the wrong type"))))
+	 (format-to-find
+	  (cond
+	   ((null syllable-count) ".*,.*,.*$") ; any format
+	   ((listp syllable-count)
+	    (mapconcat (lambda (arg)
+			 (if (stringp arg)
+			     (concat "\"" arg "\"")
+			   (number-to-string arg)))
+		       syllable-count ",")) ; construct the format from list
+	   ((stringp syllable-count) syllable-count) ; regex provided by user
+	   (t
+	    (message "syllable-count is the wrong type"))))
+	 (to-find (concat words-to-find format-to-find)))
     (with-haiku-temp-buffer
      (let ((found
-	    (get-random-matching-line (regexp-quote to-find))))
+	    (get-random-matching-line to-find)))
        (or found ; if found, return it
 	   (progn ; else send message and return nothing
 	     (message "no poem with format %s found :(" to-find)
@@ -322,20 +339,25 @@ When called interactively, the poem is displayed in the minibuffer."
 		  (message haiku) ; display in minibuffer
 		haiku)))))
 
-;;;###autoload
-(defun find-me-a-haiku (&optional arg)
+(defun find-me-a-haiku (&optional arg syllable-count)
   "Read a haiku from `haiku-dataset-file'.  Return as string of poetry.
-If ARG is a number or a marker, read the haiku at that line-number.
-If ARG is a non-nil list, look for a haiku with this syllable-count
-\(see `get-haiku-with-format').
-else (including if ARG is nil) read haiku from a random line-number.
-When called interactively, the poem is displayed in the minibuffer."
+ARG can be a number (line number),
+a string (word to look for anywhere in the poem),
+a list of strings (words to look for at specific position in the poem).
+SYLLABLE-COUNT is a list representing the format of the poem."
+;; earlier doc string:
+;;     "Read a haiku from `haiku-dataset-file'.  Return as string of poetry.
+;; If ARG is a number or a marker, read the haiku at that line-number.
+;; If ARG is a non-nil list, look for a haiku with this syllable-count
+;; \(see `get-haiku-with-format').
+;; else (including if ARG is nil) read haiku from a random line-number.
+;; When called interactively, the poem is displayed in the minibuffer."
   (interactive "P")
   (let* ((haiku-line
-	  (cond ((and arg (listp arg))
-		 (get-haiku-with-format arg))
-		((integer-or-marker-p arg)
+	  (cond ((integer-or-marker-p arg)
 		 (get-haiku-line arg))
+		((or arg syllable-count)
+		 (get-haiku-with-format arg syllable-count))
 		(t
 		 (get-random-haiku-line))))
 	 (haiku
