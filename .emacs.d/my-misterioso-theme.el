@@ -13,6 +13,12 @@
  '(trailing-whitespace ((((class color) (min-colors 89)) (:background "#ff4242"))))
  ;; '(mode-line ((((class color) (min-colors 89)) (:background "#212931" :foreground "#eeeeec"))))
  '(mode-line ((((class color) (min-colors 89)) (:background "#14191f" :foreground "#eeeeec"))))
+
+ ;; better way to deal with the line-number
+ '(line-number ((((class color) (min-colors 257)) (:background "#2e3748" :foreground "#b3b3b3"))))
+ '(line-number-current-line ((((class color) (min-colors 257)) (:inherit default :underline nil)) (((class color) (min-colors 89)) (:foreground "#F5F5F5" :background "#1B1E1C" :inherit default :underline nil))))
+;; end of new line stuff
+
  '(mode-line-inactive ((((class color) (min-colors 89)) (:background "#878787" :foreground "#14191f"))))
  '(header-line ((((class color) (min-colors 89)) (:background "#808080" :foreground "#333333"))))
  '(minibuffer-prompt ((((class color) (min-colors 89)) (:foreground "#729fcf" :weight bold))))

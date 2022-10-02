@@ -655,6 +655,37 @@ future."
     (insert "\n")))
 
 ;;;; BUFFER AND FRAME movements
+(use-package ibuffer  :bind (("C-x C-b" . ibuffer)
+	 :map ibuffer-name-map
+	 ("<mouse-1>" . ibuffer-visit-buffer)))
+
+(use-package all-the-icons-ibuffer
+  :after (all-the-icons ibuffer)
+  :config
+  ;; increase size of 'name' column
+  (define-ibuffer-column size-h
+    (:name "Size" :inline t)
+    (cond
+     ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
+     ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
+     (t (format "%8d" (buffer-size)))))
+  (setq all-the-icons-ibuffer-formats
+        `((mark modified read-only ,(if (>= emacs-major-version 26) 'locked "")
+          ;; Here you may adjust by replacing :right with :center or :left
+          ;; According to taste, if you want the icon further from the name
+          " " ,(if all-the-icons-ibuffer-icon
+                   '(icon 2 2 :left :elide)
+                 "")
+          ,(if all-the-icons-ibuffer-icon
+               (propertize " " 'display `(space :align-to 8))
+             "")
+          (name 27 27 :left :elide)
+          " " (size-h 9 -1 :right)
+          " " (mode+ 16 16 :left :elide)
+          " " filename-and-process+)
+    (mark " " (name 16 -1) " " filename))))
+(add-hook 'ibuffer-mode-hook #'all-the-icons-ibuffer-mode)
+
 (defun switch-to-minibuffer-window ()
   "Switch to minibuffer window (if active)."
   (interactive)
@@ -679,15 +710,6 @@ future."
   "Find all buffers whose name contains ARG."
   (seq-filter
    (apply-partially #'buffer-name-matchp arg) (buffer-list)))
-
-(use-package ibuffer
-  :bind (("C-x C-b" . ibuffer)
-	 :map ibuffer-name-map
-	 ("<mouse-1>" . ibuffer-visit-buffer)))
-
-(use-package all-the-icons-ibuffer
-  :after (all-the-icons ibuffer)
-  :hook (ibuffer-mode . all-the-icons-ibuffer-mode))
 
 ;;;; SPEEDBAR
 (use-package sr-speedbar
