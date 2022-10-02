@@ -940,6 +940,20 @@ Else, call find-symbol-first-occurrence"
 (use-package go-mode
   :defer t)
 
+;; python
+(use-package elpy
+  :defer t
+  :init
+  (advice-add 'python-mode :before 'elpy-enable)
+  (setq elpy-modules '(elpy-module-sane-defaults
+                          elpy-module-company
+                          elpy-module-eldoc
+                          elpy-module-flymake
+                          elpy-module-pyvenv
+                          elpy-module-yasnippet
+                          elpy-module-django)))
+(add-hook 'python-mode-hook #'color-identifiers-mode)
+
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
   "Find and replace file-path from FILE-NAME.
