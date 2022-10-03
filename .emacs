@@ -377,6 +377,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("C-c l" . org-insert-link)
 	 ("C-c a" . org-agenda)
 	 :map org-mode-map
+	 ("C-'" . avy-goto-char-2) ; overwrite the usual org-cycle-agenda-files
 	 ("M--" . org-timestamp-down-day)
 	 ("M-_" . org-timestamp-down-day)
 	 ("M-+" . org-timestamp-up-day)
