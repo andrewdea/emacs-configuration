@@ -99,7 +99,7 @@
 (defun default-theme ()
   (let ((hour (nth 2 (decode-time (current-time)))))
     (if (or (> hour 21) (< hour 8))
-	'my-misterioso ; at night
+	'cyberpunk ; at night
       'my-monokai))) ; during the day
 
 ;; my daily default theme is based on standard tango-dark;
@@ -555,7 +555,7 @@ delete preceding ARG lines and preceding 1 char."
 
 (use-package avy
   :defer t
-  :bind (("C-'" . avy-goto-char-timer)))
+  :bind (("C-'" . avy-goto-char-2)))
 ;;;;; flyspell
 (use-package flyspell
   :bind (:map flyspell-mode-map
@@ -711,7 +711,7 @@ future."
   (seq-filter
    (apply-partially #'buffer-name-matchp arg) (buffer-list)))
 
-;;;; SPEEDBAR
+;;;; SPEEDBAR & TREEMACS
 (use-package sr-speedbar
   :init
   (defun bar-toggle ()
@@ -799,6 +799,11 @@ open siblings (directories at its same depth)"
 	      ("M-<down>" . speedbar-restricted-next)
 	      ("M-<up>" . speedbar-restricted-prev)
 	      ("C-x u" . my-speedbar-undo)))
+
+;;;;; treemacs
+(use-package treemacs
+  :ensure t
+  :defer t)
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
@@ -940,6 +945,20 @@ Else, call find-symbol-first-occurrence"
 (use-package go-mode
   :defer t)
 
+;; python
+(use-package elpy
+  :defer t
+  :init
+  (advice-add 'python-mode :before 'elpy-enable)
+  (setq elpy-modules '(elpy-module-sane-defaults
+                          elpy-module-company
+                          elpy-module-eldoc
+                          elpy-module-flymake
+                          elpy-module-pyvenv
+                          elpy-module-yasnippet
+                          elpy-module-django)))
+(add-hook 'python-mode-hook #'color-identifiers-mode)
+
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
   "Find and replace file-path from FILE-NAME.
@@ -1018,7 +1037,7 @@ and set its contents as the appropriate programming-language-template"
    '("024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(all-the-haikus elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(all-the-haikus treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode))
  '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
