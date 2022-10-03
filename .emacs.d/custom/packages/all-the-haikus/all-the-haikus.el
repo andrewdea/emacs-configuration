@@ -188,27 +188,6 @@ If ARG is not provided, use the line at point."
 	 (thing-at-point 'line 'no-properties)
        (progn (message "%s not found :(" line) nil)))))
 
-;;;; Creating haikus
-(defun generate-poem-with-format (syllable-count)
-  "Given a SYLLABLE-COUNT, create a new poem with matching lines."
-  (message "searching for this syllable count: %s"
-	   syllable-count)
-  (with-haiku-temp-buffer
-   (let* ((first-regexp (format "[[:alpha:]],%S," (car syllable-count)))
-	  (second-regexp (format "[[:digit:]]\"?,%S,"(nth 1 syllable-count)))
-	  (third-regexp (format "[[:digit:]]\"?,%S$"(nth 2 syllable-count)))
-	  (to-find-list (list first-regexp second-regexp third-regexp))
-	  (found-list ; the three matching lines from the file
-	   (mapcar #'get-random-matching-line to-find-list))
-	  (just-the-right-lines ; three strings that will make our poem
-	   ;; preserve the order of the lines:
-	   ;; for the first line in our new poem,
-	   ;; take a line that was originally a first line in its poem
-	   ;; apply the same logic for second line, etc
-	   ;; this makes the sentences more coherent/meaningful
-	   (cl-mapcar #'nth '(0 1 2) found-list)))
-     (format-haiku-just-text just-the-right-lines))))
-
 ;;;; Saving haikus
 (defun haiku-save-to-favorites (&optional arg)
   "Find ARG's data and save it to `haiku-favorites-file'.
@@ -281,6 +260,7 @@ If it is, return the three lines of the poem and its data.
 This is done by checking if the string contains `generated-poem-marker'
 If called interactively or string is not provided,
 check the text around the point."
+  ;; TODO: make it less verbose
   (interactive)
   (let ((to-find (concat "^\"?" (regexp-quote generated-poem-marker) "\n")))
     (if arg
@@ -311,6 +291,27 @@ check the text around the point."
 	      (if poetry-lines
 		  (haiku-generate-data poetry-lines))))))))
 
+
+;;;; Creating haikus
+(defun generate-poem-with-format (syllable-count)
+  "Given a SYLLABLE-COUNT, create a new poem with matching lines."
+  (message "searching for this syllable count: %s"
+	   syllable-count)
+  (with-haiku-temp-buffer
+   (let* ((first-regexp (format "[[:alpha:]],%S," (car syllable-count)))
+	  (second-regexp (format "[[:digit:]]\"?,%S,"(nth 1 syllable-count)))
+	  (third-regexp (format "[[:digit:]]\"?,%S$"(nth 2 syllable-count)))
+	  (to-find-list (list first-regexp second-regexp third-regexp))
+	  (found-list ; the three matching lines from the file
+	   (mapcar #'get-random-matching-line to-find-list))
+	  (just-the-right-lines ; three strings that will make our poem
+	   ;; preserve the order of the lines:
+	   ;; for the first line in our new poem,
+	   ;; take a line that was originally a first line in its poem
+	   ;; apply the same logic for second line, etc
+	   ;; this makes the sentences more coherent/meaningful
+	   (cl-mapcar #'nth '(0 1 2) found-list)))
+     (format-haiku-just-text just-the-right-lines))))
 
 ;;;; Interface
 ;;;###autoload
