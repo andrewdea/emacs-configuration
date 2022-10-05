@@ -234,6 +234,13 @@
   (set-frame-position (selected-frame) 838 24))
 (add-hook 'tetris-mode-hook #'yt-frame)
 
+;; (defun toggle-pixel-scroll-precision ()
+;;   (interactive)
+;;   (pixel-scroll-precision-mode 'toggle))
+;; (add-hook 'tetris-mode-hook #'toggle-pixel-scroll-precision)
+(add-hook 'tetris-mode-hook (lambda ()
+			      (pixel-scroll-precision-mode -1)))
+
 (defun right-frame ()
   (interactive)
   (let ((available-width
@@ -372,7 +379,9 @@ the whole region is fontified (by automatically inserting character at mark)"
 	       (makunbound 'to-fontify))))
   (add-hook 'post-self-insert-hook #'electric-fontify)
 
-  (add-hook 'org-mode-hook #'turn-on-flyspell)
+  :hook
+  (org-mode . org-indent-mode)
+  (org-mode . turn-on-flyspell)
   :bind (("C-c s" . org-store-link)
 	 ("C-c l" . org-insert-link)
 	 ("C-c a" . org-agenda)
