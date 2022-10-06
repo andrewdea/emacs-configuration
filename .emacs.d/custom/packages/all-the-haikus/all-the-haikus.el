@@ -282,20 +282,20 @@ check the text around the point."
 	    (replace-regexp-in-string to-find "" arg))
       ;; if ARG is not provided, check the text around point
       (progn
-	(message "arg not provided")
+	;(message "arg not provided")
 	(move-beginning-of-line 1)
-	(message "moved one line")
+	;(message "moved one line")
 	(if (search-forward-regexp "^\"?$" nil t) ; go to the end of the poem
 	    (let* ((pos (- (point) 1)) ; subtract 1 to remove the final \" char
 		   (poetry-lines
 		    (progn
 		      (forward-line -4) ; go back 4 lines to find the marker
-		      (message "found the end, going back 4 lines to find marker")
+		      ;(message "found the end, going back 4 lines to find marker")
 		      (if (string-match-p to-find
 					  (thing-at-point 'line 'no-properties))
 			  ;; if marker found, ignore marker line
 			  (progn (forward-line 1)
-				 (message "returning the last 3 lines")
+				 ;(message "returning the last 3 lines")
 				 ;; return last 3 lines
 				 (buffer-substring-no-properties
 				  (point) pos))))))
