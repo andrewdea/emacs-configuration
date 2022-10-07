@@ -2,7 +2,6 @@
 ;; Author: Andrew De Angelis
 
 ;;; Code:
-
 ;;;; NATIVE COMPILATION
 ;;;;; don't show compilation warnings
 ;; keeping warnings on for now to monitor native comp til I'm familiar with it
@@ -58,11 +57,11 @@
 
 
 ;;;;; monitoring init
-;; check which packages are slow to load/config
+;; ;; check which packages are slow to load/config
 ;; (setq use-package-verbose t
 ;;       use-package-minimum-reported-time 0.005)
 
-;; check where init is slow to load
+;; ;; check where init is slow to load
 ;; (use-package benchmark-init
 ;;   :init
 ;;   ;; To disable collection of benchmark data after init is done.
@@ -1024,20 +1023,46 @@ and set its contents as the appropriate programming-language-template"
   (if (equal "y" (read-string "Write your template? y/n: "))
       (template-set-contents file-name file-ext)))
 
+;;;; WEB
+(use-package xwidget
+  :init
+  ;; implementing a simple web search for quick questions
+  (defvar my-search-engine "search.brave.com"
+    "Search engine used when running `websearch'.")
+
+  (defun websearch (&optional arg)
+    (interactive "P")
+    (let ((url
+	   (thread-last
+	     (read-from-minibuffer
+	      (format "use %s to search: " my-search-engine))
+	     (string-replace " " "+")
+	     (concat "https://" my-search-engine "/search?q=")))
+	  (new-session (if arg t nil)))
+      (message "xwidgeting this: %s" url)
+      (xwidget-webkit-browse-url url new-session)))
+
+  :config
+  (defun my-current-url ()
+    "Return current url in minibuffer and return it"
+    (interactive)
+    (xwidget-webkit-current-url)
+    (message (current-kill 0)))
+
+  ;; eww is useful when text-navigation is needed
+  ;; as it preserves all the emacs key-bindings
+  (defun eww-this ()
+    "Grab current url with `my-current-url'
+and open a new eww buffer to visit it"
+    (interactive)
+    (eww-browse-url (my-current-url)))
+
+  :bind (:map xwidget-webkit-mode-map
+	      ("w" . my-current-url)
+	      ("s" . websearch)
+	      ("t" . eww-this)))
+
 ;;;; RANDOM STUFF
-;; implementing a simple web search for quick questions
-(setq my-search-engine "searx.bar")
-(defun websearch (&optional arg)
-  (interactive "P")
-  (let ((url
-	 (thread-last
-	   (read-from-minibuffer
-	    (format "use %s to search: " my-search-engine))
-	   (string-replace " " "+")
-	   (concat "https://" my-search-engine "/search?q=")))
-	(new-session (if arg t nil)))
-    (message "xwidgeting this: %s" url)
-    (xwidget-webkit-browse-url url new-session)))
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
@@ -1052,7 +1077,7 @@ and set its contents as the appropriate programming-language-template"
    '("024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(vundo all-the-haikus treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(all-the-haikus vundo treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode))
  '(projectile-ignored-projects '("~/")))
 
 (custom-set-faces
