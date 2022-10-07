@@ -1061,6 +1061,15 @@ and open a new eww buffer to visit it"
 	      ("w" . my-current-url)
 	      ("s" . websearch)
 	      ("t" . eww-this)))
+(use-package eww
+  :config
+  (defun my-xwidget-browse (&optional new-session)
+    (interactive "P")
+    (let ((url (eww-current-url)))
+      (xwidget-webkit-browse-url url new-session)))
+
+  :bind (:map eww-mode-map
+	      ("x" . my-xwidget-browse)))
 
 ;;;; RANDOM STUFF
 
