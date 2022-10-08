@@ -1056,6 +1056,31 @@ and open a new eww buffer to visit it"
     (interactive)
     (eww-browse-url (my-current-url)))
 
+  ;; overriding the xwidget.el definition because it tries to call
+  ;; an undefined function
+  (define-derived-mode xwidget-webkit-mode special-mode "xwidget-webkit"
+    "Xwidget webkit view mode."
+    (setq buffer-read-only t)
+    (add-hook 'kill-buffer-hook #'xwidget-webkit-buffer-kill)
+    (setq-local tool-bar-map xwidget-webkit-tool-bar-map)
+    (setq-local bookmark-make-record-function
+		#'xwidget-webkit-bookmark-make-record)
+    (setq-local header-line-format
+		(list "WebKit: "
+                      '(:eval
+			(xwidget-webkit-title (xwidget-webkit-current-session)))
+		      ;; this will hopefully be fixed soon
+                      ;; '(:eval
+		      ;; 	(when xwidget-webkit--loading-p
+                      ;;     (let ((session (xwidget-webkit-current-session)))
+                      ;;       (format " [%d%%%%]"
+                      ;;               (* 100
+                      ;;                  (xwidget-webkit-estimated-load-progress
+		      ;; 			session))))))
+		      ))
+    ;; Keep track of [vh]scroll when switching buffers
+    (image-mode-setup-winprops))
+
   :bind (:map xwidget-webkit-mode-map
 	      ("w" . my-current-url)
 	      ("s" . websearch)
