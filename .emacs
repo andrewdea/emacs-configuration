@@ -323,7 +323,13 @@
 ;;;;; appearance for specific modes
 
 (add-hook 'package-menu-mode-hook
-	  (lambda () (hl-line-mode t) (visual-line-mode -1)))
+	  (lambda ()
+	    (hl-line-mode t)
+	    (visual-line-mode -1)
+	    (setq-local truncate-lines t)))
+
+(add-hook 'csv-mode-hook
+	  (lambda () (visual-line-mode -1) (setq-local truncate-lines t)))
 
 ;;;; ORG mode
 (use-package org
@@ -850,10 +856,7 @@ for each open buffer with one of these files, refresh the version-control state"
 (defun my-prog-appearance ()
   (interactive)
   (display-line-numbers-mode t)
-  ;; (color-identifiers-mode t)
-  (electric-pair-local-mode t)
-  ;; (set-window-fringes (selected-window) 0)
-  )
+  (electric-pair-local-mode t))
 
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
@@ -970,7 +973,6 @@ Else, call find-symbol-first-occurrence"
                           elpy-module-pyvenv
                           elpy-module-yasnippet
                           elpy-module-django)))
-(add-hook 'python-mode-hook #'color-identifiers-mode)
 
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
@@ -1042,11 +1044,46 @@ and set its contents as the appropriate programming-language-template"
       (xwidget-webkit-browse-url url new-session)))
 
   :config
+  (defvar web-history-file "~/.emacs.d/custom/datasets/web_history.csv")
+  (defvar web-history-file-header "day,time,title,url\n")
+
+  (defun xwidget-add-current-url-to-history (&optional arg)
+    (with-temp-file web-history-file
+      (if (file-exists-p web-history-file)
+	  (insert-file-contents-literally web-history-file)
+	(insert web-history-file-header))
+      (let* ((title (or arg
+			(xwidget-webkit-title (xwidget-webkit-current-session))))
+	     (url (xwidget-webkit-uri (xwidget-webkit-current-session)))
+	     (time-as-list (split-string (current-time-string)))
+	     (date
+	      (string-join
+	       (nconc (take 3 time-as-list) (last time-as-list)) " "))
+	     (hour (nth 3 time-as-list))
+	     (web-history-line (concat date "," hour "," title "," url "\n")))
+	(goto-char (point-max))
+	(insert web-history-line))))
+
+  ;; making sure the url gets added once it's loaded
+  ;; this overwrites xwidget-log in xwidget.el
+  ;; so that when 'webkit finished loading' we add the url to history
+  (defun xwidget-log (&rest msg)
+    "Log MSG to a buffer."
+    (let ((buf (get-buffer-create " *xwidget-log*"))
+	   (msg-str (car msg)))
+      (if (string-match-p (regexp-quote "webkit finished loading: %s") msg-str)
+	  (xwidget-add-current-url-to-history
+	   (nth 1 msg)))
+      (with-current-buffer buf
+	(insert (apply #'format msg))
+	(insert "\n"))))
+
   (defun my-current-url ()
-    "Return current url in minibuffer and return it"
-    (interactive)
-    (xwidget-webkit-current-url)
-    (message (current-kill 0)))
+  "Display the current xwidget webkit URL and place it on the `kill-ring'."
+  (interactive nil xwidget-webkit-mode)
+  (let ((url (or (xwidget-webkit-uri (xwidget-webkit-current-session)) "")))
+    (kill-new url)
+    (message "%s" url)))
 
   ;; eww is useful when text-navigation is needed
   ;; as it preserves all the emacs key-bindings
@@ -1085,6 +1122,42 @@ and open a new eww buffer to visit it"
 	      ("w" . my-current-url)
 	      ("s" . websearch)
 	      ("t" . eww-this)))
+
+
+  ;; mode to display the history
+  (defvar web-history-highlights
+	     '(
+	       ("," . 'csv-separator-face)
+	       ("[[:digit:]][[:digit:]]:[[:digit:]][[:digit:]]:[[:digit:]][[:digit:]]" .
+		'font-lock-string-face)
+	       ("https:.*" . 'link)
+	       ))
+
+(defun web-history-open-url (arg)
+  (interactive "P")
+  (let ((at-point (thing-at-point 'sexp 'no-properties)))
+    (if (string-match-p "http" at-point)
+	(progn
+	  (xwidget-webkit-browse-url at-point arg))
+    (let* ((line (thing-at-point 'line 'no-properties))
+	  (link (string-trim (substring line (string-match-p "[^,]+$" line))))
+	  (url (read-from-minibuffer "xwidget-webkit URL: " link)))
+      (xwidget-webkit-browse-url url arg)))))
+
+(defvar web-history-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-<return>") #'web-history-open-url)
+    map))
+
+;;;###autoload
+(define-derived-mode web-history-mode csv-mode "web-history"
+  "Major mode for displaying web history.
+\\{web-history-mode-map}"
+  (setq font-lock-defaults '(web-history-highlights)))
+
+(add-to-list 'auto-mode-alist '("web_history.csv" . web-history-mode))
+(add-hook 'web-history-mode-hook #'read-only-mode)
+
 (use-package eww
   :config
   (defun my-xwidget-browse (&optional new-session)
@@ -1110,7 +1183,7 @@ and open a new eww buffer to visit it"
    '("024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(all-the-haikus vundo treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer color-identifiers-mode centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
+   '(all-the-haikus vundo treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
