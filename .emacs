@@ -1033,8 +1033,7 @@ and set its contents as the appropriate programming-language-template"
       (template-set-contents file-name file-ext)))
 
 ;;;; WEB
-(use-package my-webkit
-  :after (xwidget eww csv-mode))
+(use-package my-webkit)
 
 ;;;; RANDOM STUFF
 

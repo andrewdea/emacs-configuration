@@ -25,13 +25,16 @@
 
 (defgroup my-webkit nil
   "Additional functionalities and fixes for xwidget-webkit."
-  :group 'widgets) ; leisure/art/something like that?
+  :group 'widgets)
 
 (declare-function eww-current-url "eww.el")
 (declare-function xwidget-webkit-current-session "xwidget.el")
 (declare-function xwidget-webkit-buffer-kill "xwidget.el")
 (declare-function xwidget-webkit-bookmark-make-record "xwidget.el")
 (declare-function csv-mode "csv-mode.el")
+
+(defun my-webkit-activate ()
+  (message "loading my-webkit"))
 
 ;;;; web search
 (defvar my-search-engine "search.brave.com")
@@ -62,7 +65,6 @@ Use `xwidget-webkit-browse-url' with `eww-current-url' and NEW-SESSION"
 (advice-add 'eww-mode :after
 	    (lambda ()
 	      (define-key eww-mode-map "x" #'my-xwidget-browse)))
-
 
 ;;;; web history
 (defvar web-history-file "~/.emacs.d/custom/datasets/web_history.csv")
@@ -162,10 +164,7 @@ as the value of NEW-SESSION"
 	(xwidget-webkit-browse-url url arg)))))
 
 (defun web-history-mouse-open-url (event)
-  "If called when point is at a link, open that url.
-Else, parse the line at point to find the link, prompt for confirmation,
-and open it.  ARG is used when calling `xwidget-webkit-browse-url',
-as the value of NEW-SESSION"
+  "Move point to location defined by EVENT: if there's a link, open it."
   (interactive "e")
   (mouse-set-point event)
   (let ((at-point (thing-at-point 'sexp 'no-properties)))
@@ -224,7 +223,7 @@ expecting it to return the just-killed string."
   (eww-browse-url (my-current-url)))
 
 ;; overriding this mode definition
-(defun my-xwidget-webkit-fix-mode ()
+(defun my-xwidget-webkit-fix-configuration ()
   "Xwidget webkit view mode.
 This overrides the original definition in xwidget.el.
 Because it tried to call the undefined function
@@ -247,7 +246,7 @@ Because it tried to call the undefined function
 		    ;; 			session))))))
 		    )))
 
-(advice-add 'xwidget-webkit-mode :after #'my-xwidget-webkit-fix-mode)
+(advice-add 'xwidget-webkit-mode :after #'my-xwidget-webkit-fix-configuration)
 
 ;; add package to the `features' list
 (provide 'my-webkit)
