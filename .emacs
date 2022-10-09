@@ -126,7 +126,8 @@
   (scroll-bar-mode -1)
   (global-visual-line-mode t)
   (set-fringe-style '(2 . nil))
-  (pixel-scroll-precision-mode t))
+  (pixel-scroll-precision-mode t)
+  (setq blink-cursor-blinks 5))
 
 (add-hook 'after-init-hook #'startup-look)
 
