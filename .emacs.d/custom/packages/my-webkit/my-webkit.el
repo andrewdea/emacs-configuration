@@ -162,9 +162,21 @@ as the value of NEW-SESSION"
 	     (url (read-from-minibuffer "xwidget-webkit URL: " link)))
 	(xwidget-webkit-browse-url url arg)))))
 
+(defun web-history-mouse-open-url (event)
+  "If called when point is at a link, open that url.
+Else, parse the line at point to find the link, prompt for confirmation,
+and open it.  ARG is used when calling `xwidget-webkit-browse-url',
+as the value of NEW-SESSION"
+  (interactive "e")
+  (mouse-set-point event)
+  (let ((at-point (thing-at-point 'sexp 'no-properties)))
+    (if (string-match-p "http" at-point)
+        (xwidget-webkit-browse-url at-point))))
+
 (defvar web-history-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-<return>") #'web-history-open-url)
+    (define-key map (kbd "<mouse-3>") #'web-history-mouse-open-url)
     map))
 
 ;;;###autoload
