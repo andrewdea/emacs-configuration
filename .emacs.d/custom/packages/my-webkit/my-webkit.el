@@ -33,9 +33,6 @@
 (declare-function xwidget-webkit-bookmark-make-record "xwidget.el")
 (declare-function csv-mode "csv-mode.el")
 
-(defun my-webkit-activate ()
-  (message "loading my-webkit"))
-
 ;;;; web search
 (defvar my-search-engine "search.brave.com")
 
