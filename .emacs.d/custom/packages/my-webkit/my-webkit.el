@@ -67,6 +67,25 @@ Use `xwidget-webkit-browse-url' with `eww-current-url' and NEW-SESSION"
 ;;;; web history
 (defvar web-history-file "~/.emacs.d/custom/datasets/web_history.csv")
 (defvar web-history-file-header "day,time,title,url\n")
+(defvar web-history-file-session-separator
+  "__________,__________,__________,__________\n")
+
+(defun webkit-history-add-session-separator (&rest args)
+  "Insert  `web-history-file-session-separator' in `web-histoy-file'.
+This helps visualize different sessions in the csv file.
+ARGS are ignored, but included in the definition so that this
+function can be added as advice before `xwidget-webkit-new-session'"
+  (with-suppressed-warnings ((lexical args))
+    (let (()))
+    (with-temp-file web-history-file
+      (if (file-exists-p web-history-file)
+	  (insert-file-contents-literally web-history-file)
+	(insert web-history-file-header))
+      (forward-line 1)
+      (insert web-history-file-session-separator))))
+
+(advice-add 'xwidget-webkit-new-session :before
+	    #'webkit-history-add-session-separator)
 
 (defun webkit-add-current-url-to-history (&optional arg)
   "Get the current url and add it to `web-history-file'.
@@ -101,6 +120,7 @@ Also add date, time, and widget title (when provided, use ARG for title)"
     ("," . 'csv-separator-face)
     ("[[:digit:]][[:digit:]]:[[:digit:]][[:digit:]]:[[:digit:]][[:digit:]]" .
      'font-lock-string-face)
+    ("__________" . 'font-lock-builtin-face)
     ("https:.*" . 'link)))
 
 (defun web-history-open-url (arg)
