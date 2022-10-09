@@ -69,23 +69,9 @@ Use `xwidget-webkit-browse-url' with `eww-current-url' and NEW-SESSION"
 (defvar web-history-file-header "day,time,title,url\n")
 (defvar web-history-file-session-separator
   "__________,__________,__________,__________\n")
-
-(defun webkit-history-add-session-separator (&rest args)
-  "Insert  `web-history-file-session-separator' in `web-histoy-file'.
-This helps visualize different sessions in the csv file.
-ARGS are ignored, but included in the definition so that this
-function can be added as advice before `xwidget-webkit-new-session'"
-  (with-suppressed-warnings ((lexical args))
-    (let (()))
-    (with-temp-file web-history-file
-      (if (file-exists-p web-history-file)
-	  (insert-file-contents-literally web-history-file)
-	(insert web-history-file-header))
-      (forward-line 1)
-      (insert web-history-file-session-separator))))
-
-(advice-add 'xwidget-webkit-new-session :before
-	    #'webkit-history-add-session-separator)
+(defvar web-history-amt-days 60
+  "Integer corresponding to the amount of days recorded in `web-history-file'.
+Entries that are older than the current date minus this amount will be deleted")
 
 (defun webkit-add-current-url-to-history (&optional arg)
   "Get the current url and add it to `web-history-file'.
@@ -106,6 +92,44 @@ Also add date, time, and widget title (when provided, use ARG for title)"
       ;; (goto-char (point-min))
       (forward-line 1) ; add at the top, under the header: most recent first
       (insert web-history-line))))
+
+(defun webkit-history-add-session-separator (&rest args)
+  "Insert `web-history-file-session-separator' in `web-histoy-file'.
+This helps visualize different sessions in the csv file.
+ARGS are ignored, but included in the definition so that this
+function can be added as advice before `xwidget-webkit-new-session'.
+Side effect: delete old entries by calling `webkit-history-clear-older-entries'"
+  (with-suppressed-warnings ((lexical args))
+    (with-temp-file web-history-file
+      (if (file-exists-p web-history-file)
+	  (insert-file-contents-literally web-history-file)
+	(insert web-history-file-header))
+      (forward-line 1)
+      (insert web-history-file-session-separator)
+      (webkit-history-clear-older-entries))))
+
+(advice-add 'xwidget-webkit-new-session :before
+	    #'webkit-history-add-session-separator)
+
+(defun webkit-history-clear-older-entries ()
+  "Delete entries older than `web-history-amt-days' ago from `web-history-file'"
+  (let* ((date
+	  (thread-last
+	    (* 60 60 24 web-history-amt-days)
+	    (time-subtract (current-time))
+	    (current-time-string)
+	    (replace-regexp-in-string
+	     " [[:digit:]][[:digit:]]:[[:digit:]][[:digit:]]:[[:digit:]][[:digit:]]" "")
+	    (replace-regexp-in-string "[[:space:]]+" " "))))
+    (if (search-forward-regexp date nil 'no-error)
+	;; if found, delete every following entry,
+	;; and the preceding newline
+	(progn
+	  (move-beginning-of-line 1)
+	  (let ((start (point))
+		(end (point-max)))
+	    (delete-region start end)
+	    (delete-char -1))))))
 
 ;;;###autoload
 (defun my-webkit-display-web-history ()
