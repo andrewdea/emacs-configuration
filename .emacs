@@ -841,6 +841,13 @@ open siblings (directories at its same depth)"
 
 (use-package magit
   :config
+  (defun magit-add-force (&optional arg)
+    "Adds (with force) the file ARG to the git repo.
+If ARG not specified, defaults to the current buffer's file"
+    (interactive)
+    (shell-command (concat "git add -f "
+			   (shell-quote-argument (or arg buffer-file-name)))))
+
   (defun vc-refresh-all-git-buffers ()
     "get list of git files from magit,
 for each open buffer with one of these files, refresh the version-control state"
