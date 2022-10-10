@@ -33,7 +33,7 @@
 (declare-function xwidget-webkit-bookmark-make-record "xwidget.el")
 (declare-function csv-mode "csv-mode.el")
 
-;;;; web search
+;;; web search
 (defvar my-search-engine "search.brave.com")
 
 ;;;###autoload
@@ -51,7 +51,7 @@ with the resulting url, and the optional NEW-SESSION argument"
     (message "xwidgeting this: %s" url)
     (xwidget-webkit-browse-url url new-session)))
 
-;;;; eww integration
+;;; eww integration
 (defun my-xwidget-browse (&optional new-session)
   "From a `eww' session, open an xwidget session with the current url.
 Use `xwidget-webkit-browse-url' with `eww-current-url' and NEW-SESSION"
@@ -63,7 +63,7 @@ Use `xwidget-webkit-browse-url' with `eww-current-url' and NEW-SESSION"
 	    (lambda ()
 	      (define-key eww-mode-map "x" #'my-xwidget-browse)))
 
-;;;; web history
+;;; web history
 (defvar web-history-file "~/.emacs.d/custom/datasets/web_history.csv")
 (defvar web-history-file-header "day,time,title,url\n")
 (defvar web-history-file-session-separator
@@ -183,7 +183,71 @@ as the value of NEW-SESSION"
   (auto-revert-mode 1))
 (add-to-list 'auto-mode-alist '("web_history.csv" . web-history-mode))
 
-;;;; xwidget configuration
+;;; Search text in page
+;; this section is all copied from the earlier version of xwidget.el
+;; at https://github.com/emacs-mirror/emacs/blob/emacs-28/lisp/xwidget.el
+(defvar isearch-search-fun-function)
+
+;; Initialize last search text length variable when isearch starts
+(defvar xwidget-webkit-isearch-last-length 0)
+(add-hook 'isearch-mode-hook
+          (lambda ()
+            (setq xwidget-webkit-isearch-last-length 0)))
+
+;; This is minimal. Regex and incremental search will be nice
+(defvar xwidget-webkit-search-js "
+var xwSearchForward = %s;
+var xwSearchRepeat = %s;
+var xwSearchString = '%s';
+if (window.getSelection() && !window.getSelection().isCollapsed) {
+  if (xwSearchRepeat) {
+    if (xwSearchForward)
+      window.getSelection().collapseToEnd();
+    else
+      window.getSelection().collapseToStart();
+  } else {
+    if (xwSearchForward)
+      window.getSelection().collapseToStart();
+    else {
+      var sel = window.getSelection();
+      window.getSelection().collapse(sel.focusNode, sel.focusOffset + 1);
+    }
+  }
+}
+window.find(xwSearchString, false, !xwSearchForward, true, false, true);
+")
+
+(defun xwidget-webkit-search-fun-function ()
+  "Return the function which perform the search in xwidget webkit."
+  (lambda (string &optional bound noerror count)
+    (ignore bound noerror count)
+    (let ((current-length (length string))
+          search-forward
+          search-repeat)
+      ;; Forward or backward
+      (if (eq isearch-forward nil)
+          (setq search-forward "false")
+        (setq search-forward "true"))
+      ;; Repeat if search string length not changed
+      (if (eq current-length xwidget-webkit-isearch-last-length)
+          (setq search-repeat "true")
+        (setq search-repeat "false"))
+      (setq xwidget-webkit-isearch-last-length current-length)
+      (xwidget-webkit-execute-script
+       (xwidget-webkit-current-session)
+       (format xwidget-webkit-search-js
+               search-forward
+               search-repeat
+               (regexp-quote string)))
+      ;; Unconditionally avoid 'Failing I-search ...'
+      (if (eq isearch-forward nil)
+          (goto-char (point-max))
+        (goto-char (point-min)))
+      )))
+
+;; add package to the `features' list
+(provide 'my-webkit)
+;;; xwidget configuration
 ;; overriding this function
 (defun my-xwidget-log (&rest msg)
   "Log MSG to a buffer.  This overwrites `xwidget-log' in xwidget.el.
@@ -229,6 +293,12 @@ Because it tried to call the undefined function
   (define-key xwidget-webkit-mode-map "s" #'websearch)
   (define-key xwidget-webkit-mode-map "t" #'eww-this)
   (define-key xwidget-webkit-mode-map "H" #'my-webkit-display-web-history)
+  (define-key xwidget-webkit-mode-map "x" #'xwidget-webkit-browse-url)
+  (define-key xwidget-webkit-mode-map "\C-s" #'isearch-forward)
+  (define-key xwidget-webkit-mode-map "\C-r" #'isearch-backward)
+  (setq-local isearch-lazy-highlight nil)
+  (setq-local isearch-search-fun-function
+                #'xwidget-webkit-search-fun-function)
   (setq-local header-line-format
 	      (list "WebKit: "
                     '(:eval
@@ -245,6 +315,4 @@ Because it tried to call the undefined function
 
 (advice-add 'xwidget-webkit-mode :after #'my-xwidget-webkit-fix-configuration)
 
-;; add package to the `features' list
-(provide 'my-webkit)
 ;;; my-webkit.el ends here

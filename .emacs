@@ -1034,6 +1034,7 @@ and set its contents as the appropriate programming-language-template"
 
 ;;;; WEB
 (use-package my-webkit)
+;; (use-package xwidget-patch)
 
 ;;;; RANDOM STUFF
 (define-key help-mode-map "b" #'help-go-back)
