@@ -57,16 +57,16 @@
 
 
 ;;;;; monitoring init
-;; check which packages are slow to load/config
-(setq use-package-verbose t
-      use-package-minimum-reported-time 0.005)
+;; ;; check which packages are slow to load/config
+;; (setq use-package-verbose t
+;;       use-package-minimum-reported-time 0.005)
 
-;; check where init is slow to load
-(use-package benchmark-init
-  :init
-  ;; To disable collection of benchmark data after init is done.
-  ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
-  (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
+;; ;; check where init is slow to load
+;; (use-package benchmark-init
+;;   :init
+;;   ;; To disable collection of benchmark data after init is done.
+;;   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
+;;   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
 ;;;; CHEATSHEET
 (use-package cheatsheet
@@ -1036,6 +1036,8 @@ and set its contents as the appropriate programming-language-template"
 (use-package my-webkit)
 
 ;;;; RANDOM STUFF
+(define-key help-mode-map "b" #'help-go-back)
+(define-key help-mode-map "f" #'help-go-forward)
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
