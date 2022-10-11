@@ -303,7 +303,8 @@ rather than adding the check before/after)"
 	 (nth 1 msg))
       (with-current-buffer buf
 	(insert (apply #'format msg))
-	(insert "\n")))))
+	(insert "\n"))))
+  (add-hook 'kill-buffer-hook #'my-webkit-kill-log-buffer))
 
 (advice-add 'xwidget-log :override #'my-xwidget-log)
 
@@ -333,12 +334,11 @@ only stays open only as long as there is at least one web session open"
 		      (string-match-p (regexp-quote "*xwidget-webkit: ") (buffer-name arg))
 		      (not (eq (current-buffer) arg))))
 		   (buffer-list)))
-      (condition-case nil
+      (progn
 	  (kill-buffer "*xwidget-log*")
-	(error
-	 (message "attempted to kill *xwidget-log* buffer, but not found")))))
+	  (remove-hook 'kill-buffer-hook #'my-webkit-kill-log-buffer))))
 
-(advice-add 'xwidget-webkit-buffer-kill :after #'my-webkit-kill-log-buffer)
+(add-hook 'kill-buffer-hook #'my-webkit-kill-log-buffer)
 
 ;; eww is useful when text-navigation is needed
 ;; as it preserves all the emacs key-bindings
