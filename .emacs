@@ -57,16 +57,16 @@
 
 
 ;;;;; monitoring init
-;; check which packages are slow to load/config
-(setq use-package-verbose t
-      use-package-minimum-reported-time 0.005)
+;; ;; check which packages are slow to load/config
+;; (setq use-package-verbose t
+;;       use-package-minimum-reported-time 0.005)
 
-;; check where init is slow to load
-(use-package benchmark-init
-  :init
-  ;; To disable collection of benchmark data after init is done.
-  ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
-  (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
+;; ;; check where init is slow to load
+;; (use-package benchmark-init
+;;   :init
+;;   ;; To disable collection of benchmark data after init is done.
+;;   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
+;;   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
 ;;;; CHEATSHEET
 (use-package cheatsheet
@@ -107,21 +107,27 @@
 ;; made some edits in ~/.emacs.d/my-monokai-theme.el
 
 ;; resize current frame (toggle)
-(defun big-frame ()
-  (interactive)
-  (if (< (frame-parameter (selected-frame) 'width) 200)
-      (set-frame-size (selected-frame) 204 55) ; used to be 203 55
-    (set-frame-size (selected-frame) 100 45))
-  (set-frame-position (selected-frame) 0 0))
+(defun big-frame (&optional arg)
+  "Toggles frame between full screen and small.
+If ARG is provided, set frame to big, else check the size and toggle it."
+  (interactive "P")
+  (message "setting frame position")
+  (set-frame-position (selected-frame) 0 0)
+  (if (or arg (< (frame-parameter (selected-frame) 'width) 200))
+      (progn (message "setting frame size to big")
+	     (set-frame-size (selected-frame) 204 54))
+    (progn (message "setting frame-size to small")
+	   (set-frame-size (selected-frame) 100 45))))
 
 (use-package mood-line
   :defer t)
 
 (defun startup-look ()
+  "Set (or restore) the initial appearance."
   (interactive)
   (setq column-number-mode t)
   (load-theme (default-theme))
-  (big-frame)
+  (big-frame t)
   (mood-line-mode t)
   (scroll-bar-mode -1)
   (global-visual-line-mode t)
@@ -234,10 +240,6 @@
   (set-frame-position (selected-frame) 838 24))
 (add-hook 'tetris-mode-hook #'yt-frame)
 
-;; (defun toggle-pixel-scroll-precision ()
-;;   (interactive)
-;;   (pixel-scroll-precision-mode 'toggle))
-;; (add-hook 'tetris-mode-hook #'toggle-pixel-scroll-precision)
 (add-hook 'tetris-mode-hook (lambda ()
 			      (pixel-scroll-precision-mode -1)))
 
@@ -1032,11 +1034,18 @@ and set its contents as the appropriate programming-language-template"
   (if (equal "y" (read-string "Write your template? y/n: "))
       (template-set-contents file-name file-ext)))
 
-;;;; WEB
+;;;; SPECIAL VIEWS (web and PDF)
 (use-package my-webkit)
-;; (use-package xwidget-patch)
+
+(use-package pdf-tools
+  :mode ("\\.pdf\\'" . pdf-view-mode))
+
+(add-hook 'pdf-view-mode-hook (lambda ()
+			      (pixel-scroll-precision-mode -1)))
 
 ;;;; RANDOM STUFF
+(define-key help-mode-map "b" #'help-go-back)
+(define-key help-mode-map "f" #'help-go-forward)
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
