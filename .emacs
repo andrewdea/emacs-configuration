@@ -545,6 +545,14 @@ delete preceding ARG lines and preceding 1 char."
 
 (global-set-key (kbd "C-k") #'my-kill-whole-line)
 
+(defun my-smart-copy (&optional arg)
+  (interactive "P")
+  (if (and (not mark-active) arg)
+      (kill-ring-save (line-beginning-position) (line-end-position))
+    (kill-ring-save (region-beginning) (region-end))))
+
+(global-set-key (kbd "M-w") #'my-smart-copy)
+
 (defun count-total-visible-lines ()
   (interactive)
   (message "Buffer '%s' has %d total lines"
