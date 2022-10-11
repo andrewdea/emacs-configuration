@@ -111,13 +111,10 @@
   "Toggles frame between full screen and small.
 If ARG is provided, set frame to big, else check the size and toggle it."
   (interactive "P")
-  (message "setting frame position")
   (set-frame-position (selected-frame) 0 0)
   (if (or arg (< (frame-parameter (selected-frame) 'width) 200))
-      (progn (message "setting frame size to big")
-	     (set-frame-size (selected-frame) 204 54))
-    (progn (message "setting frame-size to small")
-	   (set-frame-size (selected-frame) 100 45))))
+      (set-frame-size (selected-frame) 204 54)
+	   (set-frame-size (selected-frame) 100 45)))
 
 (use-package mood-line
   :defer t)
