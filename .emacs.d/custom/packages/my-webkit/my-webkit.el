@@ -72,15 +72,15 @@ Use `xwidget-webkit-browse-url' with `eww-current-url' and NEW-SESSION"
   "Integer corresponding to the amount of days recorded in `web-history-file'.
 Entries that are older than the current date minus this amount will be deleted")
 
-(defun webkit-add-current-url-to-history (&optional arg)
+(defun webkit-add-current-url-to-history (arg)
   "Get the current url and add it to `web-history-file'.
-Also add date, time, and widget title (when provided, use ARG for title)"
+Also add date, time, and widget title (which is ARG)"
   (with-temp-file web-history-file
     (if (file-exists-p web-history-file)
 	(insert-file-contents-literally web-history-file)
       (insert web-history-file-header))
-    (let* ((title (or arg
-		      (xwidget-webkit-title (xwidget-webkit-current-session))))
+    ;; (let* ((title (xwidget-webkit-title (xwidget-webkit-current-session)))
+    (let* ((title arg)
 	   (url (xwidget-webkit-uri (xwidget-webkit-current-session)))
 	   (time-as-list (split-string (current-time-string)))
 	   (date
@@ -285,6 +285,7 @@ for the actual events that will be sent."
 (advice-add 'xwidget-perform-lispy-event :before  #'log-before)
 (advice-add 'xwidget-perform-lispy-event :after #'log-after)
 (advice-add 'xwidget-perform-lispy-event :filter-return #'log-around)
+
 ;;; xwidget configuration
 ;; overriding this function
 (defun my-xwidget-log (&rest msg)
@@ -293,16 +294,24 @@ It adds the functionality that wen webkit finished loading,
 the url is added to our browsing history
 \(by calling `webkit-add-current-url-to-history').
 Also the space at the beginning of the xwidget-log buffer-name
-prevented the buffer from persisting for some reason"
+prevented the buffer from persisting for some reason
+(which is why we override `xwidget-log'
+rather than adding the check before/after)"
   (let ((buf (get-buffer-create "*xwidget-log*")))
     (if (string-match-p (regexp-quote "webkit finished loading: %s") (car msg))
 	(webkit-add-current-url-to-history
-	 (nth 1 msg)))
-    (with-current-buffer buf
-      (insert (apply #'format msg))
-      (insert "\n"))))
+	 (nth 1 msg))
+      (with-current-buffer buf
+	(insert (apply #'format msg))
+	(insert "\n")))))
 
 (advice-add 'xwidget-log :override #'my-xwidget-log)
+
+;; not sure if this is necessary
+;; but I've seen it malfunction before
+;; (advice-add 'webkit-add-current-url-to-history :after
+;; 	    (lambda (arg)
+;; 	      (rename-buffer arg 'unique)))
 
 (defun my-current-url ()
   "Display the current xwidget webkit URL and place it on the `kill-ring'.
@@ -313,6 +322,23 @@ expecting it to return the just-killed string."
   (let ((url (or (xwidget-webkit-uri (xwidget-webkit-current-session)) "")))
     (kill-new url)
     (message "%s" url)))
+
+(defun my-webkit-kill-log-buffer ()
+  "If the current buffer is the only xwidget-webkit, kill the log buffer.
+Added as a hook to `xwidget-webkit-buffer-kill' so that the log buffer
+only stays open only as long as there is at least one web session open"
+  (if (not
+       (cl-find-if (lambda (arg)
+		     (and
+		      (string-match-p (regexp-quote "*xwidget-webkit: ") (buffer-name arg))
+		      (not (eq (current-buffer) arg))))
+		   (buffer-list)))
+      (condition-case nil
+	  (kill-buffer "*xwidget-log*")
+	(error
+	 (message "attempted to kill *xwidget-log* buffer, but not found")))))
+
+(advice-add 'xwidget-webkit-buffer-kill :after #'my-webkit-kill-log-buffer)
 
 ;; eww is useful when text-navigation is needed
 ;; as it preserves all the emacs key-bindings
