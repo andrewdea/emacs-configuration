@@ -338,8 +338,6 @@ only stays open only as long as there is at least one web session open"
 	  (kill-buffer "*xwidget-log*")
 	  (remove-hook 'kill-buffer-hook #'my-webkit-kill-log-buffer))))
 
-(add-hook 'kill-buffer-hook #'my-webkit-kill-log-buffer)
-
 ;; eww is useful when text-navigation is needed
 ;; as it preserves all the emacs key-bindings
 (defun eww-this ()
