@@ -143,7 +143,7 @@ Side effect: delete old entries by calling `webkit-history-clear-older-entries'"
     ("[[:digit:]][[:digit:]]:[[:digit:]][[:digit:]]:[[:digit:]][[:digit:]]" .
      'font-lock-string-face)
     ("__________" . 'font-lock-builtin-face)
-    ("https:.*" . 'link)))
+    ("http:.*" . 'link)))
 
 (defun web-history-open-url (arg)
   "If called when point is at a link, open that url.
