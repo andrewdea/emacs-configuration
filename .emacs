@@ -545,7 +545,7 @@ delete preceding ARG lines and preceding 1 char."
 
 (global-set-key (kbd "C-k") #'my-kill-whole-line)
 
-(defun my-smart-copy (&optional arg)
+(defun my-smart-copy ()
   (interactive)
   (if (not mark-active)
       (kill-ring-save (line-beginning-position) (line-end-position))
