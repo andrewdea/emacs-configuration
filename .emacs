@@ -865,7 +865,8 @@ for each open buffer with one of these files, refresh the version-control state"
 	     #'string-equal-ignore-case)))
   ;; this might affect performance when there are many files
   ;; but it can always be turned off
-  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers))
+  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers)
+  :bind ("C-x g" . magit-status))
 
 ;;;;; appearance
 (defun my-prog-appearance ()
