@@ -245,47 +245,6 @@ window.find(xwSearchString, false, !xwSearchForward, true, false, true);
         (goto-char (point-min)))
       )))
 
-;; add package to the `features' list
-(provide 'my-webkit)
-;;; edit mode
-(defun xwidget-webkit-pass-command-event ()
-  "Pass `last-command-event' to the current buffer's WebKit widget.
-If `current-input-method' is non-nil, consult `input-method-function'
-for the actual events that will be sent."
-  (interactive)
-  (message "in webkit-pass-command-event")
-  (message "current-input-method: %s, last-command-event: %s" current-input-method last-command-event)
-  (if (and current-input-method
-           (characterp last-command-event))
-      (message "both true, last-command-event: %s" last-command-event)
-      (let ((xwidget-webkit--input-method-events nil)
-            (minibuffer-local-map (make-keymap)))
-        (define-key minibuffer-local-map [with-input-method]
-          'xwidget-webkit-pass-command-event-with-input-method)
-        (push last-command-event unread-command-events)
-        (push 'with-input-method unread-command-events)
-	(message "about to read from minibuffer (what for???)")
-	(message "read from minibuffer")
-        (read-from-minibuffer "" nil nil nil nil nil t)
-        (dolist (event xwidget-webkit--input-method-events)
-          (xwidget-perform-lispy-event (xwidget-webkit-current-session)
-                                       event)))
-    (xwidget-perform-lispy-event (xwidget-webkit-current-session)
-                                 last-command-event)))
-
-(defun log-before (&rest args)
-  (message "calling xwidget-perform-lispy-event with args: %s" args))
-
-(defun log-after (&rest args)
-  (message "just called xwidget-perform-lispy-event with args: %s" args))
-
-(defun log-around (&rest args)
-  (message "just called xwidget-perform-lispy-event, returns: %s" args))
-
-(advice-add 'xwidget-perform-lispy-event :before  #'log-before)
-(advice-add 'xwidget-perform-lispy-event :after #'log-after)
-(advice-add 'xwidget-perform-lispy-event :filter-return #'log-around)
-
 ;;; xwidget configuration
 ;; overriding this function
 (defun my-xwidget-log (&rest msg)
@@ -377,4 +336,6 @@ Because it tried to call the undefined function
 
 (advice-add 'xwidget-webkit-mode :after #'my-xwidget-webkit-fix-configuration)
 
+;; add package to the `features' list
+(provide 'my-webkit)
 ;;; my-webkit.el ends here
