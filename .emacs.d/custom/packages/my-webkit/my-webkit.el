@@ -254,7 +254,7 @@ the url is added to our browsing history
 \(by calling `webkit-add-current-url-to-history').
 Also the space at the beginning of the xwidget-log buffer-name
 prevented the buffer from persisting for some reason
-(which is why we override `xwidget-log'
+\(which is why we override `xwidget-log'
 rather than adding the check before/after)"
   (let ((buf (get-buffer-create "*xwidget-log*")))
     (if (string-match-p (regexp-quote "webkit finished loading: %s") (car msg))
@@ -286,7 +286,7 @@ expecting it to return the just-killed string."
 (defun my-webkit-kill-log-buffer ()
   "If the current buffer is the only xwidget-webkit, kill the log buffer.
 Added as a hook to `xwidget-webkit-buffer-kill' so that the log buffer
-only stays open only as long as there is at least one web session open"
+stays open only as long as there is at least one web session open"
   (if (not
        (cl-find-if (lambda (arg)
 		     (and
