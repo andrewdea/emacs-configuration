@@ -466,12 +466,12 @@ the whole region is fontified (by automatically inserting character at mark)"
   (setq all-the-icons-dired-monochrome nil))
 
 (use-package dired-subtree
-  :defer
+  :defer t
   :after dired
-  (:bind
+  :bind
    (:map dired-mode-map
 	 ("<tab>" . dired-subtree-toggle)
-	 ("<backtab>" . dired-subtree-cycle))))
+	 ("<backtab>" . dired-subtree-cycle)))
 
 ;;;;; find and grep
 (use-package shell-output-mode
