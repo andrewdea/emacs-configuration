@@ -22,6 +22,7 @@
 (eval-when-compile (require 'eww))
 (eval-when-compile (require 'image-mode))
 (eval-when-compile (require 'csv-mode))
+(eval-when-compile (require 'cl-seq))
 
 (defgroup my-webkit nil
   "Additional functionalities and fixes for xwidget-webkit."
@@ -46,12 +47,25 @@ with the resulting url, and the optional NEW-SESSION argument"
 	 (thread-last
 	   (read-from-minibuffer
 	    (format "use %s to search: " my-search-engine))
-	   (string-replace " " "+")
+	   (url-hexify-string)
 	   (concat "https://" my-search-engine "/search?q="))))
     (message "xwidgeting this: %s" url)
     (xwidget-webkit-browse-url url new-session)))
 
 ;;; eww integration
+
+;; toggling between eww and xwidget was an important feature
+;; when search was broken in xwidget.
+;; Now that it works fine (see section above)
+;; it's not as needed, but is still a small nice-to-have,
+;; as it allows us to navigate text using all our usual Emacs key bindings
+(defun eww-this ()
+  "Open a new eww buffer with `my-current-url'.
+This assumes that an xwidget session is currently open.
+If it's not, `my-current-url' throws an error"
+  (interactive)
+  (eww-browse-url (my-current-url)))
+
 (defun my-xwidget-browse (&optional new-session)
   "From a `eww' session, open an xwidget session with the current url.
 Use `xwidget-webkit-browse-url' with `eww-current-url' and NEW-SESSION"
@@ -249,13 +263,15 @@ window.find(xwSearchString, false, !xwSearchForward, true, false, true);
 ;; overriding this function
 (defun my-xwidget-log (&rest msg)
   "Log MSG to a buffer.  This overwrites `xwidget-log' in xwidget.el.
-It adds the functionality that wen webkit finished loading,
+It adds the functionality that wen webkit finishes loading,
 the url is added to our browsing history
 \(by calling `webkit-add-current-url-to-history').
 Also the space at the beginning of the xwidget-log buffer-name
 prevented the buffer from persisting for some reason
 \(which is why we override `xwidget-log'
-rather than adding the check before/after)"
+rather than adding the check before/after).
+Also, add the hook `my-webkit-kill-log-buffer' to `kill-buffer-hook',
+ensuring that the log buffer doesn't stay open when not needed"
   (let ((buf (get-buffer-create "*xwidget-log*")))
     (if (string-match-p (regexp-quote "webkit finished loading: %s") (car msg))
 	(webkit-add-current-url-to-history
@@ -296,13 +312,6 @@ stays open only as long as there is at least one web session open"
       (progn
 	  (kill-buffer "*xwidget-log*")
 	  (remove-hook 'kill-buffer-hook #'my-webkit-kill-log-buffer))))
-
-;; eww is useful when text-navigation is needed
-;; as it preserves all the emacs key-bindings
-(defun eww-this ()
-  "Open a new eww buffer with `my-current-url'."
-  (interactive)
-  (eww-browse-url (my-current-url)))
 
 ;; overriding this mode definition
 (defun my-xwidget-webkit-fix-configuration ()
