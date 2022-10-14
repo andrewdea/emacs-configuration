@@ -47,7 +47,7 @@ with the resulting url, and the optional NEW-SESSION argument"
 	 (thread-last
 	   (read-from-minibuffer
 	    (format "use %s to search: " my-search-engine))
-	   (string-replace " " "+")
+	   (url-hexify-string)
 	   (concat "https://" my-search-engine "/search?q="))))
     (message "xwidgeting this: %s" url)
     (xwidget-webkit-browse-url url new-session)))
