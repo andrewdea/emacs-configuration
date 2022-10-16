@@ -541,7 +541,8 @@ point reaches the beginning or end of the buffer, stop there."
   (let ((orig-point (point)))
     (back-to-indentation)
     (when (= orig-point (point))
-      (move-beginning-of-line 1))))
+      (move-beginning-of-line 1)))
+  (point))
 
 ;; remap C-a to 'smarter-move-beginning-of-line'
 (global-set-key (kbd "\C-a") #'smarter-move-beginning-of-line)
@@ -568,7 +569,10 @@ delete preceding ARG lines and preceding 1 char."
 (defun my-smart-copy ()
   (interactive)
   (if (not mark-active)
-      (kill-ring-save (line-beginning-position) (line-end-position))
+      (let ((orig-point (point)))
+	(kill-ring-save (smarter-move-beginning-of-line nil)
+			(line-end-position))
+	(goto-char orig-point))
     (kill-ring-save (region-beginning) (region-end))))
 
 (global-set-key (kbd "M-w") #'my-smart-copy)
