@@ -32,6 +32,10 @@
       (package-delete (cadr (assq arg package-alist)))
     (error (message "error while deleting, most likely had already deleted"))))
 
+;;;; PATH from shell
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
+
 ;;;; PERFORMANCE
 ;;;;; garbage collection
 ;; avoid garbage collection at startup
@@ -398,6 +402,14 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("C-M-<backspace>" . org-cut-subtree)
 	 ("TAB" . my-org-tab)))
 
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory "~/RoamNotes")
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+	 ("C-c n f" . org-roam-node-find)
+	 ("C-c n i" . org-roam-node-insert)))
+
 ;;;; FILE utilities
 ;;;;; load faster
 ;; these are useful especially in VERY large files
@@ -465,6 +477,14 @@ the whole region is fontified (by automatically inserting character at mark)"
   :config
   (setq all-the-icons-dired-monochrome nil))
 
+(use-package dired-subtree
+  :defer t
+  :after dired
+  :bind
+   (:map dired-mode-map
+	 ("<tab>" . dired-subtree-toggle)
+	 ("<backtab>" . dired-subtree-cycle)))
+
 ;;;;; find and grep
 (use-package shell-output-mode
   :defer t)
@@ -521,7 +541,8 @@ point reaches the beginning or end of the buffer, stop there."
   (let ((orig-point (point)))
     (back-to-indentation)
     (when (= orig-point (point))
-      (move-beginning-of-line 1))))
+      (move-beginning-of-line 1)))
+  (point))
 
 ;; remap C-a to 'smarter-move-beginning-of-line'
 (global-set-key (kbd "\C-a") #'smarter-move-beginning-of-line)
@@ -545,10 +566,13 @@ delete preceding ARG lines and preceding 1 char."
 
 (global-set-key (kbd "C-k") #'my-kill-whole-line)
 
-(defun my-smart-copy (&optional arg)
-  (interactive "P")
-  (if (and (not mark-active) arg)
-      (kill-ring-save (line-beginning-position) (line-end-position))
+(defun my-smart-copy ()
+  (interactive)
+  (if (not mark-active)
+      (let ((orig-point (point)))
+	(kill-ring-save (smarter-move-beginning-of-line nil)
+			(line-end-position))
+	(goto-char orig-point))
     (kill-ring-save (region-beginning) (region-end))))
 
 (global-set-key (kbd "M-w") #'my-smart-copy)
@@ -865,7 +889,8 @@ for each open buffer with one of these files, refresh the version-control state"
 	     #'string-equal-ignore-case)))
   ;; this might affect performance when there are many files
   ;; but it can always be turned off
-  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers))
+  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers)
+  :bind ("C-x g" . magit-status))
 
 ;;;;; appearance
 (defun my-prog-appearance ()
@@ -1065,7 +1090,7 @@ and set its contents as the appropriate programming-language-template"
    '("024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(my-webkit pdf-tools tablist all-the-haikus vundo treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
+   '(my-webkit exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
