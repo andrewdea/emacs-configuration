@@ -313,6 +313,12 @@ stays open only as long as there is at least one web session open"
 	  (kill-buffer "*xwidget-log*")
 	  (remove-hook 'kill-buffer-hook #'my-webkit-kill-log-buffer))))
 
+;; working with xwidget-webkit--loading-p
+(defun reset-loading-nil ()
+  (setq-local xwidget-webkit--loading-p nil))
+
+(advice-add 'xwidget-webkit-stop-loading :after #'reset-loading-nil)
+
 ;; overriding this mode definition
 (defun my-xwidget-webkit-fix-configuration ()
   "Xwidget webkit view mode.
@@ -328,20 +334,22 @@ Because it tried to call the undefined function
   (define-key xwidget-webkit-mode-map "\C-r" #'isearch-backward)
   (setq-local isearch-lazy-highlight nil)
   (setq-local isearch-search-fun-function
-                #'xwidget-webkit-search-fun-function)
+              #'xwidget-webkit-search-fun-function)
   (setq-local header-line-format
 	      (list "WebKit: "
                     '(:eval
 		      (xwidget-webkit-title (xwidget-webkit-current-session)))
-		    ;; this will hopefully be fixed soon
-                    ;; '(:eval
-		    ;; 	(when xwidget-webkit--loading-p
-                    ;;     (let ((session (xwidget-webkit-current-session)))
-                    ;;       (format " [%d%%%%]"
-                    ;;               (* 100
-                    ;;                  (xwidget-webkit-estimated-load-progress
-		    ;; 			session))))))
-		    )))
+                    '(:eval
+		      (when xwidget-webkit--loading-p
+			(if (fboundp #'xwidget-webkit-estimated-load-progress)
+                            (let ((session (xwidget-webkit-current-session)))
+                              (format " [%d%%%%]"
+                                      (* 100
+					 (xwidget-webkit-estimated-load-progress
+					  session))))
+			  (if xwidget-webkit--loading-p ; this isn't automatically reset
+			      (format " loading ...")
+			    (format " loaded!"))))))))
 
 (advice-add 'xwidget-webkit-mode :after #'my-xwidget-webkit-fix-configuration)
 
