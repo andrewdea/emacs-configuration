@@ -888,12 +888,9 @@ for each open buffer with one of these files, refresh the version-control state"
 	     (mapcar #'buffer-name (buffer-list))
 	     #'string-equal-ignore-case)))
 
-  (defun async-vc-refresh-all ()
-    (make-thread #'vc-refresh-all-git-buffers))
-
   ;; this might affect performance when there are many files
   ;; but it can always be turned off
-  :hook (magit-refresh-buffer . async-vc-refresh-all)
+  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers)
   :bind ("C-x g" . magit-status))
 
 ;;;;; appearance
