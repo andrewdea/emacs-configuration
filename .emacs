@@ -893,7 +893,7 @@ for each open buffer with one of these files, refresh the version-control state"
 
   ;; this might affect performance when there are many files
   ;; but it can always be turned off
-  :hook (magit-refresh-buffer . (async-vc-refresh-all))
+  :hook (magit-refresh-buffer . async-vc-refresh-all)
   :bind ("C-x g" . magit-status))
 
 ;;;;; appearance
