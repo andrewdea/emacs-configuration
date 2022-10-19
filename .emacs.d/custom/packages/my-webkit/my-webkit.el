@@ -259,6 +259,64 @@ window.find(xwSearchString, false, !xwSearchForward, true, false, true);
         (goto-char (point-min)))
       )))
 
+;; a different fix: simply never use `xwidget-webkit-finish-search'
+;; use `xwidget-webkit-search' instead
+;; (defvar-keymap xwidget-webkit-isearch-mode-map
+;;   :doc "The keymap used inside `xwidget-webkit-isearch-mode'."
+;;   :full t)
+
+;; (set-char-table-range (nth 1 xwidget-webkit-isearch-mode-map)
+;;                       (cons 0 (max-char))
+;;                       'xwidget-webkit-isearch-exit)
+
+;; (substitute-key-definition 'self-insert-command
+;;                            'xwidget-webkit-isearch-printing-char
+;;                            xwidget-webkit-isearch-mode-map
+;;                            global-map)
+
+;; (define-key xwidget-webkit-isearch-mode-map (kbd "DEL")
+;;   'xwidget-webkit-isearch-erasing-char)
+;; (define-key xwidget-webkit-isearch-mode-map [backspace] 'xwidget-webkit-isearch-erasing-char)
+;; (define-key xwidget-webkit-isearch-mode-map [return] 'xwidget-webkit-isearch-exit)
+;; (define-key xwidget-webkit-isearch-mode-map "\r" 'xwidget-webkit-isearch-exit)
+;; (define-key xwidget-webkit-isearch-mode-map "\C-g" 'xwidget-webkit-isearch-exit)
+;; (define-key xwidget-webkit-isearch-mode-map "\C-r" 'xwidget-webkit-isearch-backward)
+;; (define-key xwidget-webkit-isearch-mode-map "\C-s" 'xwidget-webkit-isearch-forward)
+;; (define-key xwidget-webkit-isearch-mode-map "\C-y" 'xwidget-webkit-isearch-yank-kill)
+;; (define-key xwidget-webkit-isearch-mode-map "\C-\\" 'toggle-input-method)
+;; (define-key xwidget-webkit-isearch-mode-map "\t" 'xwidget-webkit-isearch-printing-char)
+
+;; (let ((meta-map (make-keymap)))
+;;   (set-char-table-range (nth 1 meta-map)
+;;                         (cons 0 (max-char))
+;;                         'xwidget-webkit-isearch-exit)
+;;   (define-key xwidget-webkit-isearch-mode-map (char-to-string meta-prefix-char) meta-map))
+
+;; (define-minor-mode my-xwidget-webkit-isearch-mode
+;;   "Minor mode for performing incremental search inside WebKit buffers.
+
+;; This resembles the regular incremental search, but it does not
+;; support recursive edits.
+
+;; If this mode is activated with `\\<xwidget-webkit-isearch-mode-map>\\[xwidget-webkit-isearch-backward]', then the search will by default
+;; start in the reverse direction.
+
+;; To navigate around the search results, type
+;; \\<xwidget-webkit-isearch-mode-map>\\[xwidget-webkit-isearch-forward] to move forward, and
+;; \\<xwidget-webkit-isearch-mode-map>\\[xwidget-webkit-isearch-backward] to move backward.
+
+;; To insert the string at the front of the kill ring into the
+;; search query, type \\<xwidget-webkit-isearch-mode-map>\\[xwidget-webkit-isearch-yank-kill].
+
+;; Press \\<xwidget-webkit-isearch-mode-map>\\[xwidget-webkit-isearch-exit] to exit incremental search."
+;;   :keymap xwidget-webkit-isearch-mode-map
+;;   (if xwidget-webkit-isearch-mode
+;;       (progn
+;;         (setq xwidget-webkit-isearch--string "")
+;;         (setq xwidget-webkit-isearch--is-reverse (eq last-command-event ?\C-r))
+;;         (xwidget-webkit-isearch--update))
+;;     (xwidget-webkit-search "" (xwidget-webkit-current-session))))
+
 ;;; xwidget configuration
 ;; overriding this function
 (defun my-xwidget-log (&rest msg)
@@ -330,6 +388,8 @@ Because it tried to call the undefined function
   (define-key xwidget-webkit-mode-map "t" #'eww-this)
   (define-key xwidget-webkit-mode-map "H" #'my-webkit-display-web-history)
   (define-key xwidget-webkit-mode-map "x" #'xwidget-webkit-browse-url)
+  ;; (define-key xwidget-webkit-mode-map "\C-s" #'my-xwidget-webkit-isearch-mode)
+  ;; (define-key xwidget-webkit-mode-map "\C-r" #'my-xwidget-webkit-isearch-mode)
   (define-key xwidget-webkit-mode-map "\C-s" #'isearch-forward)
   (define-key xwidget-webkit-mode-map "\C-r" #'isearch-backward)
   (setq-local isearch-lazy-highlight nil)
