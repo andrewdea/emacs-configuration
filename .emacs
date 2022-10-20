@@ -1066,7 +1066,7 @@ and set its contents as the appropriate programming-language-template"
       (template-set-contents file-name file-ext)))
 
 ;;;; SPECIAL VIEWS (web and PDF)
-(use-package my-webkit)
+;; (use-package my-webkit)
 
 (use-package pdf-tools
   :mode ("\\.pdf\\'" . pdf-view-mode))
@@ -1084,10 +1084,14 @@ and set its contents as the appropriate programming-language-template"
   (defun my-god-mode-update-mode-line ()
     (cond
      (god-local-mode
-      (setq mode-line-misc-info "G-MODE-ENABLED"))
+      (setq mode-line-misc-info "💪⚡ ENABLED"))
      (t
       (setq mode-line-misc-info
-	    '((global-mode-string ("" global-mode-string))))))))
+	    '((global-mode-string ("" global-mode-string)))))))
+  (add-hook 'post-command-hook #'my-god-mode-update-mode-line)
+  :bind
+  ("<escape>" . god-local-mode)
+   ("s-<escape>" . god-mode-all))
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
