@@ -610,7 +610,7 @@ delete preceding ARG lines and preceding 1 char."
 ;;;;; flyspell
 (use-package flyspell
   :bind (:map flyspell-mode-map
-	      ("<mouse-3>" . flyspell-correct-word-before-point)
+	      ("<mouse-3>" . flyspell-correct-word)
 	      ("C-c f" . flyspell-correct-word-before-point)))
 
 ;;;;; search
@@ -1099,10 +1099,11 @@ and set its contents as the appropriate programming-language-template"
     (if god-local-mode
 	(let ((translated-command
 	       (god-mode-lookup-key-sequence (string-to-char (caar arg)))))
+	  (describe-function translated-command)
 	  (message
-	   "org-self-insert translated key sequence: %s into the command: %s"
-	   arg translated-command)
-	(describe-function translated-command))
+	   "`god-mode-self-insert' translated the key-sequence %s %s %s %s "
+	   "starting with " arg
+	   " into the command: " translated-command))
       nil))
 
   (advice-add #'describe-key :before-until #'god-mode-describe-key)
