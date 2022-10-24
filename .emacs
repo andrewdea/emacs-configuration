@@ -1095,6 +1095,18 @@ and set its contents as the appropriate programming-language-template"
   (add-hook 'post-command-hook #'my-god-mode-update-mode-line)
   (delete #'god-special-mode-p god-exempt-predicates)
 
+  (defun god-mode-describe-key (arg &optional buffer)
+    (if god-local-mode
+	(let ((translated-command
+	       (god-mode-lookup-key-sequence (string-to-char (caar arg)))))
+	  (message
+	   "org-self-insert translated key sequence: %s into the command: %s"
+	   arg translated-command)
+	(describe-function translated-command))
+      nil))
+
+  (advice-add #'describe-key :before-until #'god-mode-describe-key)
+
   :bind
   ("<escape>" . god-local-mode)
    ("s-<escape>" . god-mode-all))
