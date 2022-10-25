@@ -572,7 +572,8 @@ delete preceding ARG lines and preceding 1 char."
       (let ((orig-point (point)))
 	(kill-ring-save (smarter-move-beginning-of-line nil)
 			(line-end-position))
-	(goto-char orig-point))
+	(goto-char orig-point)
+	(message "copied the current line"))
     (kill-ring-save (region-beginning) (region-end))))
 
 (global-set-key (kbd "M-w") #'my-smart-copy)
@@ -1096,12 +1097,16 @@ and set its contents as the appropriate programming-language-template"
   (delete #'god-special-mode-p god-exempt-predicates)
 
   (defun god-mode-describe-key (arg &optional buffer)
+    "Describe a key-sequence while in `god-mode'.
+Use `god-mode-lookup-key-sequence' to translate a key-sequence
+into the appropriate command,
+and use `describe-function' to display its information"
     (if god-local-mode
 	(let ((translated-command
 	       (god-mode-lookup-key-sequence (string-to-char (caar arg)))))
 	  (describe-function translated-command)
 	  (message
-	   "`god-mode-self-insert' translated the key-sequence %s %s %s %s "
+	   "`god-mode-self-insert' translated the key-sequence %s %s %s %s"
 	   "starting with " arg
 	   " into the command: " translated-command))
       nil))
