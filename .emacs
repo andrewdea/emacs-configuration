@@ -118,7 +118,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
   (set-frame-position (selected-frame) 0 0)
   (if (or arg (< (frame-parameter (selected-frame) 'width) 200))
       (set-frame-size (selected-frame) 204 54)
-	   (set-frame-size (selected-frame) 100 45)))
+    (set-frame-size (selected-frame) 100 45)))
 
 (use-package mood-line
   :defer t)
@@ -223,15 +223,15 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 ;; make current window bigger or smaller
 (defun wbig (&optional arg)
   (interactive "P")
-       (if arg () (setq arg 25))
-       (enlarge-window-horizontally arg)
-       (message (concat "expanded window by " (number-to-string arg))))
+  (if arg () (setq arg 25))
+  (enlarge-window-horizontally arg)
+  (message (concat "expanded window by " (number-to-string arg))))
 
 (defun wsmall (&optional arg)
   (interactive "P")
-       (if arg () (setq arg 25))
-       (shrink-window-horizontally arg)
-       (message (concat "reduced window by " (number-to-string arg))))
+  (if arg () (setq arg 25))
+  (shrink-window-horizontally arg)
+  (message (concat "reduced window by " (number-to-string arg))))
 
 ;; frame to have together with max youtube
 (defun yt-frame ()
@@ -481,9 +481,9 @@ the whole region is fontified (by automatically inserting character at mark)"
   :defer t
   :after dired
   :bind
-   (:map dired-mode-map
-	 ("<tab>" . dired-subtree-toggle)
-	 ("<backtab>" . dired-subtree-cycle)))
+  (:map dired-mode-map
+	("<tab>" . dired-subtree-toggle)
+	("<backtab>" . dired-subtree-cycle)))
 
 ;;;;; find and grep
 (use-package shell-output-mode
@@ -708,8 +708,8 @@ future."
 
 ;;;; BUFFER AND FRAME movements
 (use-package ibuffer  :bind (("C-x C-b" . ibuffer)
-	 :map ibuffer-name-map
-	 ("<mouse-1>" . ibuffer-visit-buffer)))
+			     :map ibuffer-name-map
+			     ("<mouse-1>" . ibuffer-visit-buffer)))
 
 (use-package all-the-icons-ibuffer
   :after (all-the-icons ibuffer)
@@ -723,19 +723,19 @@ future."
      (t (format "%8d" (buffer-size)))))
   (setq all-the-icons-ibuffer-formats
         `((mark modified read-only ,(if (>= emacs-major-version 26) 'locked "")
-          ;; Here you may adjust by replacing :right with :center or :left
-          ;; According to taste, if you want the icon further from the name
-          " " ,(if all-the-icons-ibuffer-icon
-                   '(icon 2 2 :left :elide)
-                 "")
-          ,(if all-the-icons-ibuffer-icon
-               (propertize " " 'display `(space :align-to 8))
-             "")
-          (name 27 27 :left :elide)
-          " " (size-h 9 -1 :right)
-          " " (mode+ 16 16 :left :elide)
-          " " filename-and-process+)
-    (mark " " (name 16 -1) " " filename))))
+		;; Here you may adjust by replacing :right with :center or :left
+		;; According to taste, if you want the icon further from the name
+		" " ,(if all-the-icons-ibuffer-icon
+			 '(icon 2 2 :left :elide)
+                       "")
+		,(if all-the-icons-ibuffer-icon
+		     (propertize " " 'display `(space :align-to 8))
+		   "")
+		(name 27 27 :left :elide)
+		" " (size-h 9 -1 :right)
+		" " (mode+ 16 16 :left :elide)
+		" " filename-and-process+)
+	  (mark " " (name 16 -1) " " filename))))
 (add-hook 'ibuffer-mode-hook #'all-the-icons-ibuffer-mode)
 
 (defun switch-to-minibuffer-window ()
@@ -1009,12 +1009,12 @@ Else, call find-symbol-first-occurrence"
   :init
   (advice-add 'python-mode :before 'elpy-enable)
   (setq elpy-modules '(elpy-module-sane-defaults
-                          elpy-module-company
-                          elpy-module-eldoc
-                          elpy-module-flymake
-                          elpy-module-pyvenv
-                          elpy-module-yasnippet
-                          elpy-module-django)))
+                       elpy-module-company
+                       elpy-module-eldoc
+                       elpy-module-flymake
+                       elpy-module-pyvenv
+                       elpy-module-yasnippet
+                       elpy-module-django)))
 
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
@@ -1067,7 +1067,7 @@ and set its contents as the appropriate programming-language-template"
       (template-set-contents file-name file-ext)))
 
 ;;;; SPECIAL VIEWS (web and PDF)
-(use-package my-webkit)
+;; (use-package my-webkit)
 
 (use-package pdf-tools
   :mode ("\\.pdf\\'" . pdf-view-mode))
@@ -1096,12 +1096,20 @@ and set its contents as the appropriate programming-language-template"
   (add-hook 'post-command-hook #'my-god-mode-update-mode-line)
   (delete #'god-special-mode-p god-exempt-predicates)
 
-  (defun god-mode-describe-key (arg &optional buffer)
-    "Describe a key-sequence while in `god-mode'.
+  (defcustom god-translate-key-for-description
+    t
+    "Whether to use `god-mode-describe-key' when god-mode is enabled."
+    :group 'god
+    :type 'boolean)
+
+  (defun god-mode-describe-key (arg)
+    "Describe a key-sequence (starting with ARG) as interpreted by `god-mode'.
 Use `god-mode-lookup-key-sequence' to translate a key-sequence
-into the appropriate command,
-and use `describe-function' to display its information"
-    (if god-local-mode
+into the appropriate command, and use `describe-function' to display
+its information.
+Only applied when `god-translate-key-for-description' is t"
+    (message "we are running `god-mode-describe-key'")
+    (if god-translate-key-for-description
 	(let ((translated-command
 	       (god-mode-lookup-key-sequence (string-to-char (caar arg)))))
 	  (describe-function translated-command)
@@ -1111,11 +1119,16 @@ and use `describe-function' to display its information"
 	   " into the command: " translated-command))
       nil))
 
-  (advice-add #'describe-key :before-until #'god-mode-describe-key)
+  (add-hook 'god-mode-enabled-hook
+	    (lambda ()
+	      (advice-add #'describe-key :before-until #'god-mode-describe-key)))
+
+  (add-hook 'god-mode-disabled-hook
+	    (lambda () (advice-remove #'describe-key #'god-mode-describe-key)))
 
   :bind
   ("<escape>" . god-local-mode)
-   ("s-<escape>" . god-mode-all))
+  ("s-<escape>" . god-mode-all))
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
@@ -1130,7 +1143,7 @@ and use `describe-function' to display its information"
    '("024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(my-webkit god-mode exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
+   '(god-mode exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
