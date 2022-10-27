@@ -706,6 +706,55 @@ future."
     (insert-kbd-macro name)
     (insert "\n")))
 
+;;;;; god-mode
+(use-package god-mode
+  :defer t
+  :config
+  (defun my-god-mode-update-mode-line ()
+    (cond
+     (god-local-mode
+      (setq mode-line-misc-info (list "💪⚡ ENABLED")))
+     (t
+      (setq mode-line-misc-info
+	    '((global-mode-string ("" global-mode-string)))))))
+
+  (add-hook 'post-command-hook #'my-god-mode-update-mode-line)
+  (delete #'god-special-mode-p god-exempt-predicates)
+
+  (defcustom god-translate-key-for-description
+    t
+    "Whether to use `god-mode-describe-key' when god-mode is enabled."
+    :group 'god
+    :type 'boolean)
+
+  (defun god-mode-describe-key (arg)
+    "Describe a key-sequence (starting with ARG) as interpreted by `god-mode'.
+Use `god-mode-lookup-key-sequence' to translate a key-sequence
+into the appropriate command, and use `describe-function' to display
+its information.
+Only applied when `god-translate-key-for-description' is t"
+    (message "we are running `god-mode-describe-key'")
+    (if god-translate-key-for-description
+	(let ((translated-command
+	       (god-mode-lookup-key-sequence (string-to-char (caar arg)))))
+	  (describe-function translated-command)
+	  (message
+	   "`god-mode-self-insert' translated the key-sequence %s %s %s %s"
+	   "starting with " arg
+	   " into the command: " translated-command))
+      nil))
+
+  (add-hook 'god-mode-enabled-hook
+	    (lambda ()
+	      (advice-add #'describe-key :before-until #'god-mode-describe-key)))
+
+  (add-hook 'god-mode-disabled-hook
+	    (lambda () (advice-remove #'describe-key #'god-mode-describe-key)))
+
+  :bind
+  ("<escape>" . god-local-mode)
+  ("s-<escape>" . god-mode-all))
+
 ;;;; BUFFER AND FRAME movements
 (use-package ibuffer  :bind (("C-x C-b" . ibuffer)
 			     :map ibuffer-name-map
@@ -1081,54 +1130,6 @@ and set its contents as the appropriate programming-language-template"
 ;;;; RANDOM STUFF
 (define-key help-mode-map "b" #'help-go-back)
 (define-key help-mode-map "f" #'help-go-forward)
-
-(use-package god-mode
-  :defer t
-  :config
-  (defun my-god-mode-update-mode-line ()
-    (cond
-     (god-local-mode
-      (setq mode-line-misc-info (list "💪⚡ ENABLED")))
-     (t
-      (setq mode-line-misc-info
-	    '((global-mode-string ("" global-mode-string)))))))
-
-  (add-hook 'post-command-hook #'my-god-mode-update-mode-line)
-  (delete #'god-special-mode-p god-exempt-predicates)
-
-  (defcustom god-translate-key-for-description
-    t
-    "Whether to use `god-mode-describe-key' when god-mode is enabled."
-    :group 'god
-    :type 'boolean)
-
-  (defun god-mode-describe-key (arg)
-    "Describe a key-sequence (starting with ARG) as interpreted by `god-mode'.
-Use `god-mode-lookup-key-sequence' to translate a key-sequence
-into the appropriate command, and use `describe-function' to display
-its information.
-Only applied when `god-translate-key-for-description' is t"
-    (message "we are running `god-mode-describe-key'")
-    (if god-translate-key-for-description
-	(let ((translated-command
-	       (god-mode-lookup-key-sequence (string-to-char (caar arg)))))
-	  (describe-function translated-command)
-	  (message
-	   "`god-mode-self-insert' translated the key-sequence %s %s %s %s"
-	   "starting with " arg
-	   " into the command: " translated-command))
-      nil))
-
-  (add-hook 'god-mode-enabled-hook
-	    (lambda ()
-	      (advice-add #'describe-key :before-until #'god-mode-describe-key)))
-
-  (add-hook 'god-mode-disabled-hook
-	    (lambda () (advice-remove #'describe-key #'god-mode-describe-key)))
-
-  :bind
-  ("<escape>" . god-local-mode)
-  ("s-<escape>" . god-mode-all))
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
