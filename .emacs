@@ -51,7 +51,6 @@
 (use-package gcmh
   :hook
   (after-init . gcmh-mode)
-  (tetris-mode . gc-restore-defaults)
   :defer t
   :config
   (setq gcmh-idle-delay 'auto  ; default is 15s
@@ -239,10 +238,6 @@ If ARG is provided, set frame to big, else check the size and toggle it."
   (delete-other-windows)
   (set-frame-size (selected-frame) 84 54)
   (set-frame-position (selected-frame) 838 24))
-(add-hook 'tetris-mode-hook #'yt-frame)
-
-(add-hook 'tetris-mode-hook (lambda ()
-			      (pixel-scroll-precision-mode -1)))
 
 (defun right-frame ()
   (interactive)
@@ -1124,8 +1119,32 @@ and set its contents as the appropriate programming-language-template"
 (add-hook 'pdf-view-mode-hook (lambda ()
 				(pixel-scroll-precision-mode -1)))
 
-;;;; MAIL
-;; (use-package notmuch)
+;;;; GAMES
+;;;;; tetris
+(add-hook 'tetris-mode-hook #'gc-restore-defaults)
+(add-hook 'tetris-mode-hook #'yt-frame)
+(add-hook 'tetris-mode-hook (lambda ()
+			      (pixel-scroll-precision-mode -1)))
+
+(defun close-scores-and-play ()
+  (interactive)
+  (delete-window)
+  (switch-to-buffer "*Tetris*")
+  (tetris-start-game))
+
+(defvar-keymap tetris-score-mode-map
+  "n" #'close-scores-and-play)
+
+(define-minor-mode tetris-score-mode
+  "Minor mode for displaying tetris scores
+  \\{tetris-score-mode-map}"
+  :keymap tetris-score-mode-map
+  (add-hook 'view-mode-hook
+	    (lambda ()
+	      (if tetris-score-mode
+		  (define-key view-mode-map "n" nil)))))
+
+(add-to-list 'auto-mode-alist '("\\tetris-scores\\'" . tetris-score-mode))
 
 ;;;; RANDOM STUFF
 (define-key help-mode-map "b" #'help-go-back)
