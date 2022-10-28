@@ -701,7 +701,7 @@ future."
     (insert-kbd-macro name)
     (insert "\n")))
 
-;;;;; god-mode
+;;;;; god mode
 (use-package god-mode
   :defer t
   :config
