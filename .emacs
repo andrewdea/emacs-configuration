@@ -101,8 +101,8 @@
 (defun default-theme ()
   (let ((hour (nth 2 (decode-time (current-time)))))
     (if (or (> hour 21) (< hour 8))
-	'cyberpunk ; at night
-      'my-monokai))) ; during the day
+	#'cyberpunk ; at night
+      #'my-monokai))) ; during the day
 
 ;; my daily default theme is based on standard tango-dark;
 ;; with some small edits in ~/.emacs.d/tango-dark-theme.el
@@ -127,7 +127,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
   (interactive)
   (setq column-number-mode t)
   (un-theme)
-  (load-theme (default-theme))
+  (funcall (default-theme))
   (big-frame t)
   (mood-line-mode t)
   (scroll-bar-mode -1)
@@ -278,7 +278,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
   (un-theme)
   (if (not arg)
       (load-theme 'cyberpunk))
-  (load-theme "my-monokai"))
+  (load-theme 'my-monokai))
 (defun tango-dark ()
   (interactive)
   (un-theme "tango-dark"))
