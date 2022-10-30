@@ -709,16 +709,11 @@ future."
 (use-package god-mode
   :defer t
   :config
-  (defun my-god-mode-update-mode-line ()
-    (cond
-     (god-local-mode
-      (setq mode-line-misc-info (list "💪⚡ ENABLED")))
-     (t
-      (setq mode-line-misc-info
-	    '((global-mode-string ("" global-mode-string)))))))
-
-  (add-hook 'post-command-hook #'my-god-mode-update-mode-line)
-  (delete #'god-special-mode-p god-exempt-predicates)
+  (advice-add #'mood-line-segment-major-mode :filter-return
+	      (lambda (arg)
+		(if (bound-and-true-p god-local-mode)
+		    (concat "💪⚡" arg)
+		  arg)))
 
   (defcustom god-translate-key-for-description
     t
