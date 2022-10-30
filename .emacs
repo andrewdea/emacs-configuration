@@ -563,7 +563,13 @@ delete preceding ARG lines and preceding 1 char."
   (kill-line arg)
   (delete-char -1))
 
-(global-set-key (kbd "C-k") #'my-kill-whole-line)
+(defun dwim-kill (&optional arg)
+  (interactive "P")
+  (if mark-active
+      (kill-region (region-beginning) (region-end))
+    (my-kill-whole-line arg)))
+
+(global-set-key (kbd "C-k") #'dwim-kill)
 
 (defun my-smart-copy ()
   (interactive)
@@ -1005,7 +1011,7 @@ Else, call find-symbol-first-occurrence"
 			  (shell-quote-argument
 			   (template-trim-name buffer-file-name)))
 		      options)))
-;; todo: move these to the appropriate section below
+
 (add-hook 'java-mode-hook
 	  (lambda () (set-compile-command "javac" t)))
 (add-hook 'scala-mode-hook
