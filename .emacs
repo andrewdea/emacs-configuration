@@ -72,8 +72,8 @@
 ;;   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
 ;;;; CHEATSHEET
-;; (use-package cheatsheet
-;;   :hook (kill-emacs . cheatsheet-save-list-to-file))
+(use-package cheatsheet
+  :hook (kill-emacs . cheatsheet-save-list-to-file))
 
 ;; quick ways to reload the updates:
 (defun delete-cheatsheet ()
