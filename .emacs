@@ -72,8 +72,8 @@
 ;;   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
 ;;;; CHEATSHEET
-(use-package cheatsheet
-  :hook (kill-emacs . cheatsheet-save-list-to-file))
+;; (use-package cheatsheet
+;;   :hook (kill-emacs . cheatsheet-save-list-to-file))
 
 ;; quick ways to reload the updates:
 (defun delete-cheatsheet ()
@@ -976,6 +976,9 @@ else, first move to previous visible heading, then call it"
 ;; enable outline-minor-mode for *ALL* programming buffers
 (add-hook 'prog-mode-hook #'outline-minor-mode)
 
+;;;;; expand region
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
 ;;;;; helper functions
 ;; implemented my own, extremely dumb version of dumb jump
 ;; possible enhancements:
@@ -1155,6 +1158,9 @@ and set its contents as the appropriate programming-language-template"
 (define-key help-mode-map "b" #'help-go-back)
 (define-key help-mode-map "f" #'help-go-forward)
 
+;; for working with the updated god-mode package
+(setq load-prefer-newer t)
+
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
 ;; cyberpunk, and my-misterioso
@@ -1168,7 +1174,7 @@ and set its contents as the appropriate programming-language-template"
    '("024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(god-mode exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy cheatsheet avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
+   '(expand-region cheatsheet god-mode exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
