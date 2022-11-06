@@ -1069,14 +1069,102 @@ Else, call find-symbol-first-occurrence"
 (use-package elpy
   :defer t
   :init
-  (advice-add 'python-mode :before 'elpy-enable)
+  ;; (advice-add 'python-mode :before 'elpy-enable)
   (setq elpy-modules '(elpy-module-sane-defaults
-                       elpy-module-company
-                       elpy-module-eldoc
-                       elpy-module-flymake
-                       elpy-module-pyvenv
-                       elpy-module-yasnippet
-                       elpy-module-django)))
+		       elpy-module-company
+		       elpy-module-eldoc
+		       elpy-module-flymake
+		       elpy-module-pyvenv
+		       elpy-module-yasnippet
+		       elpy-module-django))
+  :bind (:map elpy-mode-map
+	      ("M-." . elpy-goto-definition)))
+
+(use-package lsp-pyright
+  :defer t
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (lsp)))  ; or lsp-deferred
+  )
+
+;; (use-package lsp-ui)
+
+(use-package pyvenv
+  :defer t
+  :hook (python-mode . pyvenv-mode)
+  :config
+  ;; Set correct Python interpreter
+  (setq pyvenv-post-activate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))))
+  (setq pyvenv-post-deactivate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter "python3")))))
+
+(use-package blacken
+  :commands blacken-mode blacken-buffer)
+
+;; for the python interpreter
+(defun inferion-python-current-indentation ()
+  (beginning-of-line 1)
+  (set-mark-command nil)
+  (back-to-indentation)
+  (kill-ring-save (region-beginning) (region-end))
+  (pop kill-ring))
+
+(defun input-or-newline (&optional arg)
+  (if arg
+      (comint-send-input)
+    (progn
+      (insert ?\n))))
+
+(defun python-smart-indent (&optional arg)
+  (interactive)
+  (delete-horizontal-space)
+  (if (string-match-p "[^[:space:]]" (or (thing-at-point 'line 'no-prop) ""))
+      (let ((indent (inferion-python-current-indentation)))
+	(move-end-of-line 1)
+	(if (eq (char-before) ?:)
+	    ;; I'd rather use tabs, but then this weird string gets inserted:
+	    ;; 0__dummy_completion__  1__dummy_completion__
+	    (setf indent (concat indent "    ")))
+	(input-or-newline arg)
+	(insert indent))
+    (input-or-newline arg)))
+
+(add-hook 'inferior-python-mode-hook
+          (lambda ()
+	    (local-set-key (kbd "C-<return>")
+			   #'python-smart-indent)))
+
+(add-hook 'inferior-python-mode-hook
+          (lambda ()
+	    (local-set-key (kbd "<return>")
+			   (lambda () (interactive) (python-smart-indent 'send)))))
+
+(add-hook 'inferior-python-mode-hook
+          (lambda ()
+	    (local-set-key (kbd "C-<backspace>")
+			   (lambda () (interactive) (delete-backward-char 4)))))
+
+(add-hook 'inferior-python-mode-hook (lambda () (setq-local use-cleanup-kills t)))
+
+(add-hook 'inferior-python-mode-hook (lambda ()
+				       (advice-add #'kill-new :filter-args
+						   #'inferior-python-cleanup-kills)))
+
+(defun inferior-python-cleanup-kills (string &optional _replace)
+  ;; (message "this is string: %s" string)
+  ;; (message "this is type of string: %s" (type-of string))
+  ;; (message "this is cdr string: %s" (cdr string))
+  (if (bound-and-true-p use-cleanup-kills)
+      (let ((prompt-regexp (concat "^" "\\(" python-shell-prompt-regexp "\\)+"))
+	    (prompt-block-regexp (concat "^" "\\(" python-shell-prompt-block-regexp "\\)+")))
+	(thread-last
+	  (replace-regexp-in-string prompt-block-regexp "    " (car string))
+	  (replace-regexp-in-string prompt-regexp "")
+	  (list)))
+    string))
 
 ;;;;; templates
 (defun template-trim-name (file-name &optional file-ext)
@@ -1184,7 +1272,7 @@ and set its contents as the appropriate programming-language-template"
    '("a000d0fedd5e1c3b58e3a1c645c316ec2faa66300fc014c9ad0af1a4c1de839b" "024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(aggressive-indent expand-region cheatsheet god-mode exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
+   '(blacken lsp-pyright aggressive-indent expand-region cheatsheet god-mode exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
