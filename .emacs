@@ -189,19 +189,22 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 			       :height 1.1
 			       :v-adjust -0.05
 			       :face 'font-lock-keyword-face))
+  (defun center-and-propertize-haiku-line (line)
+    (dashboard-center-line line)
+    (insert (propertize line 'face 'dashboard-footer))
+    (insert "\n"))
 
   (defun dashboard-insert-footer ()
     "Insert custom haiku-footer for dashboard."
-    (let ((footer (and dashboard-set-footer (car dashboard-footer-messages)))
-	  (footer-heading "Today's haiku:\n\n"))
-      (when footer
-	(insert "\n")
-	;; (dashboard-center-line footer)
-	(insert dashboard-footer-icon)
-	(insert " ")
-	(insert (propertize footer-heading 'face 'dashboard-heading))
-	(insert (propertize footer 'face 'dashboard-footer))
-	(insert "\n"))))
+    (let ((footer (car dashboard-footer-messages))
+	  (footer-heading "Today's haiku:\n"))
+      (insert "\n\n")
+      (dashboard-center-line footer-heading)
+      (insert dashboard-footer-icon)
+      (insert " ")
+      (insert (propertize footer-heading 'face 'dashboard-heading))
+      (mapcar #'center-and-propertize-haiku-line (split-string footer "\n"))
+      (insert "\n")))
 
   (defun find-or-write-haiku ()
     (if (nth (random 2) (list nil t))
