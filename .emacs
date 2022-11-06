@@ -987,7 +987,10 @@ else, first move to previous visible heading, then call it"
 
 ;;;;; expand region
 (use-package expand-region
-  :bind ("C-=" . er/expand-region))
+  :bind
+  ("C-=" . er/expand-region)
+  ("C-M-/" . er/expand-region))
+
 ;;;;; aggressive indent
 (use-package aggressive-indent
   :hook
