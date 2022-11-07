@@ -1028,7 +1028,8 @@ Else, call find-symbol-first-occurrence"
 	      (concat arg " "
 		      (if (and buffer-file-name use-file)
 			  (shell-quote-argument
-			   (template-trim-name buffer-file-name)))
+			   (file-name-sans-extension
+			    (file-name-nondirectory buffer-file-name))))
 		      options)))
 
 (add-hook 'java-mode-hook
@@ -1173,54 +1174,25 @@ Else, call find-symbol-first-occurrence"
     string))
 
 ;;;;; templates
-(defun template-trim-name (file-name &optional file-ext)
-  "Find and replace file-path from FILE-NAME.
-If provided find and replace FILE-EXT also"
-  (replace-regexp-in-string ".*\/" ""
-			    (if file-ext
-				(string-replace file-ext "" file-name)
-			      file-name)))
+(auto-insert-mode t)
+(setq auto-insert-directory "~/.emacs.d/templates")
 
-(defun template-write-to-buffer (contents-as-string)
-  "Write CONTENTS-AS-STRING to the current buffer.
-\(if the buffer is not empty, CONTENTS-AS-STRING will be appended to the end)"
-  (with-current-buffer (buffer-name)
-    (goto-char (point-max))
-    (insert contents-as-string)))
+(defun template-insert-file-name ()
+  (let ((name (file-name-sans-extension
+	       (file-name-nondirectory buffer-file-name))))
+    (replace-string "Template"
+		    (concat (upcase (string (aref name 0))) (seq-drop name 1)))))
 
-(defun template-file-to-string (file-name)
-  "Return contents of FILE-NAME as string."
-  (with-temp-buffer
-    (insert-file-contents file-name)
-    (buffer-string)))
+(defun add-auto-insert-template-by-extension (arg)
+  `(define-auto-insert
+     ,(concat "\\." arg "\\'")
+     [,(concat arg ".template") template-insert-file-name]))
 
-(defun template-set-contents (file-name file-ext)
-  "Read from the template file and write to buffer the contents.
-replacing 'Template' with FILE-NAME"
-  (let ((file-contents
-	 (template-file-to-string
-	  (concat "~/.emacs.d/custom/programming-language-templates/Template"
-		  file-ext))))
-    (template-write-to-buffer
-     (string-replace "Template"
-		     (template-trim-name file-name file-ext)
-		     file-contents))))
+(defmacro define-all-templates (args)
+  `(progn ,@(mapcar 'add-auto-insert-template-by-extension args)))
 
-(defun get-file-ext (&optional file-name)
-  (if (equal nil file-name) (setq file-name buffer-name))
-  ;; (substring file-name (string-match "\.[^.]*$" file-name))
-  (concat "." (file-name-extension file-name)))
-
-(defun template-open ()
-  "Prompt for file name, find the file, ask for confirmation,
-and set its contents as the appropriate programming-language-template"
-  (interactive)
-  (setq file-name (read-file-name "Enter the name of your file:"))
-  (setq file-ext  (get-file-ext file-name))
-  (find-file file-name)
-  (message "Opened %s" file-name)
-  (if (equal "y" (read-string "Write your template? y/n: "))
-      (template-set-contents file-name file-ext)))
+(define-all-templates
+ ("org" "java" "sc" "c" "go"))
 
 ;;;; SPECIAL VIEWS (web and PDF)
 ;; (use-package my-webkit)
