@@ -134,6 +134,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
   (global-visual-line-mode t)
   (set-fringe-style '(2 . nil))
   (pixel-scroll-precision-mode t)
+  (setq-default indent-tabs-mode nil)
   (setq blink-cursor-blinks 5))
 
 (add-hook 'after-init-hook #'startup-look)
