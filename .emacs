@@ -528,7 +528,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 ;;;; TEXT EDITING
 ;;;;; utilities
-(defun dwim-move-beginning-of-line (arg)
+(defun dwim-move-beginning-of-line (&optional arg)
   "Move point back to indentation of beginning of line.
 `move-beginning-of-line' but smarter.
 
@@ -540,12 +540,10 @@ the beginning of the line.
 If ARG is not nil or 1, move forward ARG - 1 lines first.  If
 point reaches the beginning or end of the buffer, stop there."
   (interactive "^p")
-  (setq arg (or arg 1))
-
-  (when (/= arg 1)
-    (let ((line-move-visual nil))
-      (forward-line (1- arg))))
-
+  (let ((arg (or arg 1)))
+    (when (/= arg 1)
+      (let ((line-move-visual nil))
+        (forward-line (1- arg)))))
   (let ((orig-point (point)))
     (back-to-indentation)
     (when (= orig-point (point))
