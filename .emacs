@@ -968,6 +968,9 @@ else, first move to previous visible heading, then call it"
 
 ;;;;; expand region
 (use-package expand-region
+  :config
+  (er/enable-mode-expansions 'inferior-python-mode
+                             'er/add-python-mode-expansions)
   :bind
   ("C-=" . er/expand-region)
   ("C-M-/" . er/expand-region))
@@ -976,6 +979,7 @@ else, first move to previous visible heading, then call it"
 (use-package aggressive-indent
   :hook
   (prog-mode . aggressive-indent-mode))
+
 ;;;;; helper functions
 ;; implemented my own, extremely dumb version of dumb jump
 ;; possible enhancements:
@@ -1054,6 +1058,8 @@ Else, call find-symbol-first-occurrence"
   :defer t)
 
 ;; python
+(add-hook 'python-mode-hook #'subword-mode)
+(add-hook 'inferior-python-mode-hook #'subword-mode)
 (use-package elpy
   :defer t
   :init
@@ -1081,30 +1087,72 @@ Else, call find-symbol-first-occurrence"
   :defer t
   :hook (python-mode . pyvenv-mode)
   :config
+  (defun get-project-pyvenv (directory)
+    (interactive)
+    (or
+     directory
+     (list (bound-and-true-p project-pyvenv))))
+  (advice-add 'pyvenv-activate :filter-args #'get-project-pyvenv)
+  (setq pyvenv-default-virtual-env-name "venv/")
   ;; Set correct Python interpreter
   (setq pyvenv-post-activate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))))
+                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))
+	      (lambda ()
+		(message "activated venv at: \t%s" (getenv "VIRTUAL_ENV")))))
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
                 (setq python-shell-interpreter "python3")))))
 
+;; helper functions to quickly open a shell with venv activated
+(defun venv-shell (&optional arg)
+  (interactive "P")
+  (if (equal current-prefix-arg '(4))
+      (setf arg 2))
+  (let ((pyvenv-to-use
+	 (if (boundp 'project-pyvenv)
+	     project-pyvenv
+	   (read-directory-name "Activate venv: "))))
+    (dotimes (number (or arg 1))
+      (let ((buffer-name (format "*shell-%d-venv*" number)))
+        (named-venv-shell buffer-name pyvenv-to-use)))))
+
+(defun named-venv-shell (&optional arg pyvenv-to-use)
+  (interactive (list (read-string "Name of the shell: " "*shell-")))
+  (let ((pyvenv-to-use
+	 (or
+	  pyvenv-to-use
+	  (bound-and-true-p project-pyvenv)
+	  (read-directory-name "Activate venv: "))))
+    (switch-to-buffer (shell arg))
+    (comint-send-string nil (concat "source " pyvenv-to-use "bin/activate"))
+    (comint-send-input nil t)))
+
+(defun python-run-this (arg)
+  (interactive (list (read-file-name "run this file in a pyvenv shell: ")))
+  (named-venv-shell (format "*shell-%s*"(file-name-nondirectory arg))
+		    (bound-and-true-p project-pyvenv))
+  (let ((desired-dir (file-name-directory arg)))
+    (if (not (equal desired-dir default-directory))
+	(progn (comint-send-string nil (format "cd %s" desired-dir))
+	       (comint-send-input nil t))))
+  (comint-send-string nil (format "python %s" arg))
+  (comint-send-input nil t))
+
 (use-package blacken
   :commands blacken-mode blacken-buffer)
 
-;; for the python interpreter
+;; for the inferior python interpreter
 (defun inferion-python-current-indentation ()
   (beginning-of-line 1)
   (set-mark-command nil)
   (back-to-indentation)
-  (kill-ring-save (region-beginning) (region-end))
-  (pop kill-ring))
+  (buffer-substring (region-beginning) (region-end)))
 
 (defun input-or-newline (&optional arg)
   (if arg
       (comint-send-input)
-    (progn
-      (insert ?\n))))
+    (insert ?\n)))
 
 (defun python-smart-indent (&optional arg)
   (interactive)
@@ -1142,16 +1190,13 @@ Else, call find-symbol-first-occurrence"
 						   #'inferior-python-cleanup-kills)))
 
 (defun inferior-python-cleanup-kills (string &optional _replace)
-  ;; (message "this is string: %s" string)
-  ;; (message "this is type of string: %s" (type-of string))
-  ;; (message "this is cdr string: %s" (cdr string))
   (if (bound-and-true-p use-cleanup-kills)
       (let ((prompt-regexp (concat "^" "\\(" python-shell-prompt-regexp "\\)+"))
 	    (prompt-block-regexp (concat "^" "\\(" python-shell-prompt-block-regexp "\\)+")))
 	(thread-last
 	  (replace-regexp-in-string prompt-block-regexp "    " (car string))
 	  (replace-regexp-in-string prompt-regexp "")
-	  (list)))
+	  (list))) ; string argument is actually passed as a list
     string))
 
 ;;;;; templates
@@ -1231,7 +1276,7 @@ Else, call find-symbol-first-occurrence"
    '("a000d0fedd5e1c3b58e3a1c645c316ec2faa66300fc014c9ad0af1a4c1de839b" "024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(blacken lsp-pyright aggressive-indent expand-region cheatsheet god-mode exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
+   '(god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
