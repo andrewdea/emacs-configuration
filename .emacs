@@ -585,7 +585,10 @@ delete preceding ARG lines and preceding 1 char."
 	(kill-ring-save (dwim-move-beginning-of-line)
 			(line-end-position))
 	(goto-char orig-point)
-	(message "copied the current line: \t%s" (current-kill 0)))
+	;; (message "copied the current line: \t%s" (current-kill 0)))
+        (message "%s %s"
+                 (propertize "copied current line:" 'face 'minibuffer-prompt)
+                 (current-kill 0)))
     (kill-ring-save (region-beginning) (region-end))))
 
 (global-set-key (kbd "M-w") #'dwim-copy)
@@ -596,7 +599,9 @@ delete preceding ARG lines and preceding 1 char."
       (let ((orig-point (point)))
 	(kill-region (dwim-move-beginning-of-line)
 		     (line-end-position))
-	(message "copied this line: \t%s" (current-kill 0)))
+        (message "%s %s"
+                 (propertize "copied line:" 'face 'minibuffer-prompt)
+                 (current-kill 0)))
     (kill-region (region-beginning) (region-end))))
 
 (global-set-key (kbd "C-w") #'dwim-kill)
@@ -990,7 +995,8 @@ else, first move to previous visible heading, then call it"
 	(message "No symbol at point")
       (progn (point-to-register 'r)
 	     (goto-char (point-min))
-	     (goto-char (search-forward-regexp (isearch-symbol-regexp my-symbol)))
+	     (goto-char (search-forward-regexp
+                         (isearch-symbol-regexp my-symbol)))
 	     (isearch-forward-symbol-at-point)))))
 
 ;; only use find-symbol-first occurrence as a weak alternative in cases
@@ -1095,9 +1101,13 @@ Else, call find-symbol-first-occurrence"
   ;; Set correct Python interpreter
   (setq pyvenv-post-activate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))
+                (setq python-shell-interpreter
+                      (concat pyvenv-virtual-env "bin/python3")))
 	      (lambda ()
-		(message "activated venv at: \t%s" (getenv "VIRTUAL_ENV")))))
+		(message "%s %s"
+                         (propertize "activated venv at:"
+                                     'face 'minibuffer-prompt)
+                         (getenv "VIRTUAL_ENV")))))
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
                 (setq python-shell-interpreter "python3")))))
