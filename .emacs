@@ -528,7 +528,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 ;;;; TEXT EDITING
 ;;;;; utilities
-(defun smarter-move-beginning-of-line (arg)
+(defun dwim-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
 `move-beginning-of-line' but smarter.
 
@@ -552,8 +552,8 @@ point reaches the beginning or end of the buffer, stop there."
       (move-beginning-of-line 1)))
   (point))
 
-;; remap C-a to 'smarter-move-beginning-of-line'
-(global-set-key (kbd "\C-a") #'smarter-move-beginning-of-line)
+;; remap C-a to 'dwim-move-beginning-of-line'
+(global-set-key (kbd "\C-a") #'dwim-move-beginning-of-line)
 
 ;; when typing in selected region, delete it
 (delete-selection-mode t)
@@ -572,25 +572,36 @@ delete preceding ARG lines and preceding 1 char."
   (kill-line arg)
   (delete-char -1))
 
-(defun dwim-kill (&optional arg)
+(defun dwim-kill-line (&optional arg)
   (interactive "P")
   (if mark-active
       (kill-region (region-beginning) (region-end))
     (my-kill-whole-line arg)))
 
-(global-set-key (kbd "C-k") #'dwim-kill)
+(global-set-key (kbd "C-k") #'dwim-kill-line)
 
-(defun my-smart-copy ()
+(defun dwim-copy ()
   (interactive)
   (if (not mark-active)
       (let ((orig-point (point)))
-	(kill-ring-save (smarter-move-beginning-of-line nil)
+	(kill-ring-save (dwim-move-beginning-of-line)
 			(line-end-position))
 	(goto-char orig-point)
-	(message "copied the current line"))
+	(message "copied the current line: \t%s" (current-kill 0)))
     (kill-ring-save (region-beginning) (region-end))))
 
-(global-set-key (kbd "M-w") #'my-smart-copy)
+(global-set-key (kbd "M-w") #'dwim-copy)
+
+(defun dwim-kill ()
+  (interactive)
+  (if (not mark-active)
+      (let ((orig-point (point)))
+	(kill-region (dwim-move-beginning-of-line)
+		     (line-end-position))
+	(message "copied this line: \t%s" (current-kill 0)))
+    (kill-region (region-beginning) (region-end))))
+
+(global-set-key (kbd "C-w") #'dwim-kill)
 
 (defun count-total-visible-lines ()
   (interactive)
