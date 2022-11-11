@@ -729,37 +729,6 @@ future."
 		(if (bound-and-true-p god-local-mode)
 		    (concat "💪⚡" arg)
 		  arg)))
-
-  (defcustom god-translate-key-for-description
-    t
-    "Whether to use `god-mode-describe-key' when god-mode is enabled."
-    :group 'god
-    :type 'boolean)
-
-  (defun god-mode-describe-key (arg)
-    "Describe a key-sequence (starting with ARG) as interpreted by `god-mode'.
-Use `god-mode-lookup-key-sequence' to translate a key-sequence
-into the appropriate command, and use `describe-function' to display
-its information.
-Only applied when `god-translate-key-for-description' is t"
-    (message "we are running `god-mode-describe-key'")
-    (if god-translate-key-for-description
-	(let ((translated-command
-	       (god-mode-lookup-key-sequence (string-to-char (caar arg)))))
-	  (describe-function translated-command)
-	  (message
-	   "`god-mode-self-insert' translated the key-sequence %s %s %s %s"
-	   "starting with " arg
-	   " into the command: " translated-command))
-      nil))
-
-  (add-hook 'god-mode-enabled-hook
-	    (lambda ()
-	      (advice-add #'describe-key :before-until #'god-mode-describe-key)))
-
-  (add-hook 'god-mode-disabled-hook
-	    (lambda () (advice-remove #'describe-key #'god-mode-describe-key)))
-
   :bind
   ("<escape>" . god-local-mode)
   ("s-<escape>" . god-mode-all))
