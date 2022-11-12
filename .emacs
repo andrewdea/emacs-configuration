@@ -744,8 +744,9 @@ future."
 		    (concat "💪⚡" arg)
 		  arg)))
   :bind
-  ("<escape>" . god-local-mode)
-  ("s-<escape>" . god-mode-all))
+  ("<escape>" . god-mode-all)
+  ("s-<escape>" . god-local-mode)
+  ("M-<escape>" . god-execute-with-current-bindings))
 
 
 ;;;; BUFFER AND FRAME movements
