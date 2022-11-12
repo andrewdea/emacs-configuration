@@ -940,6 +940,7 @@ for each open buffer with one of these files, refresh the version-control state"
 (defun my-prog-appearance ()
   (interactive)
   (display-line-numbers-mode t)
+  (setq-local display-line-numbers 'relative)
   (electric-pair-local-mode t))
 
 (add-hook 'prog-mode-hook #'my-prog-appearance)
