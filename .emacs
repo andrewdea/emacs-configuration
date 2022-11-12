@@ -475,6 +475,11 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (dired "~/CraftingInterpreters"))
 
+(defun reveal-in-finder (arg)
+  "Use the shell command \"open -R ARG\" to select file in Finder."
+  (interactive (list (read-file-name "open in Finder: ")))
+  (shell-command (message "open -R %s" arg)))
+
 ;;;;; dired mode
 (use-package all-the-icons-dired
   :init
@@ -585,7 +590,6 @@ delete preceding ARG lines and preceding 1 char."
 	(kill-ring-save (dwim-move-beginning-of-line)
 			(line-end-position))
 	(goto-char orig-point)
-	;; (message "copied the current line: \t%s" (current-kill 0)))
         (message "%s %s"
                  (propertize "copied current line:" 'face 'minibuffer-prompt)
                  (current-kill 0)))
@@ -596,8 +600,8 @@ delete preceding ARG lines and preceding 1 char."
 (defun dwim-kill ()
   (interactive)
   (if (not mark-active)
-      (let ((orig-point (point)))
-	(kill-region (dwim-move-beginning-of-line)
+      (progn
+        (kill-region (dwim-move-beginning-of-line)
 		     (line-end-position))
         (message "%s %s"
                  (propertize "copied line:" 'face 'minibuffer-prompt)
