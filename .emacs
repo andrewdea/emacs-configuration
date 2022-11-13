@@ -916,18 +916,17 @@ open siblings (directories at its same depth)"
   (setq ido-enable-flex-matching t))
 
 ;;;;; git
-(defun vc-refresh-buffer (arg)
-  (set-buffer arg)
-  (vc-refresh-state))
-
 (use-package magit
   :config
+  (defun vc-refresh-buffer (arg)
+    (set-buffer arg)
+    (vc-refresh-state))
+
   (defun magit-add-force (arg)
     "Adds (with force) the file ARG to the git repo.
 If ARG not specified, defaults to the current buffer's file"
     (interactive (list (read-file-name "git add -f " (buffer-file-name))))
     (shell-command (concat "git add -f " arg)))
-  ;; (shell-quote-argument arg))))
 
   (defun vc-refresh-all-git-buffers ()
     "get list of git files from magit,
