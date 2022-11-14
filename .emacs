@@ -637,11 +637,18 @@ delete preceding ARG lines and preceding 1 char."
 (use-package avy
   :defer t
   :bind (("s-'" . avy-goto-char-2)))
+
 ;;;;; visual undo
 (use-package vundo
   :defer t
   :config
-  (setq vundo-glyph-alist vundo-unicode-symbols))
+  (setq vundo-glyph-alist vundo-unicode-symbols)
+  (add-hook 'vundo-pre-enter-hook
+            (lambda ()
+              (setq gc-cons-threshold most-positive-fixnum)))
+  (advice-add 'vundo :after
+              (lambda ()  (setq gc-cons-threshold 800000))))
+
 ;;;;; flyspell
 (use-package flyspell
   :bind (:map flyspell-mode-map
