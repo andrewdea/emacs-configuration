@@ -53,7 +53,7 @@ else, open a new buffer and insert the file contents."
      (progn
        (with-temp-buffer
          (setq-local temp-haiku-buffer t)
-         (insert-file-contents-literally ,haiku-dataset-file)
+         (insert-file-contents-literally haiku-dataset-file)
          ,@body))))
 
 ;;;; Formatting haikus
