@@ -47,13 +47,14 @@
   "Execute BODY inside of a temporary buffer with the haiku file.
 If we're already in the haiku temp buffer, just execute body;
 else, open a new buffer and insert the file contents."
-  (if (boundp 'temp-haiku-buffer)
-      `(progn ,@body)
-    (progn
-      `(with-temp-buffer
-	 (insert-file-contents-literally haiku-dataset-file)
-	 (setq-local temp-haiku-buffer (current-buffer))
-	 ,@body))))
+  `(if (boundp 'temp-haiku-buffer)
+       (progn
+         ,@body)
+     (progn
+       (with-temp-buffer
+         (setq-local temp-haiku-buffer t)
+         (insert-file-contents-literally ,haiku-dataset-file)
+         ,@body))))
 
 ;;;; Formatting haikus
 (defun haiku-break-into-lines (string within-quotes)
