@@ -612,13 +612,13 @@ delete preceding ARG lines and preceding 1 char."
 
 (global-set-key (kbd "C-w") #'dwim-kill)
 
-(defun count-total-visible-lines ()
+(defun total-visible-lines ()
   (interactive)
   (message "Buffer '%s' has %d total lines"
 	   (buffer-name (current-buffer))
 	   (count-lines (point-min) (point-max))))
 
-(global-set-key (kbd "C-x l") #'count-total-visible-lines)
+(global-set-key (kbd "C-x l") #'goto-line)
 
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
@@ -953,8 +953,27 @@ for each open buffer with one of these files, refresh the version-control state"
 (defun my-prog-appearance ()
   (interactive)
   (display-line-numbers-mode t)
-  (setq-local display-line-numbers 'relative)
+  (absolute-line-numbers-setup)
   (electric-pair-local-mode t))
+
+(defun adj/:around-goto-line-read-args (origfn)
+  (let ((display-line-numbers 'absolute))
+    (funcall origfn)))
+
+(defun relative-line-numbers-setup ()
+  (interactive)
+  (display-line-numbers-mode t)
+  (setq display-line-numbers 'relative)
+  (defun adj/:around-goto-line-read-args (origfn)
+    (let ((display-line-numbers 'absolute))
+      (funcall origfn)))
+  (advice-add 'goto-line-read-args :around #'adj/:around-goto-line-read-args))
+
+(defun absolute-line-numbers-setup ()
+  (interactive)
+  (setq display-line-numbers 'absolute)
+  (display-line-numbers-mode)
+  (advice-remove 'goto-line-read-args #'adj/:around-goto-line-read-args))
 
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
