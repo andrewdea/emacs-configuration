@@ -417,6 +417,9 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (setq jit-lock-defer-time nil))
 
+;;
+(setq delete-by-moving-to-trash t)
+
 ;;;;; shortcuts
 ;; open init file
 (defun init ()
