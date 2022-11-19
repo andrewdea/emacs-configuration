@@ -341,9 +341,11 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 	  (lambda () (visual-line-mode -1) (setq-local truncate-lines t)))
 
 (add-hook 'comint-mode-hook
-	  (lambda () (visual-line-mode -1)))
+	  (lambda () (visual-line-mode -1) (electric-pair-local-mode t)))
 
 (setq help-window-select t)
+(define-key help-mode-map "b" #'help-go-back)
+(define-key help-mode-map "f" #'help-go-forward)
 
 ;;;; ORG mode
 (use-package org
@@ -477,10 +479,29 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (dired "~/CraftingInterpreters"))
 
+
+(defun shell-command-open (arg &optional options)
+  (interactive "Sopen ")
+  (let ((options (or options "")))
+    (shell-command (message "open %s %s" options arg))
+    (with-current-buffer "*Shell Command Output*"
+      (if (eq (buffer-size) 0)
+          (kill-buffer)))))
+
 (defun reveal-in-finder (arg)
   "Use the shell command \"open -R ARG\" to select file in Finder."
-  (interactive (list (read-file-name "open in Finder: ")))
-  (shell-command (message "open -R %s" arg)))
+  (interactive (list (ido-read-file-name "open in Finder: ")))
+  (shell-command-open arg "-R"))
+
+(defun open-in-browser (url)
+  (interactive
+   (let ((uris (eww-suggested-uris)))
+     (list (read-string (format-prompt "Enter URL or keywords"
+                                       (and uris (car uris)))
+                        nil 'eww-prompt-history uris))))
+  ;; (message "arg: %s" url))
+  (let ((url (eww--dwim-expand-url url)))
+    (shell-command-open url)))
 
 ;;;;; dired mode
 (use-package all-the-icons-dired
@@ -645,9 +666,10 @@ delete preceding ARG lines and preceding 1 char."
   (setq vundo-glyph-alist vundo-unicode-symbols)
   (add-hook 'vundo-pre-enter-hook
             (lambda ()
+              (garbage-collect-maybe 5)
               (setq gc-cons-threshold most-positive-fixnum)))
   (advice-add 'vundo :after
-              (lambda ()  (setq gc-cons-threshold 800000))))
+              (lambda () (setq gc-cons-threshold 800000))))
 
 ;;;;; flyspell
 (use-package flyspell
@@ -953,7 +975,7 @@ for each open buffer with one of these files, refresh the version-control state"
 (defun my-prog-appearance ()
   (interactive)
   (display-line-numbers-mode t)
-  (absolute-line-numbers-setup)
+  (relative-line-numbers-setup)
   (electric-pair-local-mode t))
 
 (defun adj/:around-goto-line-read-args (origfn)
@@ -1298,11 +1320,15 @@ Else, call find-symbol-first-occurrence"
 (add-to-list 'auto-mode-alist '("\\tetris-scores\\'" . tetris-score-mode))
 
 ;;;; RANDOM STUFF
-(define-key help-mode-map "b" #'help-go-back)
-(define-key help-mode-map "f" #'help-go-forward)
+(defun my-inhibit-startup-screen-always ()
+  "Startup screen inhibitor for `command-line-functions`.
+Inhibits startup screen on the first unrecognised option."
+  (ignore (setq inhibit-startup-screen t)))
+
+(add-hook 'command-line-functions #'my-inhibit-startup-screen-always)
 
 ;; for working with the updated god-mode package
-(setq load-prefer-newer t)
+;; (setq load-prefer-newer t)
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
