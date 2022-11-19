@@ -76,6 +76,7 @@
 
 ;; ;; check where init is slow to load
 ;; (use-package benchmark-init
+;;   :demand t
 ;;   :init
 ;;   ;; To disable collection of benchmark data after init is done.
 ;;   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
@@ -1311,7 +1312,7 @@ Inhibits startup screen on the first unrecognised option."
    '("a000d0fedd5e1c3b58e3a1c645c316ec2faa66300fc014c9ad0af1a4c1de839b" "024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
+   '(benchmark-init god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
