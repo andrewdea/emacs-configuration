@@ -41,5 +41,8 @@
 (setq initial-major-mode 'fundamental-mode)
 (setq initial-scratch-message "**Welcome to Emacs!**\n\n\n")
 
+(scroll-bar-mode -1)
+(pixel-scroll-precision-mode t)
+
 (provide 'early-init)
 ;;; early-init.el ends here

@@ -174,7 +174,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 	     (float-time (time-since time)))))
       (switch-to-buffer dashboard-buffer-name)))
 
-  ;; (add-hook 'after-init-hook #'dashboard-open)
+  ;; (add-hook 'after-init-hook #'dashboard-open 100)
 
   :defer 4
 
@@ -933,6 +933,7 @@ open siblings (directories at its same depth)"
 
 ;;;;; git
 (use-package magit
+  :defer t
   :config
   (defun vc-refresh-buffer (arg)
     (set-buffer arg)
