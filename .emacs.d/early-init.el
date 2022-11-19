@@ -24,25 +24,29 @@
 ;;; Code:
 
 ;; avoid garbage collection at startup
-(setq gc-cons-threshold most-positive-fixnum) ; 2^61 bytes
+(setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
+      gc-cons-percentage 0.6)
 (add-hook 'after-init-hook
           (lambda ()
-            (setq gc-cons-threshold 800000)))
-(setq gc-cons-percentage 0.6)
+            (setq gc-cons-threshold 16777216 ; 16mb
+                  gc-cons-percentage 0.1)))
 ;; reset these after init
 
-;; don't show startup screen
-(setq inhibit-startup-screen t)
 
-;; don't show tool bar
-(tool-bar-mode -1)
+(progn ;; early customizations for nice appearance
+  (push '(tool-bar-lines . 0)   default-frame-alist)
+  (push '(vertical-scroll-bars) default-frame-alist)
+  (setq tool-bar-mode   nil
+	scroll-bar-mode nil)
 
-;; scratch buffer in fundamental mode
-(setq initial-major-mode 'fundamental-mode)
-(setq initial-scratch-message "**Welcome to Emacs!**\n\n\n")
+  ;; scratch buffer in fundamental mode
+  (setq initial-major-mode 'fundamental-mode)
+  (setq initial-scratch-message "**Welcome to Emacs!**\n\n\n")
 
-(scroll-bar-mode -1)
-(pixel-scroll-precision-mode t)
+  (push '(left-fringe . 2)  default-frame-alist)
+  (push '(right-fringe . 0) default-frame-alist)
+
+  (setq inhibit-startup-screen t))
 
 (provide 'early-init)
 ;;; early-init.el ends here
