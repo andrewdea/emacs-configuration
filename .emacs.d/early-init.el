@@ -25,8 +25,11 @@
 
 ;; avoid garbage collection at startup
 (setq gc-cons-threshold most-positive-fixnum) ; 2^61 bytes
-(add-hook 'after-init (lambda () (setq gc-cons-threshold 800000)))
+(add-hook 'after-init-hook
+          (lambda ()
+            (setq gc-cons-threshold 800000)))
 (setq gc-cons-percentage 0.6)
+;; reset these after init
 
 ;; don't show startup screen
 (setq inhibit-startup-screen t)
