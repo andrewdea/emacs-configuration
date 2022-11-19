@@ -34,7 +34,6 @@
   (require 'use-package))
 
 (require 'use-package-ensure)
-;; (setq use-package-always-ensure t)
 
 ;; useful for when I'm working on my own packages and need to update
 (defun reload-package-from-file (&optional arg)
@@ -229,15 +228,15 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 ;; make current window bigger or smaller
 (defun wbig (&optional arg)
   (interactive "P")
-  (if arg () (setq arg 25))
-  (enlarge-window-horizontally arg)
-  (message (concat "expanded window by " (number-to-string arg))))
+  (let ((arg (or arg 25)))
+    (enlarge-window-horizontally arg)
+    (message "expanded window by %s columns" arg)))
 
 (defun wsmall (&optional arg)
   (interactive "P")
-  (if arg () (setq arg 25))
-  (shrink-window-horizontally arg)
-  (message (concat "reduced window by " (number-to-string arg))))
+  (let ((arg (or arg 25)))
+    (shrink-window-horizontally arg)
+    (message "reduced window by %s columns" arg)))
 
 ;; frame to have together with max youtube
 (defun yt-frame ()
@@ -309,21 +308,6 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 
 ;; long line to test whitespace-mode:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;; tabs
-(use-package centaur-tabs
-  :config
-  (centaur-tabs-headline-match)
-
-  (defun centaur-tabs-disable-locally ()
-    (if centaur-tabs-mode (centaur-tabs-local-mode)))
-
-  (setq centaur-tabs-set-icons t)
-  (setq centaur-tabs-gray-out-icons 'buffer)
-  (setq centaur-tabs-set-bar 'left)
-  :hook
-  (speedbar-mode . centaur-tabs-disable-locally)
-  (shell-mode . centaur-tabs-disable-locally))
 
 ;;;;; icons
 (use-package all-the-icons
@@ -1343,7 +1327,7 @@ Inhibits startup screen on the first unrecognised option."
    '("a000d0fedd5e1c3b58e3a1c645c316ec2faa66300fc014c9ad0af1a4c1de839b" "024e125a165ef1f13cf858942b9e8f812f93f6078d8d84694a5c6f9675e94462" "e5dc4ab5d76a4a1571a1c3b6246c55b8625b0af74a1b9035ab997f7353aeffb2" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer centaur-tabs all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
+   '(god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup benchmark-init go-mode sr-speedbar scala-mode cider clojure-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
