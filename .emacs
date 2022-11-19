@@ -31,9 +31,9 @@
   (package-install 'use-package))
 
 (eval-when-compile
-  (require 'use-package))
-
-(require 'use-package-ensure)
+  (require 'use-package)
+  (setq use-package-always-defer t)
+  (require 'use-package-ensure))
 
 ;; useful for when I'm working on my own packages and need to update
 (defun reload-package-from-file (&optional arg)
@@ -62,7 +62,6 @@
 (use-package gcmh
   :hook
   (after-init . gcmh-mode)
-  :defer t
   :config
   (setq gcmh-idle-delay 'auto  ; default is 15s
 	gcmh-high-cons-threshold (* 16 1024 1024)  ; 16mb
@@ -120,8 +119,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
       (set-frame-size (selected-frame) 204 54)
     (set-frame-size (selected-frame) 100 45)))
 
-(use-package mood-line
-  :defer t)
+(use-package mood-line)
 
 (defun startup-look ()
   "Set (or restore) the initial appearance."
@@ -141,11 +139,9 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 (add-hook 'after-init-hook #'startup-look)
 
 ;;;;; dashboard
-(use-package all-the-haikus
-  :defer t)
+(use-package all-the-haikus)
 
-(use-package bookmark
-  :defer t)
+(use-package bookmark)
 
 (use-package dashboard
   :init
@@ -302,7 +298,6 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 	       "enabled"
 	     "disabled")))
       (message "Whitespace mode %s in this buffer" action-taken)))
-  :defer t
   :config
   (setq whitespace-style '(face lines-tail trailing)))
 
@@ -310,8 +305,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;; icons
-(use-package all-the-icons
-  :defer t)
+(use-package all-the-icons)
 
 ;;;;; appearance for specific modes
 
@@ -501,7 +495,6 @@ the whole region is fontified (by automatically inserting character at mark)"
   (setq all-the-icons-dired-monochrome nil))
 
 (use-package dired-subtree
-  :defer t
   :after dired
   :bind
   (:map dired-mode-map
@@ -509,8 +502,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 	("<backtab>" . dired-subtree-cycle)))
 
 ;;;;; find and grep
-(use-package shell-output-mode
-  :defer t)
+(use-package shell-output-mode)
 
 ;;;;; recent files
 (use-package recentf
@@ -643,12 +635,10 @@ delete preceding ARG lines and preceding 1 char."
 (global-set-key (kbd "C-<wheel-up>") #'my-scroll)
 
 (use-package avy
-  :defer t
   :bind (("s-'" . avy-goto-char-2)))
 
 ;;;;; visual undo
 (use-package vundo
-  :defer t
   :config
   (setq vundo-glyph-alist vundo-unicode-symbols)
   (add-hook 'vundo-pre-enter-hook
@@ -758,7 +748,6 @@ future."
 
 ;;;;; god mode
 (use-package god-mode
-  :defer t
   :config
   (advice-add #'mood-line-segment-major-mode :filter-return
 	      (lambda (arg)
@@ -918,9 +907,7 @@ open siblings (directories at its same depth)"
 	      ("C-x u" . my-speedbar-undo)))
 
 ;;;;; treemacs
-(use-package treemacs
-  :ensure t
-  :defer t)
+(use-package treemacs)
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
@@ -933,7 +920,6 @@ open siblings (directories at its same depth)"
 
 ;;;;; git
 (use-package magit
-  :defer t
   :config
   (defun vc-refresh-buffer (arg)
     (set-buffer arg)
@@ -1094,21 +1080,17 @@ Else, call find-symbol-first-occurrence"
   :mode "\\.mc\\'")
 
 ;; clojure
-(use-package clojure-mode
-  :defer t)
+(use-package clojure-mode)
 
-(use-package cider
-  :defer t)
+(use-package cider)
 
 ;; go
-(use-package go-mode
-  :defer t)
+(use-package go-mode)
 
 ;; python
 (add-hook 'python-mode-hook #'subword-mode)
 (add-hook 'inferior-python-mode-hook #'subword-mode)
 (use-package elpy
-  :defer t
   :init
   ;; (advice-add 'python-mode :before 'elpy-enable)
   (setq elpy-modules '(elpy-module-sane-defaults
@@ -1122,7 +1104,6 @@ Else, call find-symbol-first-occurrence"
 	      ("M-." . elpy-goto-definition)))
 
 (use-package lsp-pyright
-  :defer t
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp)))  ; or lsp-deferred
@@ -1131,7 +1112,6 @@ Else, call find-symbol-first-occurrence"
 ;; (use-package lsp-ui)
 
 (use-package pyvenv
-  :defer t
   :hook (python-mode . pyvenv-mode)
   :config
   (defun get-project-pyvenv (directory)
