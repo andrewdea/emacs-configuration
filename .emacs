@@ -522,7 +522,8 @@ the whole region is fontified (by automatically inserting character at mark)"
   (setq recentf-max-menu-items 25
         recentf-max-saved-items 25)
   (add-to-list 'recentf-exclude "ido.last")
-  (recentf-mode)
+  (make-it-quiet
+   (recentf-mode))
   :hook (recentf-dialog-mode . hl-line-mode))
 
 ;;;;; projectile mode
@@ -1230,6 +1231,13 @@ Else, call find-symbol-first-occurrence"
 	  (replace-regexp-in-string prompt-regexp "")
 	  (list))) ; string argument is actually passed as a list
     string))
+
+;;;;; emacs lisp
+(defmacro make-it-quiet (&rest body)
+  `(let ((inhibit-message t))
+     (progn ,@body)))
+
+(add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -100)
 
 ;;;;; templates
 (auto-insert-mode t)
