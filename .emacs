@@ -139,6 +139,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 
 (add-hook 'after-init-hook #'startup-look)
 
+(setq use-short-answers t)
 ;;;;; dashboard
 (use-package all-the-haikus)
 
