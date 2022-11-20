@@ -166,7 +166,8 @@ If ARG is provided, set frame to big, else check the size and toggle it."
       (if (not already-open)
 	  (progn
 	    ;; make sure you autoload this function (see above):
-	    (dashboard-insert-startupify-lists)
+	    (make-it-quiet
+             (dashboard-insert-startupify-lists))
 	    (message
 	     "Welcome! Dashboard opened in %.2f seconds"
 	     (float-time (time-since time)))))
