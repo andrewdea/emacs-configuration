@@ -414,7 +414,7 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (setq jit-lock-defer-time nil))
 
-;;
+;; don't rm files with just a couple key-presses
 (setq delete-by-moving-to-trash t)
 
 ;;;;; shortcuts
@@ -1245,8 +1245,10 @@ Else, call find-symbol-first-occurrence"
 (setq auto-insert-directory "~/.emacs.d/templates")
 
 (defun template-insert-file-name ()
-  (let ((name (file-name-sans-extension
-	       (file-name-nondirectory buffer-file-name))))
+  (let ((name (thread-last
+	        (file-name-nondirectory buffer-file-name)
+                (file-name-sans-extension)
+                (replace-regexp-in-string "_\\|-" " "))))
     (replace-string "Template"
 		    (concat (upcase (string (aref name 0))) (seq-drop name 1)))))
 
