@@ -522,9 +522,7 @@ the whole region is fontified (by automatically inserting character at mark)"
         recentf-max-saved-items 25)
   (add-to-list 'recentf-exclude "ido.last")
   (recentf-mode)
-  :hook (recentf-dialog-mode . hl-line-mode)
-  ;; :hook (after-init . recentf-mode)
-  )
+  :hook (recentf-dialog-mode . hl-line-mode))
 
 ;;;;; projectile mode
 (use-package projectile
@@ -1063,8 +1061,8 @@ Else, call find-symbol-first-occurrence"
 
 ;;;;; shell
 (setq shell-file-name "/bin/zsh")
-;;;;; programming-language specifics
-;; java
+;;;; PROGRAMMING-LANGUAGES
+;;;;; java
 (use-package javadoc-lookup
   :bind (("C-c s" . org-store-link)))
 
@@ -1073,23 +1071,23 @@ Else, call find-symbol-first-occurrence"
 	      ("C-i" . javadoc-add-import))
   :hook (java-mode . subword-mode))
 
-;; scala
+;;;;; scala
 (use-package scala-mode
   :mode "\\.sc\\'")
 
-;; monicelli
+;;;;; monicelli
 (use-package monicelli-mode
   :mode "\\.mc\\'")
 
-;; clojure
+;;;;; clojure
 (use-package clojure-mode)
 
 (use-package cider)
 
-;; go
+;;;;; go
 (use-package go-mode)
 
-;; python
+;;;;; python
 (add-hook 'python-mode-hook #'subword-mode)
 (add-hook 'inferior-python-mode-hook #'subword-mode)
 (use-package elpy
