@@ -23,16 +23,6 @@
 
 ;;; Code:
 
-;; avoid garbage collection at startup
-(setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
-      gc-cons-percentage 0.6)
-(add-hook 'after-init-hook
-          (lambda ()
-            (setq gc-cons-threshold 16777216 ; 16mb
-                  gc-cons-percentage 0.1)))
-;; reset these after init
-
-
 (progn ;; early customizations for nice appearance
   (push '(tool-bar-lines . 0)   default-frame-alist)
   (push '(vertical-scroll-bars) default-frame-alist)
@@ -46,7 +36,36 @@
   (push '(left-fringe . 2)  default-frame-alist)
   (push '(right-fringe . 0) default-frame-alist)
 
-  (setq inhibit-startup-screen t))
+  (setq inhibit-startup-screen t
+        inhibit-startup-echo-area-message user-login-name))
+
+;; optimization
+;; avoid garbage collection at startup:
+(setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
+      gc-cons-percentage 0.6
+      ;; avoid checking this list for any file that's opened
+      my-file-name-handler-alist file-name-handler-alist
+      file-name-handler-alist nil)
+;; reset these after init:
+(add-hook 'after-init-hook
+          (lambda ()
+            (setq gc-cons-threshold 16777216 ; 16mb
+                  gc-cons-percentage 0.1
+                  file-name-handler-alist my-file-name-handler-alist)))
+
+(unless noninteractive
+
+  ;; since we won't ever use these, we can avoid loading them
+  (advice-add #'display-startup-echo-area-message :override #'ignore)
+  (advice-add #'display-startup-screen :override #'ignore)
+
+  (advice-add #'scroll-bar-mode :override #'ignore)
+  (advice-add #'tool-bar-mode :override #'ignore)
+
+  (unless (memq initial-window-system '(x pgtk))
+    (setq command-line-x-option-alist nil)))
+(setq load-prefer-newer noninteractive)
+
 
 (provide 'early-init)
 ;;; early-init.el ends here
