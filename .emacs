@@ -82,20 +82,6 @@
 ;;   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
 ;;   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
 
-;;;; CHEATSHEET
-;; (use-package cheatsheet
-;;   :hook (kill-emacs . cheatsheet-save-list-to-file))
-
-;; quick ways to reload the updates:
-(defun delete-cheatsheet ()
-  (interactive)
-  (delete-package-quietly 'cheatsheet))
-
-(defun reload-cheatsheet ()
-  (interactive)
-  (delete-cheatsheet)
-  (package-install-file "~/.emacs.d/custom/packages/cheatsheet/cheatsheet.el"))
-
 ;;;; appearance: SIZING, FRAMES, WINDOWS, THEMES
 ;;;;; startup
 ;; choose default theme based on time of day
@@ -421,7 +407,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; open init file
 (defun init ()
   (interactive)
-  (find-file "~/.emacs"))
+  (find-file user-init-file))
 
 ;; open HackerRank
 (defun hacker-rank ()
