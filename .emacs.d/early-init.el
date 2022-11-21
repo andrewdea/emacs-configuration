@@ -25,6 +25,7 @@
 ;;;; setup variables
 (setq user-emacs-directory
       (file-name-directory (or load-file-name buffer-file-name)))
+(startup-redirect-eln-cache "eln-cache")
 
 ;;;; early GUI customizations for nice appearance
 (push '(tool-bar-lines . 0)   default-frame-alist)
