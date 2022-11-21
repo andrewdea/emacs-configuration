@@ -46,9 +46,9 @@
 
 ;; (push '(fullscreen . maximized) default-frame-alist)
 
-(setq custom-safe-themes
-      '("99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
-(load-theme 'my-monokai)
+;; (setq custom-safe-themes
+;;       '("99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
+;; (load-theme 'my-monokai)
 
 ;;;; optimization
 ;;;;; avoid garbage collection at startup:
