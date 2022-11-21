@@ -123,7 +123,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
   (setq-default indent-tabs-mode nil)
   (setq blink-cursor-blinks 5))
 
-(add-hook 'after-init-hook #'startup-look)
+(add-hook 'after-init-hook #'startup-look -99)
 
 (setq use-short-answers t)
 ;;;;; dashboard
@@ -159,7 +159,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 	     (float-time (time-since time)))))
       (switch-to-buffer dashboard-buffer-name)))
 
-  ;; (add-hook 'after-init-hook #'dashboard-open 100)
+  ;; (add-hook 'after-init-hook #'dashboard-open)
 
   :defer 4
 
@@ -1224,7 +1224,7 @@ Else, call find-symbol-first-occurrence"
   `(let ((inhibit-message t))
      (progn ,@body)))
 
-(add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -100)
+(add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
 
 ;;;;; templates
 (auto-insert-mode t)
@@ -1309,7 +1309,8 @@ Inhibits startup screen on the first unrecognised option."
    '("19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "a000d0fedd5e1c3b58e3a1c645c316ec2faa66300fc014c9ad0af1a4c1de839b" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(esup benchmark-init god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode)))
+   '(rainbow-mode esup benchmark-init god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell org-roam dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+ '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
