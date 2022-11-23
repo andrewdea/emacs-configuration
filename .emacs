@@ -159,7 +159,9 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 	     (float-time (time-since time)))))
       (switch-to-buffer dashboard-buffer-name)))
 
-  ;; (add-hook 'after-init-hook #'dashboard-open)
+  (add-hook 'after-init-hook (lambda ()
+                               (or ns-input-file (cdr command-line-args)
+                                   (dashboard-open))))
 
   :defer 4
 
@@ -1289,15 +1291,13 @@ Else, call find-symbol-first-occurrence"
 (add-to-list 'auto-mode-alist '("\\tetris-scores\\'" . tetris-score-mode))
 
 ;;;; RANDOM STUFF
-(defun my-inhibit-startup-screen-always ()
-  "Startup screen inhibitor for `command-line-functions`.
-Inhibits startup screen on the first unrecognised option."
-  (ignore (setq inhibit-startup-screen t)))
-
-(add-hook 'command-line-functions #'my-inhibit-startup-screen-always)
-
-;; for working with the updated god-mode package
-;; (setq load-prefer-newer t)
+(add-hook 'after-init-hook
+          (lambda ()
+            (message "ns-input-file: %s" ns-input-file)
+            (message (string-trim initial-scratch-message))
+            (if ns-input-file
+                (setq initial-buffer-choice (car ns-input-file)))
+            -99))
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
