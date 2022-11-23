@@ -521,7 +521,10 @@ the whole region is fontified (by automatically inserting character at mark)"
   :bind (:map projectile-mode-map
 	      ("s-p" . projectile-command-map)))
 
-;;;; TEXT EDITING
+;;;; TEXT EDITING and keyboard commands
+;;;;; keys
+;; allow more flexibility by binding the right-side command-key to C-
+(setq ns-right-command-modifier 'control)
 ;;;;; utilities
 (defun dwim-move-beginning-of-line (&optional arg)
   "Move point back to indentation of beginning of line.
