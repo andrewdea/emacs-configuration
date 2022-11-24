@@ -1274,9 +1274,6 @@ Else, call find-symbol-first-occurrence"
 (use-package pdf-tools
   :mode ("\\.pdf\\'" . pdf-view-mode))
 
-(add-hook 'pdf-view-mode-hook (lambda ()
-				(pixel-scroll-precision-mode -1)))
-
 ;;;; GAMES
 ;;;;; tetris
 (add-hook 'tetris-mode-hook #'gc-restore-defaults)
