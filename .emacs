@@ -1003,8 +1003,8 @@ else, first move to previous visible heading, then call it"
 
 ;; outshine
 (add-hook 'outline-minor-mode-hook #'outshine-mode)
-;; enable outline-minor-mode for *ALL* programming buffers
-(add-hook 'prog-mode-hook #'outline-minor-mode)
+;; enable outline-minor-mode for elisp programming buffers
+(add-hook 'emacs-lisp-mode-hook #'outline-minor-mode)
 
 ;;;;; expand region
 (use-package expand-region
