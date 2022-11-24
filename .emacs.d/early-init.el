@@ -64,7 +64,7 @@
             (setq gc-cons-threshold 16777216 ; 16mb
                   gc-cons-percentage 0.1
                   file-name-handler-alist my-file-name-handler-alist)
-            (makunbound 'my-file-name-handler-alist)
+            (makunbound 'my-file-name-handler-alist))
           100)
 
 ;;;;; don't load unneeded GUI components

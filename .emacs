@@ -393,6 +393,19 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("C-c n i" . org-roam-node-insert)))
 
 ;;;; FILE utilities
+;;;;; open file properly at startup
+;; this is already handled properly if the file was passed as CLI argument
+;; but if Emacs was opened through the GUI, we have to check the ns-input-file
+(add-hook 'after-init-hook
+          (lambda ()
+            (let ((to-emacs "to Emacs"))
+              ;; calling message with a format string
+              ;; ensures that we wait for the GUI to be properly set-up,
+              ;; which ensures that the value of ns-input-file is available
+              (message "Welcome %s" to-emacs))
+            (setq initial-buffer-choice (car ns-input-file))
+            )
+          98)
 ;;;;; load faster
 ;; these are useful especially in VERY large files
 (defun jit-lock-optimize-settings ()
@@ -1292,15 +1305,6 @@ Else, call find-symbol-first-occurrence"
 (add-to-list 'auto-mode-alist '("\\tetris-scores\\'" . tetris-score-mode))
 
 ;;;; RANDOM STUFF
-(add-hook 'after-init-hook
-          (lambda ()
-            (let ((to-emacs "to Emacs"))
-              ;; calling message with a format string
-              ;; ensures that we wait for the GUI to be properly set-up,
-              ;; which ensures that the value of ns-input-file is available
-              (message "Welcome %s" to-emacs))
-            (setq initial-buffer-choice (car ns-input-file)))
-          98)
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
