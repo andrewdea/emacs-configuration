@@ -159,9 +159,10 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 	     (float-time (time-since time)))))
       (switch-to-buffer dashboard-buffer-name)))
 
-  (add-hook 'after-init-hook (lambda ()
-                               (or ns-input-file (cdr command-line-args)
-                                   (dashboard-open))))
+  ;; (add-hook 'after-init-hook (lambda ()
+  ;;                              (or initial-buffer-choice (cdr command-line-args)
+  ;;                                  (dashboard-open)))
+  ;;           99)
 
   :defer 4
 
@@ -525,7 +526,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 ;;;; TEXT EDITING and keyboard commands
 ;;;;; keys
-;; allow more flexibility by binding the right-side command-key to C-
+;; allow more flexibility by binding the right-side cmd-key to C-
 (setq ns-right-command-modifier 'control)
 ;;;;; utilities
 (defun dwim-move-beginning-of-line (&optional arg)
@@ -1293,11 +1294,13 @@ Else, call find-symbol-first-occurrence"
 ;;;; RANDOM STUFF
 (add-hook 'after-init-hook
           (lambda ()
-            (message "ns-input-file: %s" ns-input-file)
-            (message (string-trim initial-scratch-message))
-            (if ns-input-file
-                (setq initial-buffer-choice (car ns-input-file)))
-            -99))
+            (let ((to-emacs "to Emacs"))
+              ;; calling message with a format string
+              ;; ensures that we wait for the GUI to be properly set-up,
+              ;; which ensures that the value of ns-input-file is available
+              (message "Welcome %s" to-emacs))
+            (setq initial-buffer-choice (car ns-input-file)))
+          98)
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
