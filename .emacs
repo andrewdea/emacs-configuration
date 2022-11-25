@@ -769,9 +769,15 @@ future."
 
 
 ;;;; BUFFER AND FRAME movements
-(use-package ibuffer  :bind (("C-x C-b" . ibuffer)
-			     :map ibuffer-name-map
-			     ("<mouse-1>" . ibuffer-visit-buffer)))
+(use-package ibuffer
+  :config
+  (setq ibuffer-directory-abbrev-alist
+        (list
+         (cons "^/Users/andrewdeangelis" "~")
+         (cons "^/Applications/Emacs.app/Contents/Resources/lisp" "Emacs.app/.*/lisp")))
+  :bind (("C-x C-b" . ibuffer)
+	 :map ibuffer-name-map
+	 ("<mouse-1>" . ibuffer-visit-buffer)))
 
 (use-package all-the-icons-ibuffer
   :after (all-the-icons ibuffer)
@@ -813,9 +819,6 @@ future."
 
 ;; turn off M-i = TAB in minibuffer
 (define-key minibuffer-local-map (kbd "M-i") "i")
-
-;; switch frames
-(global-set-key (kbd "M-o") 'other-frame)
 
 ;; find buffer by substring and switch to it
 (defun buffer-name-matchp (arg-s arg-b)
