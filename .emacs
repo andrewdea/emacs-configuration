@@ -533,7 +533,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 (use-package projectile
   :defer 6
   :config
-  (setq projectile-ignored-projects '("~/"))
+  (setq projectile-ignored-projects '("~/")
+        projectile-switch-project-action #'projectile-dired-other-window)
   :bind (:map projectile-mode-map
 	      ("s-p" . projectile-command-map)))
 
