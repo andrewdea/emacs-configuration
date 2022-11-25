@@ -139,7 +139,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 
   (autoload ; avoid loading the whole dashboad package unless needed
     #'dashboard-insert-startupify-lists
-    "~/.emacs.d/elpa/dashboard-20220922.509/dashboard.el")
+    "~/.emacs.d/elpa/dashboard-20221121.1809/dashboard.el")
 
   (defun dashboard-open ()
     "Open the *dashboard* buffer."
@@ -180,19 +180,16 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 			       :v-adjust -0.05
 			       :face 'font-lock-keyword-face))
   (defun center-and-propertize-haiku-line (line)
-    (dashboard-center-line line)
-    (insert (propertize line 'face 'dashboard-footer))
-    (insert "\n"))
+    (dashboard-insert-center (propertize line 'face 'dashboard-footer) "\n"))
 
   (defun dashboard-insert-footer ()
     "Insert custom haiku-footer for dashboard."
     (let ((footer (car dashboard-footer-messages))
 	  (footer-heading "Today's haiku:\n"))
       (insert "\n\n")
-      (dashboard-center-line footer-heading)
-      (insert dashboard-footer-icon)
-      (insert " ")
-      (insert (propertize footer-heading 'face 'dashboard-heading))
+      (dashboard-insert-center dashboard-footer-icon " "
+                               (propertize footer-heading
+                                           'face 'dashboard-heading))
       (mapcar #'center-and-propertize-haiku-line (split-string footer "\n"))
       (insert "\n")))
 
