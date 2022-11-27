@@ -1269,6 +1269,30 @@ Else, call find-symbol-first-occurrence"
 (define-all-templates
  ("org" "java" "sc" "c" "go"))
 
+;;;; SHELL modes
+(defun comint-get-prompt-above ()
+  "Get the prompt above the top visible line in the current window."
+  (interactive)
+  (save-excursion
+    (goto-char (window-start))
+    (comint-previous-prompt 1)
+    (let ((prompt (thing-at-point 'line)))
+      (aset prompt (- (length prompt) 1) 0) ; remove the \n ending char
+      prompt)))
+
+(define-minor-mode comint-sticky-mode
+  "Minor mode to show the previous prompt as a sticky header."
+  :group 'comint
+  :global nil
+  :lighter nil
+  (if comint-sticky-mode
+      (setq-local header-line-format
+                  (list '(:eval
+                          (comint-get-prompt-above))))
+    (setq-local header-line-format nil)))
+
+(add-hook 'comint-mode-hook #'comint-sticky-mode)
+
 ;;;; SPECIAL VIEWS (web and PDF)
 ;; (use-package my-webkit)
 
