@@ -227,8 +227,8 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 (defun yt-frame ()
   (interactive)
   (delete-other-windows)
-  (set-frame-size (selected-frame) 84 54)
-  (set-frame-position (selected-frame) 838 24))
+  (set-frame-position (selected-frame) 838 24)
+  (set-frame-size (selected-frame) 84 54))
 
 (defun right-frame ()
   (interactive)
