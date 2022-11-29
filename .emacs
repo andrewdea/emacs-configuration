@@ -1309,10 +1309,26 @@ Else, call find-symbol-first-occurrence"
 
 ;;;; GAMES
 ;;;;; tetris
-;; (add-hook 'tetris-mode-hook #'gc-restore-defaults)
-(add-hook 'tetris-mode-hook #'yt-frame)
-(add-hook 'tetris-mode-hook (lambda ()
-			      (pixel-scroll-precision-mode -1)))
+
+(defun tetris-setup ()
+  (yt-frame)
+  (pixel-scroll-precision-mode -1)
+  (define-key tetris-mode-map "q" #'tetris-quit)
+  (gcmh-mode -1)
+  (setq gc-cons-threshold 400000
+        gc-cons-percentage 1.0))
+
+(add-hook 'tetris-mode-hook #'tetris-setup)
+
+(defun tetris-quit ()
+  (interactive)
+  (gcmh-mode +1)
+  (pixel-scroll-precision-mode +1)
+  (kill-buffer "*Tetris*")
+  (condition-case nil
+      (kill-buffer "tetris-scores")
+    (error (message "no buffer named tetris-scores")))
+  (startup-look))
 
 (defun close-scores-and-play ()
   (interactive)
@@ -1321,7 +1337,11 @@ Else, call find-symbol-first-occurrence"
   (tetris-start-game))
 
 (defvar-keymap tetris-score-mode-map
-  "n" #'close-scores-and-play)
+  "n" #'close-scores-and-play
+  "q" (lambda ()
+        (interactive)
+        (View-quit)
+        (tetris-quit)))
 
 (define-minor-mode tetris-score-mode
   "Minor mode for displaying tetris scores
@@ -1330,7 +1350,9 @@ Else, call find-symbol-first-occurrence"
   (add-hook 'view-mode-hook
 	    (lambda ()
 	      (if tetris-score-mode
-		  (define-key view-mode-map "n" nil)))))
+		  (progn
+                    (define-key view-mode-map "n" nil)
+                    (define-key view-mode-map "q" nil))))))
 
 (add-to-list 'auto-mode-alist '("\\tetris-scores\\'" . tetris-score-mode))
 
