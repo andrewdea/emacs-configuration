@@ -1285,7 +1285,7 @@ Else, call find-symbol-first-occurrence"
     (goto-char (window-start))
     (comint-previous-prompt 1)
     (let ((prompt (thing-at-point 'line)))
-      (aset prompt (- (length prompt) 1) 0) ; remove the \n ending char
+      (aset prompt (- (length prompt) 1) 0) ; remove the newline ending char
       prompt)))
 
 (define-minor-mode comint-sticky-mode
@@ -1299,7 +1299,7 @@ Else, call find-symbol-first-occurrence"
                           (comint-get-prompt-above))))
     (setq-local header-line-format nil)))
 
-(add-hook 'comint-mode-hook #'comint-sticky-mode)
+;; (add-hook 'comint-mode-hook #'comint-sticky-mode)
 
 ;;;; SPECIAL VIEWS (web and PDF)
 ;; (use-package my-webkit)
