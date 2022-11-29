@@ -1238,6 +1238,14 @@ Else, call find-symbol-first-occurrence"
 	  (replace-regexp-in-string prompt-regexp "")
 	  (list))) ; string argument is actually passed as a list
     string))
+;;;;; c / c++ / objective c
+(use-package eglot
+  :init
+  (add-hook 'c-mode-hook 'eglot-ensure)
+  (add-hook 'c++-mode-hook 'eglot-ensure)
+  (add-hook 'objc-mode-hook 'eglot-ensure)
+  :config
+  (add-to-list 'eglot-server-programs '((c++-mode c-mode objc-mode) "clangd")))
 
 ;;;;; emacs lisp
 (defmacro make-it-quiet (&rest body)
