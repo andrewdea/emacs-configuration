@@ -1278,6 +1278,7 @@ Else, call find-symbol-first-occurrence"
  ("org" "java" "sc" "c" "go"))
 
 ;;;; SHELL modes
+;;;;; comint
 (defun comint-get-prompt-above ()
   "Get the prompt above the top visible line in the current window."
   (interactive)
@@ -1299,7 +1300,38 @@ Else, call find-symbol-first-occurrence"
                           (comint-get-prompt-above))))
     (setq-local header-line-format nil)))
 
-;; (add-hook 'comint-mode-hook #'comint-sticky-mode)
+;;;;; eshell
+;; (defun eshell-get-prompt-above ()
+;;   "Get the prompt above the top visible line in the current window."
+;;   (interactive)
+;;   (save-excursion
+;;     (goto-char (window-start))
+;;     (eshell-previous-prompt 1)
+;;     (let ((prompt (thing-at-point 'line)))
+;;       (aset prompt (- (length prompt) 1) 0) ; remove the newline ending char
+;;       prompt)))
+
+(defun eshell-get-latest-prompt ()
+  "Get the prompt above the top visible line in the current window."
+  (interactive)
+  (save-excursion
+    (goto-char (point-max))
+    (forward-line -1)
+    (eshell-previous-prompt 1)
+    (let ((prompt (thing-at-point 'line)))
+      (aset prompt (- (length prompt) 1) 0) ; remove the newline ending char
+      prompt)))
+
+(define-minor-mode eshell-sticky-mode
+  "Minor mode to show the previous prompt as a sticky header."
+  :group 'eshell
+  :global nil
+  :lighter nil
+  (if eshell-sticky-mode
+      (setq-local header-line-format
+                  (list '(:eval
+                          (eshell-get-prompt-above))))
+    (setq-local header-line-format nil)))
 
 ;;;; SPECIAL VIEWS (web and PDF)
 ;; (use-package my-webkit)
@@ -1316,7 +1348,7 @@ Else, call find-symbol-first-occurrence"
   (define-key tetris-mode-map "q" #'tetris-quit)
   (gcmh-mode -1)
   (setq gc-cons-threshold 400000
-        gc-cons-percentage 1.0))
+        gc-cons-percentage 0.5))
 
 (add-hook 'tetris-mode-hook #'tetris-setup)
 
@@ -1357,6 +1389,8 @@ Else, call find-symbol-first-occurrence"
 (add-to-list 'auto-mode-alist '("\\tetris-scores\\'" . tetris-score-mode))
 
 ;;;; RANDOM STUFF
+;; for testing xwidgets
+(setq load-prefer-newer t)
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
@@ -1371,7 +1405,7 @@ Else, call find-symbol-first-occurrence"
    '("19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "a000d0fedd5e1c3b58e3a1c645c316ec2faa66300fc014c9ad0af1a4c1de839b" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(racket-mode emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
