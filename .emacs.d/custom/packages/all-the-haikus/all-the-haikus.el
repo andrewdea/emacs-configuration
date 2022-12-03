@@ -1,19 +1,58 @@
-;;; all-the-haikus.el --- functionalities to read from csv file of haikus -*- coding: utf-8; lexical-binding: t; -*-
+;;; all-the-haikus.el --- write and find poems with emacs  -*- lexical-binding: t; -*-
 
-;; Author: Andrew De Angelis ( bobodeangelis@gmail.com )
-;; Version: 0.1.0
-;; Created: 8 Sep 2022
+;; Copyright (C) 2022  Andrew De Angelis
 
-;; This file is not part of GNU Emacs.
+;; Author: Andrew De Angelis <bobodeangelis@gmail.com>
+;; Keywords: games, wp
 
-;;; License:
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License version 3 as published
+;; by the Free Software Foundation, version 3 of the License
 
-;; You can redistribute this program and/or modify it under the terms of the GNU General Public License version 3.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
-;; TBD
-;; important to add description of dataset and format
+;; This package provides two main functionalities, `write-me-a-haiku' and
+;; `find-me-a-haiku'.
+;; `find-me-a-haiku' returns a poem from a file.  It can be a random poem, or
+;; - a poem from a specific line in the file
+;; - a poem with specific words
+;; - a poem whose lines have a specific syllable count
+;; `write-me-a-haiku' finds random lines from the file and combines them to
+;; generate a new poem.  Currently, the only constraint it can accept is a
+;; specified syllable count.
+
+;; These can be used to (for example) configure your Emacs to show you a poem
+;; on startup.
+
+;; Some additional functionalities are `haiku-save-to-favorites', which
+;; can save a specified poem to the `haiku-favorites-file',
+;; and `show-haiku-from-line-at-point', which opens the `haiku-dataset-file'
+;; and shows the specified poem.
+
+;; The package depends on the file `haiku-dataset-file'.
+;; The expected format of the file is:
+;; - first file-line is a header, not a poem, and will be ignored by our program
+;; - each subsequent file-line is a three-line poem
+;; - the lines in the poem are separated by commas
+;; - in addition to those three lines, the file-line contains 4 columns:
+;;      - the source of the poem
+;;      - the syllable-count of each line in the poem
+;; - if a column contains a comma, the column is encased in quotes \"
+;; - syllable counts can have multiple numbers assigned for the same line:
+;;      this means that the line has differing number of syllables
+;;      depending on pronounciation
+;; A dataset like this one should be fine:
+;; https://github.com/docmarionum1/haikurnn/blob/master/input/poems/haikus.csv
+
+;; Note about variable names in the code:
 ;; to avoid confusion, 'file-line' refers to a line in the dataset file,
 ;; while 'line' refers to a line of a poem
 
@@ -22,11 +61,13 @@
 
 (defgroup all-the-haikus nil
   "Read and write haikus from csv file."
-  :group 'convenience) ; leisure/art/something like that?
+  :group 'games) ; leisure/art/something like that?
 
 (defcustom haiku-dataset-file
   "~/.emacs.d/custom/datasets/haiku-dataset.csv"
-  "Comma-separated file containing our list of haikus."
+  "Comma-separated file containing our list of haikus.
+See commentary in `all-the-haikus'.el for a detailed explanation
+of its expected format."
   :group 'all-the-haikus
   :type 'file)
 
@@ -85,7 +126,8 @@ Remove all \" characters, and add an empty line to end the poem."
 		   "\n")))
 
 (defun format-haiku-line (arg)
-  "Trim the string ARG.  If ARG contains a comma, surround ARG with quotes."
+  "Trim the string ARG.
+If ARG contains a comma, surround ARG with quotes."
   (let ((trimmed (string-trim arg)))
     (if (string-match-p (regexp-quote ",") trimmed)
 	(concat "\"" trimmed "\"")
@@ -120,8 +162,8 @@ search from beginning to start-point."
   (message "looking for: %s" to-find)
   (let ((start-point ;random start
 	 (+ (length haiku-file-header) ; lowerbound: excludes the header
-	 (random
-	  (point-max)))))
+	    (random
+	     (point-max)))))
     (goto-char start-point)
     (if (or
 	 (search-forward-regexp to-find nil t) ; try from here to the end
@@ -140,7 +182,9 @@ the first word in the first column, the second word in the second column, etc."
 	      (haiku-word-list-to-regexp (cdr arg)))))
 
 (defun get-haiku-with-format (&optional arg syllable-count)
-  "Given a SYLLABLE-COUNT, find a random haiku with this format.
+  "Find a random haiku with the specified SYLLABLE-COUNT and containing ARG.
+ARG can be a string or a regexp to look for inside the poem, or a list of words,
+which must appear in the specified order in the poem.
 TODO: refactor this to be more elegant and cleaner."
   (let* ((words-to-find
 	  (cond
@@ -239,8 +283,8 @@ and then returning the syllable-count of that same position."
 	  ;; use a regexp depending on what position to find the line
 	  (pcase line-number
 	    (`0 (format "^%s,.*,.*,.*,.*,.*,.*$" string))
-		(`1 (format "^.*,%s,.*,.*,.*,.*,.*$" string))
-		(`2 (format "^.*,.*,%s,.*,.*,.*,.*$" string))))
+	    (`1 (format "^.*,%s,.*,.*,.*,.*,.*$" string))
+	    (`2 (format "^.*,.*,%s,.*,.*,.*,.*$" string))))
 	 (found
 	  (with-haiku-temp-buffer
 	   (if (search-forward-regexp to-find nil t)
@@ -273,7 +317,6 @@ If it is, return the three lines of the poem and its data.
 This is done by checking if the string contains `generated-poem-marker'
 If called interactively or string is not provided,
 check the text around the point."
-  ;; TODO: make it less verbose
   (interactive)
   (let ((to-find (concat "^\"?" (regexp-quote generated-poem-marker) "\n")))
     (if arg
@@ -282,20 +325,17 @@ check the text around the point."
 	    (replace-regexp-in-string to-find "" arg))
       ;; if ARG is not provided, check the text around point
       (progn
-	;(message "arg not provided")
 	(move-beginning-of-line 1)
-	;(message "moved one line")
 	(if (search-forward-regexp "^\"?$" nil t) ; go to the end of the poem
 	    (let* ((pos (- (point) 1)) ; subtract 1 to remove the final \" char
 		   (poetry-lines
 		    (progn
 		      (forward-line -4) ; go back 4 lines to find the marker
-		      ;(message "found the end, going back 4 lines to find marker")
 		      (if (string-match-p to-find
 					  (thing-at-point 'line 'no-properties))
 			  ;; if marker found, ignore marker line
 			  (progn (forward-line 1)
-				 ;(message "returning the last 3 lines")
+                                        ;(message "returning the last 3 lines")
 				 ;; return last 3 lines
 				 (buffer-substring-no-properties
 				  (point) pos))))))
@@ -330,9 +370,10 @@ check the text around the point."
 ;;;###autoload
 (defun write-me-a-haiku (&optional syllable-count)
   "Writes a new poem.
+SYLLABLE-COUNT is a list of three integers specifying the desired
+syllable-count of each line in the poem.
 If SYLLABLE-COUNT provided, generate a poem with that format.
 Else, generate a poem by getting three random lines.
-The file used to copy lines from is `haiku-dataset-file'.
 The returned poem has an additional first line with the `generated-poem-marker'.
 When called interactively, the poem is displayed in the minibuffer."
   (interactive)
@@ -356,17 +397,13 @@ When called interactively, the poem is displayed in the minibuffer."
 ;;;###autoload
 (defun find-me-a-haiku (&optional arg syllable-count)
   "Read a haiku from `haiku-dataset-file'.  Return as string of poetry.
-ARG can be a number (line number),
-a string (word to look for anywhere in the poem),
-a list of strings (words to look for at specific position in the poem).
-SYLLABLE-COUNT is a list representing the format of the poem."
-;; earlier doc string:
-;;     "Read a haiku from `haiku-dataset-file'.  Return as string of poetry.
-;; If ARG is a number or a marker, read the haiku at that line-number.
-;; If ARG is a non-nil list, look for a haiku with this syllable-count
-;; \(see `get-haiku-with-format').
-;; else (including if ARG is nil) read haiku from a random line-number.
-;; When called interactively, the poem is displayed in the minibuffer."
+SYLLABLE-COUNT is a list of three integers specifying the desired
+syllable-count of each line in the poem.
+If ARG is a number or a marker, read the haiku at that line-number.
+If ARG is a non-nil list, look for a haiku with this syllable-count
+\(see `get-haiku-with-format').
+else (including if ARG is nil) read haiku from a random line-number.
+When called interactively, the poem is displayed in the minibuffer."
   (interactive "P")
   (let* ((haiku-line
 	  (cond ((integer-or-marker-p arg)
