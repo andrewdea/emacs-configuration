@@ -33,7 +33,7 @@
 (defvar shell-latest-command nil)
 (defvar find-default-options " -maxdepth 3 ")
 (defvar shell-default-options nil)
-(defvar grep-default-options "-nr")
+(defvar grep-default-options "-nr -I")
 
 (defun shell-output-execute-command (command)
   "Execute COMMAND and display output in new buffer.
