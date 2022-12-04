@@ -22,7 +22,7 @@
 ;; keeping warnings on for now to monitor native comp til I'm familiar with it
 ;; (setq native-comp-async-report-warnings-errors nil)
 
-;;;; PACKAGES
+;;;; PACKAGES setup
 (add-to-list 'package-archives
              '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
@@ -34,17 +34,6 @@
   (require 'use-package)
   (setq use-package-always-defer t)
   (require 'use-package-ensure))
-
-;; useful for when I'm working on my own packages and need to update
-(defun reload-package-from-file (&optional arg)
-  (interactive "spackage name: ")
-  (delete-package-quietly (intern arg))
-  (call-interactively 'package-install-file))
-
-(defun delete-package-quietly (arg)
-  (condition-case nil
-      (package-delete (cadr (assq arg package-alist)))
-    (error (message "error while deleting, most likely had already deleted"))))
 
 ;;;; PATH from shell
 (when (memq window-system '(mac ns x))
@@ -127,10 +116,6 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 
 (setq use-short-answers t)
 ;;;;; dashboard
-(use-package all-the-haikus)
-
-(use-package bookmark)
-
 (use-package dashboard
   :init
   (defun my-dashboard-init ()
@@ -310,9 +295,15 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 (add-hook 'comint-mode-hook
 	  (lambda () (visual-line-mode -1) (electric-pair-local-mode t)))
 
-(setq help-window-select t)
-(define-key help-mode-map "b" #'help-go-back)
-(define-key help-mode-map "f" #'help-go-forward)
+;; (define-key help-mode-map "b" #'help-go-back)
+;; (define-key help-mode-map "f" #'help-go-forward)
+(use-package help-mode
+  :init
+  (setq help-window-select t)
+  :bind
+  (:map help-mode-map
+        ("b" . help-go-back)
+        ("f" . help-go-forward)))
 
 ;;;; ORG mode
 (use-package org
@@ -504,7 +495,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 	("<backtab>" . dired-subtree-cycle)))
 
 ;;;;; find and grep
-(use-package shell-output-mode)
+(use-package shell-output-mode
+  :load-path "custom/modes/")
 
 ;;;;; recent files
 (use-package recentf
@@ -1277,61 +1269,28 @@ Else, call find-symbol-first-occurrence"
 (define-all-templates
  ("org" "java" "sc" "c" "go"))
 
-;;;; SHELL modes
-;;;;; comint
-(defun comint-get-prompt-above ()
-  "Get the prompt above the top visible line in the current window."
-  (interactive)
-  (save-excursion
-    (goto-char (window-start))
-    (comint-previous-prompt 1)
-    (let ((prompt (thing-at-point 'line)))
-      (aset prompt (- (length prompt) 1) 0) ; remove the newline ending char
-      prompt)))
+;;;; local PACKAGES and functionalities
+(use-package sticky-shell
+  :load-path "custom/packages/sticky-shell/")
 
-(define-minor-mode comint-sticky-mode
-  "Minor mode to show the previous prompt as a sticky header."
-  :group 'comint
-  :global nil
-  :lighter nil
-  (if comint-sticky-mode
-      (setq-local header-line-format
-                  (list '(:eval
-                          (comint-get-prompt-above))))
-    (setq-local header-line-format nil)))
+;; (use-package all-the-haikus
+;;   :load-path "custom/packages/all-the-haikus/")
 
-;;;;; eshell
-;; (defun eshell-get-prompt-above ()
-;;   "Get the prompt above the top visible line in the current window."
-;;   (interactive)
-;;   (save-excursion
-;;     (goto-char (window-start))
-;;     (eshell-previous-prompt 1)
-;;     (let ((prompt (thing-at-point 'line)))
-;;       (aset prompt (- (length prompt) 1) 0) ; remove the newline ending char
-;;       prompt)))
+(use-package all-the-haikus
+  :load-path "custom/packages/all-the-haikus/"
+  :defer 1)
 
-(defun eshell-get-latest-prompt ()
-  "Get the prompt above the top visible line in the current window."
-  (interactive)
-  (save-excursion
-    (goto-char (point-max))
-    (forward-line -1)
-    (eshell-previous-prompt 1)
-    (let ((prompt (thing-at-point 'line)))
-      (aset prompt (- (length prompt) 1) 0) ; remove the newline ending char
-      prompt)))
 
-(define-minor-mode eshell-sticky-mode
-  "Minor mode to show the previous prompt as a sticky header."
-  :group 'eshell
-  :global nil
-  :lighter nil
-  (if eshell-sticky-mode
-      (setq-local header-line-format
-                  (list '(:eval
-                          (eshell-get-prompt-above))))
-    (setq-local header-line-format nil)))
+;; useful for when I'm working on my own packages and need to update
+(defun reload-package-from-file (&optional arg)
+  (interactive "spackage name: ")
+  (delete-package-quietly (intern arg))
+  (call-interactively 'package-install-file))
+
+(defun delete-package-quietly (arg)
+  (condition-case nil
+      (package-delete (cadr (assq arg package-alist)))
+    (error (message "error while deleting, most likely had already deleted"))))
 
 ;;;; SPECIAL VIEWS (web and PDF)
 ;; (use-package my-webkit)
@@ -1405,7 +1364,7 @@ Else, call find-symbol-first-occurrence"
    '("19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "a000d0fedd5e1c3b58e3a1c645c316ec2faa66300fc014c9ad0af1a4c1de839b" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(racket-mode emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist all-the-haikus vundo treemacs elpy avy csv-mode dashboard shell-output-mode gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme use-package the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(sticky-shell use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo treemacs elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
