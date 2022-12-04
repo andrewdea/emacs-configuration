@@ -46,8 +46,8 @@
 
 (push '(fullscreen . maximized) default-frame-alist)
 
-(add-to-list 'load-path (locate-user-emacs-file "my-themes/"))
-(require 'my-monokai-theme)
+;; (add-to-list 'load-path (locate-user-emacs-file "my-themes/"))
+;; (require 'my-monokai-theme)
 (load-theme 'my-monokai 'no-confirm)
 
 ;; (push '(background-color . "#202020") default-frame-alist)

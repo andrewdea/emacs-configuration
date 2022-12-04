@@ -57,6 +57,17 @@
 	gcmh-verbose nil
 	gcmh-auto-idle-delay-factor 10))
 
+;; defer gc while in the minibuffer
+(defun config:defer-gc ()
+  (setq gc-cons-threshold most-positive-fixnum))
+(defun config:-do-restore-gc ()
+  (setq gc-cons-threshold 16777216))
+(defun config:restore-gc ()
+  (run-at-time 1 nil #'config:-do-restore-gc))
+
+(add-hook 'minibuffer-setup #'config:defer-gc)
+(add-hook 'minibuffer-exit #'config:restore-gc)
+
 ;;;;; monitoring init
 ;; ;; check which packages are slow to load/config
 ;; (setq use-package-verbose t
@@ -398,9 +409,10 @@ the whole region is fontified (by automatically inserting character at mark)"
 (add-hook 'after-init-hook
           (lambda ()
             (let ((to-emacs "to Emacs"))
-              ;; calling message with a format string
-              ;; ensures that we wait for the GUI to be properly set-up,
-              ;; which ensures that the value of ns-input-file is available
+              ;; ensure that ns-input-file is available
+              ;; not sure why, but somehow
+              ;; this is achieved by putting it in a format string
+              (message "ns-input-file: %s" ns-input-file)
               (message "Welcome %s" to-emacs))
             (setq initial-buffer-choice (car ns-input-file))
             )
@@ -915,7 +927,9 @@ open siblings (directories at its same depth)"
 	      ("C-x u" . my-speedbar-undo)))
 
 ;;;;; treemacs
-(use-package treemacs)
+(use-package treemacs
+  :init
+  (defalias #'tm #'treemacs))
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
