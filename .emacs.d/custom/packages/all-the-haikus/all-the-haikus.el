@@ -3,6 +3,10 @@
 ;; Copyright (C) 2022  Andrew De Angelis
 
 ;; Author: Andrew De Angelis <bobodeangelis@gmail.com>
+;; Maintainer: Andrew De Angelis <bobodeangelis@gmail.com>
+;; URL: https://github.com/andyjda/all-the-haikus
+;; Version: 0.0.1
+;; Package-Requires: ((cl-lib "1.0"))
 ;; Keywords: games, wp
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -61,7 +65,7 @@
 
 (defgroup all-the-haikus nil
   "Read and write haikus from csv file."
-  :group 'games) ; leisure/art/something like that?
+  :group 'games)
 
 (defcustom haiku-dataset-file
   "~/.emacs.d/custom/datasets/haiku-dataset.csv"

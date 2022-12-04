@@ -1,30 +1,30 @@
-;;; shell-output-mode.el --- minor mode for displaying the output of shell commands, optimized for 'find' and 'grep'. -*- coding: utf-8; lexical-binding: t; -*-
+;;; shell-output-mode.el --- Minor mode for displaying the output of shell commands -*- coding: utf-8; lexical-binding: t; -*-
 
-;; Copyright © 2022, by Andrew De Angelis
+;; Copyright (C) 2022  Andrew De Angelis
 
-;; Author: Andrew De Angelis ( bobodeangelis@gmail.com )
-;; Version: 0.0.1
-;; Created: 18 Aug 2022
+;; Author: Andrew De Angelis <bobodeangelis@gmail.com>
+;; Maintainer: Andrew De Angelis <bobodeangelis@gmail.com>
+;; URL: https://github.com/andyjda/shell-output-mode
+;; Version: 0.01.0
+;; Package-Requires: ((cl-lib "1.0"))
+;; Keywords: terminals, tools
 
-;; This file is not part of GNU Emacs.
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
 
-;;; License:
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
-;; You can redistribute this program and/or modify it under the terms of the GNU General Public License version 2.
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
-;; wrapping shell-command with a handy interface providing a couple utilities
-
-;; the shell-command output is displayed in a new buffer,
-;; you can open the files listed in the new buffer with C-RET;
-;; if you want to open a directory leading to a file, just highlight the directory
-;; (or part of its name) and press C-RET.  If the file includes a line-number
-;; (eg after using grep command), C-RET also brings you to that line
-;; and highlights it.
-;; Additional utilities:
-;; shell-redo: re-run the latest command
-;; shell-flush: delete all of current buffer's contents
+;; TBD
 
 ;;; Code:
 
@@ -172,7 +172,7 @@ This can be undone with normal `undo'"
   :type 'hook
   :group 'shell-output)
 
-;;
+;;;###autoload
 (define-minor-mode shell-output-mode
   "Minor mode for shell output.
 
@@ -182,6 +182,5 @@ This can be undone with normal `undo'"
   :keymap shell-output-mode-map
   (message "set the shell-output-mode"))
 
-;; add the mode to the `features' list
 (provide 'shell-output-mode)
 ;;; shell-output-mode.el ends here
