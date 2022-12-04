@@ -46,9 +46,11 @@
 
 ;; (push '(fullscreen . maximized) default-frame-alist)
 
-;; (load-theme 'my-monokai 'no-confirm)
+(add-to-list 'load-path (locate-user-emacs-file "my-themes/"))
+(require 'my-monokai-theme)
+(load-theme 'my-monokai 'no-confirm)
 
-(push '(background-color . "#000000") default-frame-alist)
+;; (push '(background-color . "#202020") default-frame-alist)
 
 ;;;; optimization
 ;;;;; avoid garbage collection at startup:
