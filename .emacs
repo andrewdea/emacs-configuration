@@ -101,14 +101,7 @@
 ;; made some edits in ~/.emacs.d/my-monokai-theme.el
 
 ;; resize current frame (toggle)
-(defun big-frame (&optional arg)
-  "Toggles frame between full screen and small.
-If ARG is provided, set frame to big, else check the size and toggle it."
-  (interactive "P")
-  (set-frame-position (selected-frame) 0 0)
-  (if (or arg (< (frame-parameter (selected-frame) 'width) 200))
-      (set-frame-size (selected-frame) 204 54)
-    (set-frame-size (selected-frame) 100 45)))
+(defalias #'big-frame #'toggle-frame-maximized)
 
 (use-package mood-line)
 
@@ -118,7 +111,9 @@ If ARG is provided, set frame to big, else check the size and toggle it."
   (setq column-number-mode t)
   (un-theme)
   (funcall (default-theme))
-  (big-frame t)
+  ;; if not already maximized, maximize
+  (or (eq (frame-parameter (selected-frame) 'fullscreen) 'maximized)
+      (toggle-frame-maximized))
   (mood-line-mode t)
   (scroll-bar-mode -1)
   (global-visual-line-mode t)
@@ -227,6 +222,7 @@ If ARG is provided, set frame to big, else check the size and toggle it."
 (defun yt-frame ()
   (interactive)
   (delete-other-windows)
+  (toggle-frame-maximized)
   (set-frame-position (selected-frame) 838 24)
   (set-frame-size (selected-frame) 84 54))
 

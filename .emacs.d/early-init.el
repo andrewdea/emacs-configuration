@@ -44,7 +44,7 @@
 (setq inhibit-startup-screen t
       inhibit-startup-echo-area-message user-login-name)
 
-;; (push '(fullscreen . maximized) default-frame-alist)
+(push '(fullscreen . maximized) default-frame-alist)
 
 (add-to-list 'load-path (locate-user-emacs-file "my-themes/"))
 (require 'my-monokai-theme)
