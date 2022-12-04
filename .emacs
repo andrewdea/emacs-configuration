@@ -57,7 +57,6 @@
 	gcmh-verbose nil
 	gcmh-auto-idle-delay-factor 10))
 
-
 ;;;;; monitoring init
 ;; ;; check which packages are slow to load/config
 ;; (setq use-package-verbose t
@@ -70,6 +69,22 @@
 ;;   ;; To disable collection of benchmark data after init is done.
 ;;   ;; third arg is DEPTH: 100 means FUNCTION is added at the end of the hook list
 ;;   (add-hook 'after-init-hook #'benchmark-init/deactivate 100))
+
+;;;; local PACKAGES and functionalities
+(use-package all-the-haikus
+  :load-path "custom/packages/all-the-haikus/"
+  :defer 1)
+
+;; useful for when I'm working on my own packages and need to update
+(defun reload-package-from-file (&optional arg)
+  (interactive "spackage name: ")
+  (delete-package-quietly (intern arg))
+  (call-interactively 'package-install-file))
+
+(defun delete-package-quietly (arg)
+  (condition-case nil
+      (package-delete (cadr (assq arg package-alist)))
+    (error (message "error while deleting, most likely had already deleted"))))
 
 ;;;; appearance: SIZING, FRAMES, WINDOWS, THEMES
 ;;;;; startup
@@ -493,10 +508,6 @@ the whole region is fontified (by automatically inserting character at mark)"
   (:map dired-mode-map
 	("<tab>" . dired-subtree-toggle)
 	("<backtab>" . dired-subtree-cycle)))
-
-;;;;; find and grep
-(use-package shell-output-mode
-  :load-path "custom/modes/")
 
 ;;;;; recent files
 (use-package recentf
@@ -1062,6 +1073,14 @@ Else, call find-symbol-first-occurrence"
 
 ;;;;; shell
 (setq shell-file-name "/bin/zsh")
+
+(use-package sticky-shell
+  :load-path "custom/packages/sticky-shell/")
+
+(use-package shell-output-mode
+  :load-path "custom/modes/"
+  :defer 1)
+
 ;;;; PROGRAMMING-LANGUAGES
 ;;;;; java
 (use-package javadoc-lookup
@@ -1078,6 +1097,7 @@ Else, call find-symbol-first-occurrence"
 
 ;;;;; monicelli
 (use-package monicelli-mode
+  :load-path "custom/modes/"
   :mode "\\.mc\\'")
 
 ;;;;; clojure
@@ -1268,29 +1288,6 @@ Else, call find-symbol-first-occurrence"
 
 (define-all-templates
  ("org" "java" "sc" "c" "go"))
-
-;;;; local PACKAGES and functionalities
-(use-package sticky-shell
-  :load-path "custom/packages/sticky-shell/")
-
-;; (use-package all-the-haikus
-;;   :load-path "custom/packages/all-the-haikus/")
-
-(use-package all-the-haikus
-  :load-path "custom/packages/all-the-haikus/"
-  :defer 1)
-
-
-;; useful for when I'm working on my own packages and need to update
-(defun reload-package-from-file (&optional arg)
-  (interactive "spackage name: ")
-  (delete-package-quietly (intern arg))
-  (call-interactively 'package-install-file))
-
-(defun delete-package-quietly (arg)
-  (condition-case nil
-      (package-delete (cadr (assq arg package-alist)))
-    (error (message "error while deleting, most likely had already deleted"))))
 
 ;;;; SPECIAL VIEWS (web and PDF)
 ;; (use-package my-webkit)
