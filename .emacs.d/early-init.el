@@ -57,15 +57,18 @@
 (setq gc-cons-threshold most-positive-fixnum ; 2^61 bytes
       gc-cons-percentage 0.6)
 
+(defun my-gc-setup ()
+  (setq gc-cons-threshold 16777216 ; 16mb
+        gc-cons-percentage 0.1))
+
 ;; avoid checking this list for any file that's opened
 (defvar my-file-name-handler-alist file-name-handler-alist)
 (setq file-name-handler-alist nil)
 ;; reset these after init:
 (add-hook 'after-init-hook
           (lambda ()
-            (setq gc-cons-threshold 16777216 ; 16mb
-                  gc-cons-percentage 0.1
-                  file-name-handler-alist my-file-name-handler-alist)
+            (my-gc-setup)
+            (setq file-name-handler-alist my-file-name-handler-alist)
             (makunbound 'my-file-name-handler-alist))
           100)
 

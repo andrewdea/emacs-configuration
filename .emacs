@@ -1340,6 +1340,7 @@ Else, call find-symbol-first-occurrence"
 
 (defun tetris-quit ()
   (interactive)
+  (my-gc-setup)
   (gcmh-mode +1)
   (pixel-scroll-precision-mode +1)
   (kill-buffer "*Tetris*")
