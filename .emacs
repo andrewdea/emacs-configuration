@@ -938,6 +938,7 @@ open siblings (directories at its same depth)"
     "Clear the minibuffer and insert ARG.
 If ARG not provided, get it from the kill ring"
     (switch-to-minibuffer)
+    (widen)
     (mark-whole-buffer)
     (delete-region (region-beginning) (region-end))
     (insert (or arg (current-kill 0))))
