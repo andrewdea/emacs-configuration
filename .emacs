@@ -403,6 +403,9 @@ the whole region is fontified (by automatically inserting character at mark)"
 	 ("C-c n i" . org-roam-node-insert)))
 
 ;;;; FILE utilities
+;;;;; dialog boxes
+(setq use-file-dialog nil)
+(setq use-dialog-box nil)
 ;;;;; open file properly at startup
 ;; this is already handled properly if the file was passed as CLI argument
 ;; but if Emacs was opened through the GUI, we have to check the ns-input-file
@@ -947,9 +950,7 @@ the previously-selected file into this path."
     (interactive)
     (let ((path (treemacs--prop-at-point :path)))
       (message "copied from treemacs")
-      (paste-to-minibuffer (file-name-directory path))))
-
-  )
+      (paste-to-minibuffer (file-name-directory path)))))
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
