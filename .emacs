@@ -788,7 +788,10 @@ future."
   :bind
   ("<escape>" . god-mode-all)
   ("s-<escape>" . god-local-mode)
-  ("M-<escape>" . god-execute-with-current-bindings))
+  ("M-<escape>" . god-execute-with-current-bindings)
+  ("C-z" . god-mode-all)
+  ("C-s-z" . god-local-mode)
+  ("C-M-z" . god-execute-with-current-bindings))
 
 
 ;;;; BUFFER AND FRAME movements
