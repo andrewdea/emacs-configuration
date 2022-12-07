@@ -926,32 +926,36 @@ open siblings (directories at its same depth)"
 
 ;;;;; treemacs
 (use-package treemacs
+  :load-path "/Users/andrewdeangelis/treemacs_paste_feature/treemacs/src/elisp"
   :init
   (defalias #'tm #'treemacs)
 
   ;; for the following functions to work properly, add this:
-  ;; ["Paste here" treemacs-paste :visible ,(or
-  ;;                                         (equal (minibuffer-prompt) "Move to: ")
-  ;;                                         (equal (minibuffer-prompt) "Copy to: "))]
+  ;; ["Paste here"
+  ;;  treemacs--paste-point-to-minibuffer
+  ;;  :visible ,(or
+  ;;             (equal (minibuffer-prompt) "Move to: ")
+  ;;             (equal (minibuffer-prompt) "Copy to: "))]
   ;; to the menu created in `treemacs-rightclick-menu'
-  (defun paste-to-minibuffer (&optional arg)
-    "Clear the minibuffer and insert ARG.
-If ARG not provided, get it from the kill ring"
-    (switch-to-minibuffer)
-    (widen)
-    (mark-whole-buffer)
-    (delete-region (region-beginning) (region-end))
-    (insert (or arg (current-kill 0))))
+  ;; (defun paste-to-minibuffer (&optional arg)
+  ;;     "Clear the minibuffer and insert ARG.
+  ;; If ARG not provided, get it from the kill ring"
+  ;;     (switch-to-minibuffer)
+  ;;     (widen)
+  ;;     (mark-whole-buffer)
+  ;;     (delete-region (region-beginning) (region-end))
+  ;;     (insert (or arg (current-kill 0))))
 
-  (defun treemacs-paste ()
-    "Paste the ath at point into the minibuffer.
-This assumes that we are running `treemacs--copy-or-move',
-so that pasting this path into the minibuffer allows us to copy/move
-the previously-selected file into this path."
-    (interactive)
-    (let ((path (treemacs--prop-at-point :path)))
-      (message "copied from treemacs")
-      (paste-to-minibuffer (file-name-directory path)))))
+  ;;   (defun treemacs--paste-point-to-minibuffer ()
+  ;;     "Paste the ath at point into the minibuffer.
+  ;; This assumes that we are running `treemacs--copy-or-move',
+  ;; so that pasting this path into the minibuffer allows us to copy/move
+  ;; the previously-selected file into this path."
+  ;;     (interactive)
+  ;;     (let ((path (treemacs--prop-at-point :path)))
+  ;;       (message "copied from treemacs")
+  ;;       (paste-to-minibuffer (file-name-directory path))))
+  )
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
