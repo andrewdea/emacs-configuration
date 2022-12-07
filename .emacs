@@ -944,32 +944,23 @@ open siblings (directories at its same depth)"
   :init
   (defalias #'tm #'treemacs)
 
-  ;; for the following functions to work properly, add this:
-  ;; ["Paste here"
-  ;;  treemacs--paste-point-to-minibuffer
-  ;;  :visible ,(or
-  ;;             (equal (minibuffer-prompt) "Move to: ")
-  ;;             (equal (minibuffer-prompt) "Copy to: "))]
-  ;; to the menu created in `treemacs-rightclick-menu'
-  ;; (defun paste-to-minibuffer (&optional arg)
-  ;;     "Clear the minibuffer and insert ARG.
-  ;; If ARG not provided, get it from the kill ring"
-  ;;     (switch-to-minibuffer)
-  ;;     (widen)
-  ;;     (mark-whole-buffer)
-  ;;     (delete-region (region-beginning) (region-end))
-  ;;     (insert (or arg (current-kill 0))))
+  :config
+  ;; this is necessary for treemacs-paste to work properly
+  (add-to-list 'ido-read-file-name-non-ido #'treemacs-rightclick-menu)
 
-  ;;   (defun treemacs--paste-point-to-minibuffer ()
-  ;;     "Paste the ath at point into the minibuffer.
-  ;; This assumes that we are running `treemacs--copy-or-move',
-  ;; so that pasting this path into the minibuffer allows us to copy/move
-  ;; the previously-selected file into this path."
-  ;;     (interactive)
-  ;;     (let ((path (treemacs--prop-at-point :path)))
-  ;;       (message "copied from treemacs")
-  ;;       (paste-to-minibuffer (file-name-directory path))))
-  )
+  (defun treemacs-close-window ()
+    (if (and
+         (fboundp #'treemacs-current-visibility)
+         (equal 'visible (treemacs-current-visibility)))
+        (delete-window (treemacs-get-local-window))))
+
+  (defun treemacs-close-and-other-windows (&optional arg)
+    (interactive "P")
+    (if arg (treemacs-close-window))
+    (delete-other-windows))
+
+  :bind
+  (("C-x 1" . treemacs-close-and-other-windows)))
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
