@@ -675,23 +675,34 @@ delete preceding ARG lines and preceding 1 char."
 	      ("C-c f" . flyspell-correct-word-before-point)))
 
 ;;;;; search
+;;
 ;; from beginning of document
-(global-set-key (kbd "M-s")
-		(lambda () (interactive)
-		  (point-to-register 'r)
-		  (goto-char (point-min)) (isearch-forward)))
+(defun isearch-from-top (&optional regexp-p)
+  (interactive "P")
+  (let ((beg (point)))
+    (beginning-of-buffer) ; this pushes the previous position to the mark ring
+    (isearch-forward regexp-p)
+    ;; isearch sets the mark to the beginning of the search
+    ;; in our case that's useless (just the beginnig of the buffer)
+    ;; so we pop that
+    (pop-mark)))
+
+(global-set-key (kbd "M-s") #'isearch-from-top)
 
 ;; from end of document
-(global-set-key (kbd "M-r")
-		(lambda () (interactive)
-		  (point-to-register 'r)
-		  (goto-char (point-max)) (isearch-backward)))
+(defun isearch-from-bottom (&optional regexp-p)
+  (interactive "P")
+  (let ((beg (point)))
+    (end-of-buffer)  ; this pushes the previous position to the mark ring
+    (isearch-backward regexp-p)
+    ;; isearch sets the mark to the beginning of the search
+    ;; in our case that's useless (just the end of the buffer)
+    ;; so we pop that
+    (pop-mark)))
 
-;; get back to where search started
-;; not sure why I have to press this twice
-(global-set-key (kbd "M-b")
-		(lambda () (interactive)
-		  (jump-to-register 'r)))
+(global-set-key (kbd "M-r") #'isearch-from-bottom)
+
+;; use C-u C-SPC to get back to where search started
 
 ;;;;; comments
 ;; copy line/region and comment it out
@@ -1070,11 +1081,10 @@ else, first move to previous visible heading, then call it"
   (let ((my-symbol (thing-at-point 'symbol 'no-properties)))
     (if (null my-symbol)
 	(message "No symbol at point")
-      (progn (point-to-register 'r)
-	     (goto-char (point-min))
-	     (goto-char (search-forward-regexp
+      (progn (beginning-of-buffer)
+             (goto-char (search-forward-regexp
                          (isearch-symbol-regexp my-symbol)))
-	     (isearch-forward-symbol-at-point)))))
+             (isearch-forward-symbol-at-point)))))
 
 ;; only use find-symbol-first occurrence as a weak alternative in cases
 ;; where the backend for xref has not been set
