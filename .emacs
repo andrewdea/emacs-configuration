@@ -233,7 +233,8 @@
 (defun yt-frame ()
   (interactive)
   (delete-other-windows)
-  (toggle-frame-maximized)
+  (if (eq (frame-parameter (selected-frame) 'fullscreen) 'maximized)
+      (toggle-frame-maximized))
   (set-frame-position (selected-frame) 838 24)
   (set-frame-size (selected-frame) 84 54))
 
@@ -411,12 +412,14 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; but if Emacs was opened through the GUI, we have to check the ns-input-file
 (add-hook 'after-init-hook
           (lambda ()
-            (let ((to-emacs "to Emacs"))
-              ;; ensure that ns-input-file is available
-              ;; not sure why, but somehow
-              ;; this is achieved by putting it in a format string
-              (message "ns-input-file: %s" ns-input-file)
-              (message "Welcome %s" to-emacs))
+            ;; (let ((to-emacs "to Emacs"))
+            ;;   ;; ensure that ns-input-file is available
+            ;;   ;; not sure why, but somehow
+            ;;   ;; this is achieved by putting it in a format string
+            ;;   (message "ns-input-file: %s" ns-input-file)
+            ;;   (message "Welcome %s %s" to-emacs (car ns-input-file)))
+            (message "ns-input-file: %s" ns-input-file)
+            (message "Welcome to Emacs %s" (or (car ns-input-file) ""))
             (setq initial-buffer-choice (car ns-input-file))
             )
           98)
