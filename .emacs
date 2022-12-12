@@ -1401,11 +1401,10 @@ Else, call find-symbol-first-occurrence"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
- '(custom-safe-themes
-   '("19759a26a033dcb680aa11ee08677e3146ba547f1e8a83514a1671e0d36d626c" "7d52e76f3c9b107e7a57be437862b9d01b91a5ff7fca2524355603e3a2da227f" "a000d0fedd5e1c3b58e3a1c645c316ec2faa66300fc014c9ad0af1a4c1de839b" "ebd933e1d834aa9525c6e64ad8f6021bbbaa25a48deacd0d3f480a7dd6216e3b" "99830ccf652abb947fd63a23210599483a14b1521291cd99aabae9c7ce047428" default))
+ '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(sticky-shell use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo treemacs elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(toc-org sticky-shell use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init god-mode blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo treemacs elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
