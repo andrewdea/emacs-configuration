@@ -950,19 +950,22 @@ open siblings (directories at its same depth)"
   ;; for the paste to work, make sure you have this function in
   ;; treemacs-mouse-interface
   ;; (defun treemacs--paste-point-to-minibuffer ()
-  ;;   "Paste the path at point into the minibuffer.
+  ;;     "Paste the path at point into the minibuffer.
   ;; This is used by the \"Paste here\" button,
   ;; which assumes that we are running `treemacs--copy-or-move',
   ;; so that pasting this path into the minibuffer allows us to copy/move
   ;; the previously-selected file into the path at point."
-  ;;   (interactive)
-  ;;   (let ((path (file-name-directory
-  ;;                (treemacs--prop-at-point :path))))
-  ;;     (switch-to-minibuffer)
-  ;;     (mark-whole-buffer)
-  ;;     (delete-region (region-beginning) (region-end))
-  ;;     (insert path))
-  ;;   (message "copied from treemacs"))
+  ;;     (interactive)
+  ;;     (let* ((path-at-point (treemacs--prop-at-point :path))
+  ;;            (path
+  ;;             (if (file-directory-p path-at-point)
+  ;;                 path-at-point
+  ;;               (file-name-directory path-at-point))))
+  ;;       (switch-to-minibuffer)
+  ;;       (mark-whole-buffer)
+  ;;       (delete-region (region-beginning) (region-end))
+  ;;       (insert path))
+  ;;     (message "copied from treemacs"))
 
   ;; and this in `treemacs-rightclick-menu'
 
