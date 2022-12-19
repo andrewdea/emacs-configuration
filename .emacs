@@ -947,6 +947,29 @@ open siblings (directories at its same depth)"
   :init
   (defalias #'tm #'treemacs)
 
+  ;; for the paste to work, make sure you have this function in
+  ;; treemacs-mouse-interface
+  ;; (defun treemacs--paste-point-to-minibuffer ()
+  ;;   "Paste the path at point into the minibuffer.
+  ;; This is used by the \"Paste here\" button,
+  ;; which assumes that we are running `treemacs--copy-or-move',
+  ;; so that pasting this path into the minibuffer allows us to copy/move
+  ;; the previously-selected file into the path at point."
+  ;;   (interactive)
+  ;;   (let ((path (file-name-directory
+  ;;                (treemacs--prop-at-point :path))))
+  ;;     (switch-to-minibuffer)
+  ;;     (mark-whole-buffer)
+  ;;     (delete-region (region-beginning) (region-end))
+  ;;     (insert path))
+  ;;   (message "copied from treemacs"))
+
+  ;; and this in `treemacs-rightclick-menu'
+
+  ;; `(["Paste here"
+  ;;                treemacs--paste-point-to-minibuffer
+  ;;                :visible ,(string-match-p "\\(\\(Move\\)\\|\\(Copy\\)\\) to: " (or (minibuffer-prompt) ""))]
+
   :config
   ;; this is necessary for treemacs-paste to work properly
   (add-to-list 'ido-read-file-name-non-ido #'treemacs-rightclick-menu)
