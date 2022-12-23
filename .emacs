@@ -83,8 +83,7 @@
 
 ;;;; local PACKAGES and functionalities
 (use-package all-the-haikus
-  :load-path "custom/packages/all-the-haikus/"
-  :defer 1)
+  :load-path "custom/packages/all-the-haikus/")
 
 ;; useful for when I'm working on my own packages and need to update
 (defun reload-package-from-file (&optional arg)
@@ -138,6 +137,7 @@
 (setq use-short-answers t)
 ;;;;; dashboard
 (use-package dashboard
+  ;; :defer 4
   :init
   (defun my-dashboard-init ()
     (setq dashboard-init-info
@@ -200,6 +200,7 @@
       (insert "\n")))
 
   (defun find-or-write-haiku ()
+    (require 'all-the-haikus)
     (if (nth (random 2) (list nil t))
 	(find-me-a-haiku)
       (write-me-a-haiku)))
