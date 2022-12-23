@@ -583,18 +583,18 @@ point reaches the beginning or end of the buffer, stop there."
 (delete-selection-mode t)
 
 (defun my-kill-whole-line (&optional arg)
-  "Delete the line and the preceding 1 char.
-This assumes that the preceding char is a newline,
-thus bringing the point to the end of the previous line.
-With positive ARG, delete whole of current line,
-delete following ARG lines and preceding 1 char.
-With negative ARG, delete current line *only up to current point*,
-delete preceding ARG lines and preceding 1 char."
+  "Delete the line and, when appropriate, preceding newline.
+If ARG not provided or ARG > 1, first move to the beginning of the line,
+so we will delete the whole line. Then kill ARG lines.
+If the killed text containts something other than whitespace,
+assume the preceding char is a newline, and delete it"
   (interactive "P")
   (if (or (not arg) (> arg 1))
       (move-beginning-of-line 1))
   (kill-line arg)
-  (delete-char -1))
+  (if (string-match "^[[:space:]]*$" (current-kill 0))
+      (left-char)
+    (delete-char -1)))
 
 (defun dwim-kill-line (&optional arg)
   (interactive "P")
