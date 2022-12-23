@@ -493,6 +493,12 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive (list (ido-read-file-name "open in Finder: ")))
   (shell-command-open arg "-R"))
 
+(setq eww-suggest-uris (append eww-suggest-uris '(region-at-point word-at-point)))
+
+(autoload ; for `open-in-browser' to work, regardless of whether we've loaded eww already
+  #'eww-suggested-uris
+  "/Applications/Emacs.app/Contents/Resources/lisp/net/eww.el.gz")
+
 (defun open-in-browser (url)
   (interactive
    (let ((uris (eww-suggested-uris)))
@@ -500,7 +506,7 @@ the whole region is fontified (by automatically inserting character at mark)"
                                        (and uris (car uris)))
                         nil 'eww-prompt-history uris))))
   ;; (message "arg: %s" url))
-  (let ((url (eww--dwim-expand-url url)))
+  (let ((url (concat "\"" (eww--dwim-expand-url url) "\"")))
     (shell-command-open url)))
 
 ;;;;; dired mode
@@ -1331,6 +1337,9 @@ Else, call find-symbol-first-occurrence"
      (progn ,@body)))
 
 (add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
+
+(defun region-at-point ()
+  (thing-at-point 'region 'no-properties))
 
 ;;;;; templates
 (auto-insert-mode t)
