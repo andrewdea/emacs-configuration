@@ -23,8 +23,6 @@
 
 ;;; Code:
 ;;;; setup variables
-(setq user-emacs-directory
-      (file-name-directory (or load-file-name buffer-file-name)))
 (startup-redirect-eln-cache "eln-cache")
 
 ;;;; early GUI customizations for nice appearance
@@ -46,8 +44,6 @@
 
 (push '(fullscreen . maximized) default-frame-alist)
 
-;; (add-to-list 'load-path (locate-user-emacs-file "my-themes/"))
-;; (require 'my-monokai-theme)
 (load-theme 'my-monokai 'no-confirm)
 
 ;; (push '(background-color . "#202020") default-frame-alist)
@@ -64,6 +60,7 @@
 ;; avoid checking this list for any file that's opened
 (defvar my-file-name-handler-alist file-name-handler-alist)
 (setq file-name-handler-alist nil)
+
 ;; reset these after init:
 (add-hook 'after-init-hook
           (lambda ()
