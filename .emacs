@@ -135,6 +135,10 @@
 (add-hook 'after-init-hook #'startup-look -99)
 
 (setq use-short-answers t)
+
+;;;;; close
+(add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
+
 ;;;;; dashboard
 (use-package dashboard
   ;; :defer 4
@@ -1335,8 +1339,6 @@ Else, call find-symbol-first-occurrence"
 (defmacro make-it-quiet (&rest body)
   `(let ((inhibit-message t))
      (progn ,@body)))
-
-(add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
 
 (defun region-at-point ()
   (thing-at-point 'region 'no-properties))
