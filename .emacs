@@ -1009,6 +1009,20 @@ open siblings (directories at its same depth)"
 ;;;;; git
 (use-package magit
   :config
+
+  ;; instead of `magit-insert-unpushed-to-upstream-or-recent',
+  ;; show both `magit-insert-unpushed-to-upstream' and
+  ;; `magit-insert-recent-commits' in `magit-status-sections-hook'
+  ;; (let* ((pos (seq-position magit-status-sections-hook
+  ;;                           #'magit-insert-unpushed-to-upstream-or-recent))
+  ;;        (rest (cdr (nthcdr pos magit-status-sections-hook))))
+  ;;   (setf (nthcdr  pos magit-status-sections-hook) (seq-concatenate 'list '(magit-insert-unpushed-to-upstream magit-insert-recent-commits) rest)))
+  (setq magit-status-sections-hook
+        (replace-in-list #'magit-insert-unpushed-to-upstream-or-recent
+                         '(magit-insert-unpushed-to-upstream
+                           magit-insert-recent-commits)
+                         magit-status-sections-hook))
+
   (defun vc-refresh-buffer (arg)
     (set-buffer arg)
     (vc-refresh-state))
@@ -1336,11 +1350,23 @@ Else, call find-symbol-first-occurrence"
 
 ;;;;; emacs lisp
 (defmacro make-it-quiet (&rest body)
+  "Execute BODY with `inhibit-message' set to t."
   `(let ((inhibit-message t))
      (progn ,@body)))
 
 (defun region-at-point ()
   (thing-at-point 'region 'no-properties))
+
+(defun replace-in-list (to-replace replacement list)
+  "Replace TO-REPLACE with REPLACEMENT in LIST.
+If REPLACEMENT is a list, each element is inserted.
+If TO-REPLACE is not found in LIST, return LIST unaltered"
+  (let ((pos (seq-position list to-replace)))
+    (if pos
+        (append (take pos list)
+                (if (sequencep replacement) replacement (list replacement))
+                (cdr (nthcdr pos list)))
+      list)))
 
 ;;;;; templates
 (auto-insert-mode t)
