@@ -1,7 +1,7 @@
 ;;; .emacs --- init file at HOME  -*- lexical-binding: t; -*-
 ;; Copyright (C) 2022  Andrew De Angelis
 
-;; Author: Andrew De Angelis <andrewdeangelis@Andrews-MacBook-Air.local>
+;; Author: Andrew De Angelis <bobodeangelis@gmail.com>
 ;; Keywords: local
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -499,7 +499,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 (setq eww-suggest-uris (append eww-suggest-uris '(region-at-point word-at-point)))
 
-(autoload ; for `open-in-browser' to work, regardless of whether we've loaded eww already
+(autoload ; so `open-in-browser' works, even if we haven't loaded eww yet
   #'eww-suggested-uris
   "/Applications/Emacs.app/Contents/Resources/lisp/net/eww.el.gz")
 
@@ -509,7 +509,6 @@ the whole region is fontified (by automatically inserting character at mark)"
      (list (read-string (format-prompt "Enter URL or keywords"
                                        (and uris (car uris)))
                         nil 'eww-prompt-history uris))))
-  ;; (message "arg: %s" url))
   (let ((url (concat "\"" (eww--dwim-expand-url url) "\"")))
     (shell-command-open url)))
 
