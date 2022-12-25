@@ -114,11 +114,6 @@
 ;; I also really like monokai:
 ;; made some edits in ~/.emacs.d/my-monokai-theme.el
 
-;; resize current frame (toggle)
-(defalias #'big-frame #'toggle-frame-maximized)
-
-(defalias #'fullscreen-frame #'toggle-frame-fullscreen)
-
 (use-package mood-line)
 
 (defun startup-look ()
@@ -226,6 +221,14 @@
   (setq dashboard-startup-banner 'logo))
 
 ;;;;; resizing and movement
+;; resize current frame
+(defalias #'fullscreen-frame #'toggle-frame-fullscreen)
+
+(defun big-frame (&optional fullscreen)
+  (interactive "P")
+  (if fullscreen (toggle-frame-fullscreen)
+    (toggle-frame-maximized)))
+
 ;; make current window bigger or smaller
 (defun wbig (&optional arg)
   (interactive "P")
