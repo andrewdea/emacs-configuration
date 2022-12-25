@@ -1193,7 +1193,8 @@ Else, call find-symbol-first-occurrence"
 
 (defun recenter-middle (string)
   (or (eq major-mode 'minibuffer-mode)
-      (recenter nil t)))
+      (recenter nil t))
+  string)
 
 (define-minor-mode shell-recenter-mode
   "Minor mode to show the shell output at the center of the buffer."
