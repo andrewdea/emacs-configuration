@@ -46,7 +46,8 @@
 
 (load-theme 'my-monokai 'no-confirm)
 
-;; (push '(background-color . "#202020") default-frame-alist)
+;; no round corners & no title-bar
+(push '(undecorated . t) default-frame-alist)
 
 ;;;; optimization
 ;;;;; avoid garbage collection at startup:
