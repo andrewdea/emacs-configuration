@@ -23,9 +23,11 @@
 ;; (setq native-comp-async-report-warnings-errors nil)
 
 ;;;; PACKAGES setup
+(require 'package)
 (add-to-list 'package-archives
              '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -35,9 +37,11 @@
   (setq use-package-always-defer t)
   (require 'use-package-ensure))
 
+(setq use-package-always-ensure t)
+
 ;;;; PATH from shell
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
+;; (when (memq window-system '(mac ns x))
+;;   (exec-path-from-shell-initialize))
 
 ;;;; PERFORMANCE
 ;;;;; garbage collection
@@ -141,7 +145,6 @@
 
 ;;;;; dashboard
 (use-package dashboard
-  ;; :defer 4
   :init
   (defun my-dashboard-init ()
     (setq dashboard-init-info
@@ -149,7 +152,7 @@
 
   (autoload ; avoid loading the whole dashboad package unless needed
     #'dashboard-insert-startupify-lists
-    "~/.emacs.d/elpa/dashboard-20221121.1809/dashboard.el")
+    "~/.emacs.d/elpa/dashboard-20221222.931/dashboard.el")
 
   (defun dashboard-open ()
     "Open the *dashboard* buffer."
@@ -273,6 +276,8 @@
   (mapc #'disable-theme custom-enabled-themes)
   (if (> (length arg) 0) (load-theme (intern arg))))
 
+(use-package cyberpunk-theme)
+
 (defun my-misterioso ()
   (interactive)
   (un-theme "my-misterioso"))
@@ -326,6 +331,8 @@
 ;; (define-key help-mode-map "b" #'help-go-back)
 ;; (define-key help-mode-map "f" #'help-go-forward)
 (use-package help-mode
+  :load-path
+  "/opt/homebrew/Cellar/emacs-plus@29/29.0.60/share/emacs/29.0.60/lisp/"
   :init
   (setq help-window-select t)
   :bind
@@ -501,7 +508,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 (autoload ; so `open-in-browser' works, even if we haven't loaded eww yet
   #'eww-suggested-uris
-  "/Applications/Emacs.app/Contents/Resources/lisp/net/eww.el.gz")
+  "/opt/homebrew/Cellar/emacs-plus@29/29.0.60/share/emacs/29.0.60/lisp/net/eww.el")
 
 (defun open-in-browser (url)
   (interactive
@@ -949,7 +956,7 @@ open siblings (directories at its same depth)"
 
 ;;;;; treemacs
 (use-package treemacs
-  :load-path "/Users/andrewdeangelis/treemacs_paste_feature/treemacs/src/elisp"
+  ;; :load-path "/Users/andrewdeangelis/treemacs_paste_feature/treemacs/src/elisp"
   :init
   (defalias #'tm #'treemacs)
 
@@ -1452,7 +1459,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
 (setq load-prefer-newer t)
 
 ;;; CUSTOM-added variables and faces
-;; my custom-safe-themes are my-monokai, the-matrix, tango-dark,
+;; my custom-safe-themes are my-monokai, tango-dark,
 ;; cyberpunk, and my-misterioso
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -1463,7 +1470,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(god-mode toc-org sticky-shell use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo treemacs elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme the-matrix-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(god-mode toc-org sticky-shell use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo treemacs elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
