@@ -117,6 +117,8 @@
 ;; resize current frame (toggle)
 (defalias #'big-frame #'toggle-frame-maximized)
 
+(defalias #'fullscreen-frame #'toggle-frame-fullscreen)
+
 (use-package mood-line)
 
 (defun startup-look ()
@@ -241,10 +243,13 @@
 (defun yt-frame ()
   (interactive)
   (delete-other-windows)
-  (if (eq (frame-parameter (selected-frame) 'fullscreen) 'maximized)
-      (toggle-frame-maximized))
-  (set-frame-position (selected-frame) 838 24)
-  (set-frame-size (selected-frame) 84 54))
+  (let ((fullscreen (frame-parameter (selected-frame) 'fullscreen)))
+    (if (eq (frame-parameter (selected-frame) 'fullscreen) 'maximized)
+        (toggle-frame-maximized))
+    (if (memq (frame-parameter (selected-frame) 'fullscreen) '(fullscreen fullboth))
+        (toggle-frame-fullscreen)))
+  (set-frame-size (selected-frame) 84 54)
+  (right-frame))
 
 (defun right-frame ()
   (interactive)
