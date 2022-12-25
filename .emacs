@@ -274,8 +274,16 @@
   (windmove-down)
   (delete-window))
 
+(defun other-frame-or-make (&optional arg)
+  "Switch to `other-frame'. With prefix ARG, `make-frame'"
+  (interactive "P")
+  (if arg
+      (make-frame)
+    (other-frame 1)))
+
 (global-set-key (kbd "C-x <up>") #'delete-window-above)
 (global-set-key (kbd "C-x <down>") #'delete-window-below)
+(global-set-key (kbd "M-o") #'other-frame-or-make)
 
 ;;;;; themes and colors
 (defun un-theme (&optional arg)
