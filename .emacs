@@ -607,15 +607,13 @@ point reaches the beginning or end of the buffer, stop there."
   "Delete the line and, when appropriate, preceding newline.
 If ARG not provided or ARG > 1, first move to the beginning of the line,
 so we will delete the whole line. Then kill ARG lines.
-If the killed text containts something other than whitespace,
-assume the preceding char is a newline, and delete it"
+Then, delete all preceding whitespace."
   (interactive "P")
   (if (or (not arg) (> arg 1))
       (move-beginning-of-line 1))
   (kill-line arg)
-  (if (string-match "^[[:space:]]*$" (current-kill 0))
-      (left-char)
-    (delete-char -1)))
+  (delete-all-space 'backward-only))
+
 
 (defun dwim-kill-line (&optional arg)
   (interactive "P")
