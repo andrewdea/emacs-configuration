@@ -1191,14 +1191,16 @@ Else, call find-symbol-first-occurrence"
   :load-path "custom/modes/"
   :defer 1)
 
-(defun recenter-middle (string) (recenter nil t))
+(defun recenter-middle (string)
+  (or (eq major-mode 'minibuffer-mode)
+      (recenter nil t)))
 
 (define-minor-mode shell-recenter-mode
   "Minor mode to show the shell output at the center of the buffer."
   :group 'comint
   :global nil
   :lighter nil
-  (if recenter-shell-mode
+  (if shell-recenter-mode
       (add-hook 'comint-output-filter-functions #'recenter-middle 99)
     (remove-hook 'comint-output-filter-functions #'recenter-middle)))
 
