@@ -527,6 +527,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 
 (setq eww-suggest-uris (append eww-suggest-uris '(region-at-point word-at-point)))
 
+(setq eww-search-prefix "https://search.brave.com/search?q=")
+
 (autoload ; so `open-in-browser' works, even if we haven't loaded eww yet
   #'eww-suggested-uris
   "/opt/homebrew/Cellar/emacs-plus@29/29.0.60/share/emacs/29.0.60/lisp/net/eww.el")
