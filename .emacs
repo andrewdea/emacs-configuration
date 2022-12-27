@@ -630,8 +630,10 @@ Then, delete all preceding whitespace."
   (if (or (not arg) (> arg 1))
       (move-beginning-of-line 1))
   (kill-line arg)
-  (delete-all-space 'backward-only))
-
+  (if (string-match "^[[:space:]]*$" (current-kill 0))
+      (backward-char 1)
+    (delete-char -1))
+  (delete-horizontal-space 'backwards))
 
 (defun dwim-kill-line (&optional arg)
   (interactive "P")
