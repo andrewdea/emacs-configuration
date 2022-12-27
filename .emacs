@@ -104,10 +104,12 @@
 ;;;;; startup
 ;; choose default theme based on time of day
 (defun default-theme ()
-  (let ((hour (nth 2 (decode-time (current-time)))))
-    (if (or (> hour 21) (< hour 8))
-	#'cyberpunk ; at night
-      #'my-monokai))) ; during the day
+  (if (not window-system)
+      #'modus-vivendi
+    (let ((hour (nth 2 (decode-time (current-time)))))
+      (if (or (> hour 21) (< hour 8))
+	  #'cyberpunk ; at night
+        #'my-monokai)))) ; during the day
 
 ;; my daily default theme is based on standard tango-dark;
 ;; with some small edits in ~/.emacs.d/tango-dark-theme.el
@@ -142,6 +144,7 @@
 
 ;;;;; dashboard
 (use-package dashboard
+  :if window-system
   :init
   (defun my-dashboard-init ()
     (setq dashboard-init-info
@@ -309,6 +312,8 @@
 (defun cyberpunk  ()
   (interactive)
   (un-theme "cyberpunk"))
+(defun modus-vivendi ()
+  (un-theme "modus-vivendi"))
 
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
@@ -973,7 +978,9 @@ open siblings (directories at its same depth)"
 
 ;;;;; treemacs
 (use-package treemacs
-  ;; :load-path "/Users/andrewdeangelis/treemacs_paste_feature/treemacs/src/elisp"
+  ;; :load-path "/Users/andyjda/treemacs-paste-feature/treemacs/src/elisp"
+  :if window-system
+  :demand t
   :init
   (defalias #'tm #'treemacs)
 

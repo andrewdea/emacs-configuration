@@ -23,7 +23,8 @@
 
 ;;; Code:
 ;;;; setup variables
-(startup-redirect-eln-cache "eln-cache")
+(if (native-comp-available-p)
+    (startup-redirect-eln-cache "eln-cache"))
 
 ;;;; early GUI customizations for nice appearance
 (push '(tool-bar-lines . 0)   default-frame-alist)
