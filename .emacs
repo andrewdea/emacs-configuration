@@ -254,7 +254,7 @@
         (toggle-frame-fullscreen))
     (if (eq (frame-parameter frame 'fullscreen) 'maximized)
         (toggle-frame-maximized)))
-  (set-frame-size (selected-frame) 84 54)
+  (set-frame-size (selected-frame) 84 60)
   (right-frame))
 
 (defun right-frame ()
@@ -481,13 +481,9 @@ the whole region is fontified (by automatically inserting character at mark)"
   (dired "~/desktop/HackerRankProblems/"))
 
 ;; open zsh profile
-(defun zshenv ()
+(defun zshrc ()
   (interactive)
-  (find-file "/Users/andrewdeangelis/.zshenv"))
-;; open bash profile
-(defun bash-profile () ; note: I switched shell to zsh, this might no longer be needed
-  (interactive)
-  (find-file "/Users/andrewdeangelis/.bash_profile"))
+  (find-file "/Users/andyjda/.zshrc"))
 
 ;; open org folder
 (defun forg ()
@@ -1016,7 +1012,7 @@ open siblings (directories at its same depth)"
 
   :config
   ;; this is necessary for treemacs-paste to work properly
-  (add-to-list 'ido-read-file-name-non-ido #'treemacs-rightclick-menu)
+  ;; (add-to-list 'ido-read-file-name-non-ido #'treemacs-rightclick-menu)
 
   (defun treemacs-close-window ()
     (if (and
@@ -1048,10 +1044,6 @@ open siblings (directories at its same depth)"
   ;; instead of `magit-insert-unpushed-to-upstream-or-recent',
   ;; show both `magit-insert-unpushed-to-upstream' and
   ;; `magit-insert-recent-commits' in `magit-status-sections-hook'
-  ;; (let* ((pos (seq-position magit-status-sections-hook
-  ;;                           #'magit-insert-unpushed-to-upstream-or-recent))
-  ;;        (rest (cdr (nthcdr pos magit-status-sections-hook))))
-  ;;   (setf (nthcdr  pos magit-status-sections-hook) (seq-concatenate 'list '(magit-insert-unpushed-to-upstream magit-insert-recent-commits) rest)))
   (setq magit-status-sections-hook
         (replace-in-list #'magit-insert-unpushed-to-upstream-or-recent
                          '(magit-insert-unpushed-to-upstream
@@ -1147,7 +1139,8 @@ else, first move to previous visible heading, then call it"
 ;;;;; aggressive indent
 (use-package aggressive-indent
   :hook
-  (prog-mode . aggressive-indent-mode))
+  (emacs-lisp-mode . aggressive-indent-mode)
+  (inferior-emacs-lisp-mode . aggressive-indent-mode))
 
 ;;;;; helper functions
 ;; implemented my own, extremely dumb version of dumb jump
@@ -1199,7 +1192,8 @@ Else, call find-symbol-first-occurrence"
 (setq shell-file-name "/bin/zsh")
 
 (use-package sticky-shell
-  :load-path "custom/packages/sticky-shell/")
+  :load-path "custom/packages/sticky-shell/"
+  :defer 1)
 
 (use-package shell-output-mode
   :load-path "custom/modes/"
@@ -1210,12 +1204,12 @@ Else, call find-symbol-first-occurrence"
       (recenter nil t))
   string)
 
-(define-minor-mode shell-recenter-mode
+(define-minor-mode recenter-shell-mode
   "Minor mode to show the shell output at the center of the buffer."
   :group 'comint
   :global nil
   :lighter nil
-  (if shell-recenter-mode
+  (if recenter-shell-mode
       (add-hook 'comint-output-filter-functions #'recenter-middle 99)
     (remove-hook 'comint-output-filter-functions #'recenter-middle)))
 
@@ -1417,6 +1411,8 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
                 (cdr (nthcdr pos list)))
       list)))
 
+(setq source-directory "~/Emacs-Build/emacs")
+
 ;;;;; templates
 (auto-insert-mode t)
 (setq auto-insert-directory "~/.emacs.d/templates")
@@ -1440,11 +1436,13 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
 (define-all-templates
  ("org" "java" "sc" "c" "go"))
 
-;;;; SPECIAL VIEWS (web and PDF)
+;;;; SPECIAL VIEWS (web, PDF, ebooks)
 ;; (use-package my-webkit)
 
 (use-package pdf-tools
   :mode ("\\.pdf\\'" . pdf-view-mode))
+
+(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 
 ;;;; GAMES
 ;;;;; tetris
@@ -1512,7 +1510,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(god-mode toc-org sticky-shell use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo treemacs elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org sticky-shell use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode esup benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
