@@ -686,6 +686,9 @@ Then, delete all preceding whitespace."
 (use-package avy
   :bind (("s-'" . avy-goto-char-2)))
 
+;; save clipboard contents to kill-ring
+(setq save-interprogram-paste-before-kill 1000)
+
 ;;;;; visual undo
 (use-package vundo
   :config
