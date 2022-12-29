@@ -1204,12 +1204,12 @@ Else, call find-symbol-first-occurrence"
       (recenter nil t))
   string)
 
-(define-minor-mode recenter-shell-mode
+(define-minor-mode center-shell-mode
   "Minor mode to show the shell output at the center of the buffer."
   :group 'comint
   :global nil
   :lighter nil
-  (if recenter-shell-mode
+  (if center-shell-mode
       (add-hook 'comint-output-filter-functions #'recenter-middle 99)
     (remove-hook 'comint-output-filter-functions #'recenter-middle)))
 
