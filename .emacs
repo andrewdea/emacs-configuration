@@ -584,6 +584,11 @@ the whole region is fontified (by automatically inserting character at mark)"
   :bind (:map projectile-mode-map
 	      ("s-p" . projectile-command-map)))
 
+;;;;; iCloud functionalities
+(use-package icloud
+  :load-path "custom/packages/icloud-utilities/"
+  :defer 1)
+
 ;;;; TEXT EDITING and keyboard commands
 ;;;;; keys
 ;; allow more flexibility by binding the right-side cmd-key to C-
