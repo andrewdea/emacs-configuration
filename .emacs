@@ -1209,8 +1209,8 @@ Else, call find-symbol-first-occurrence"
   :defer 1)
 
 (defun recenter-middle (string)
-  (or (eq major-mode 'minibuffer-mode)
-      (recenter nil t))
+  (when (eq (window-buffer (selected-window)) (current-buffer))
+    (recenter nil t))
   string)
 
 (define-minor-mode center-shell-mode
