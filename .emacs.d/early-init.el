@@ -23,7 +23,7 @@
 
 ;;; Code:
 ;;;; setup variables
-(if (native-comp-available-p)
+(if (and (native-comp-available-p) (= emacs-build-number 1))
     (startup-redirect-eln-cache "eln-cache"))
 
 ;;;; early GUI customizations for nice appearance
@@ -83,8 +83,6 @@
 
   (unless (memq initial-window-system '(x pgtk))
     (setq command-line-x-option-alist nil)))
-
-(setq load-prefer-newer noninteractive)
 
 (provide 'early-init)
 ;;; early-init.el ends here

@@ -487,7 +487,7 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; open zsh profile
 (defun zshrc ()
   (interactive)
-  (find-file "/Users/andyjda/.zshrc"))
+  (find-file "~/.zshrc"))
 
 ;; open org folder
 (defun forg ()
