@@ -248,7 +248,7 @@
 ;; frame to have together with max youtube
 (defun yt-frame ()
   (interactive)
-  (delete-other-windows)
+  (treemacs-close-and-other-windows t)
   (let ((frame (selected-frame)))
     (if (memq (frame-parameter frame 'fullscreen) '(fullscreen fullboth))
         (toggle-frame-fullscreen))
@@ -995,6 +995,18 @@ open siblings (directories at its same depth)"
   :init
   (defalias #'tm #'treemacs)
 
+  (defun treemacs-close-window ()
+    (if (and
+         (fboundp #'treemacs-current-visibility)
+         (equal 'visible (treemacs-current-visibility)))
+        (delete-window (treemacs-get-local-window))))
+
+  (defun treemacs-close-and-other-windows (&optional arg)
+    (interactive "P")
+    (if arg (treemacs-close-window))
+    (delete-other-windows))
+
+
   ;; for the paste to work, make sure you have this function in
   ;; treemacs-mouse-interface
   ;; (defun treemacs--paste-point-to-minibuffer ()
@@ -1024,17 +1036,6 @@ open siblings (directories at its same depth)"
   :config
   ;; this is necessary for treemacs-paste to work properly
   ;; (add-to-list 'ido-read-file-name-non-ido #'treemacs-rightclick-menu)
-
-  (defun treemacs-close-window ()
-    (if (and
-         (fboundp #'treemacs-current-visibility)
-         (equal 'visible (treemacs-current-visibility)))
-        (delete-window (treemacs-get-local-window))))
-
-  (defun treemacs-close-and-other-windows (&optional arg)
-    (interactive "P")
-    (if arg (treemacs-close-window))
-    (delete-other-windows))
 
   :bind
   (("C-x 1" . treemacs-close-and-other-windows)))
