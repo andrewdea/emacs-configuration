@@ -1497,6 +1497,9 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
   "Minor mode for displaying tetris scores
   \\{tetris-score-mode-map}"
   :keymap tetris-score-mode-map
+  (hl-line-mode t)
+  (visual-line-mode -1)
+  (setq-local truncate-lines t)
   (add-hook 'view-mode-hook
 	    (lambda ()
 	      (if tetris-score-mode
