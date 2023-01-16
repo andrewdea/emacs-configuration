@@ -1205,6 +1205,7 @@ Else, call find-symbol-first-occurrence"
 
 (use-package sticky-shell
   :load-path "custom/packages/sticky-shell/"
+  :hook (sticky-shell-mode . sticky-shell-shorten-header-set-mode)
   :defer 1)
 
 (use-package shell-output-mode
