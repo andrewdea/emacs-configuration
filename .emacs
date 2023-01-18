@@ -479,11 +479,6 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (find-file user-init-file))
 
-;; open HackerRank
-(defun hacker-rank ()
-  (interactive)
-  (dired "~/desktop/HackerRankProblems/"))
-
 ;; open zsh profile
 (defun zshrc ()
   (interactive)
