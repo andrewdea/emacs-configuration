@@ -1083,10 +1083,12 @@ for each open buffer with one of these files, refresh the version-control state"
   :bind ("C-x g" . magit-status))
 
 ;;;;; appearance
-(defun my-prog-appearance ()
-  (interactive)
+(defun my-prog-appearance (&optional absolute)
+  (interactive "P")
   (display-line-numbers-mode t)
-  (relative-line-numbers-setup)
+  (if absolute
+      (absolute-line-numbers-setup)
+    (relative-line-numbers-setup))
   (electric-pair-local-mode t))
 
 (defun adj/:around-goto-line-read-args (origfn)
@@ -1116,11 +1118,15 @@ for each open buffer with one of these files, refresh the version-control state"
 
 (defun absolute-line-numbers-global ()
   (interactive)
-  (line-numbers-global #'absolute-line-numbers-setup))
+  (line-numbers-global #'absolute-line-numbers-setup)
+  (remove-hook 'prog-mode-hook #'my-prog-appearance)
+  (add-hook 'prog-mode-hook (lambda () (my-prog-appearance 'absolute))))
 
 (defun relative-line-numbers-global ()
   (interactive)
-  (line-numbers-global #'relative-line-numbers-setup))
+  (line-numbers-global #'relative-line-numbers-setup)
+  (remove-hook 'prog-mode-hook (lambda () (my-prog-appearance 'absolute)))
+  (add-hook 'prog-mode-hook #'my-prog-appearance))
 
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
@@ -1214,8 +1220,6 @@ Else, call find-symbol-first-occurrence"
 (setq shell-file-name "/bin/zsh")
 
 (use-package sticky-shell
-  :custom
-  (sticky-shell-get-prompt #'sticky-shell-prompt-above-cursor)
   :hook (sticky-shell-mode . sticky-shell-shorten-header-set-mode)
   :defer 1)
 
