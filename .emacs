@@ -246,8 +246,9 @@
     (message "reduced window by %s columns" arg)))
 
 ;; frame to have together with max youtube
-(defun yt-frame ()
-  (interactive)
+(defun yt-frame (&optional arg)
+  (interactive "P")
+  (when arg (make-frame))
   (treemacs-close-and-other-windows t)
   (let ((frame (selected-frame)))
     (if (memq (frame-parameter frame 'fullscreen) '(fullscreen fullboth))
@@ -1107,6 +1108,20 @@ for each open buffer with one of these files, refresh the version-control state"
   (display-line-numbers-mode)
   (advice-remove 'goto-line-read-args #'adj/:around-goto-line-read-args))
 
+(defun line-numbers-global (setup)
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when display-line-numbers-mode
+        (funcall setup)))))
+
+(defun absolute-line-numbers-global ()
+  (interactive)
+  (line-numbers-global #'absolute-line-numbers-setup))
+
+(defun relative-line-numbers-global ()
+  (interactive)
+  (line-numbers-global #'relative-line-numbers-setup))
+
 (add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
 (use-package dash)
@@ -1531,7 +1546,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
