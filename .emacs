@@ -634,8 +634,7 @@ Then, delete all preceding whitespace."
   (if (or (not arg) (> arg 1))
       (move-beginning-of-line 1))
   (kill-line arg)
-  (if (string-match "^[[:space:]]*$" (current-kill 0))
-      (backward-char 1)
+  (when (eq (char-before) ?\C-j) ; newline
     (delete-char -1))
   (delete-horizontal-space 'backwards))
 
