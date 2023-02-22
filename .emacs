@@ -144,6 +144,7 @@
 
 ;;;;; dashboard
 (use-package dashboard
+  :load-path "/Users/andyjda/repos/emacs-dashboard/"
   :if window-system
   :init
   (defun my-dashboard-init ()
@@ -159,17 +160,17 @@
     (interactive)
     (my-dashboard-init)
     (let ((time (current-time))
-	  ;; Refresh dashboard buffer or just switch to it?
-	  (already-open (and (boundp 'dashboard-buffer-name)
-			     (get-buffer dashboard-buffer-name))))
+          ;; Refresh dashboard buffer or just switch to it?
+          (already-open (and (boundp 'dashboard-buffer-name)
+      		             (get-buffer dashboard-buffer-name))))
       (if (not already-open)
-	  (progn
-	    ;; make sure you autoload this function (see above):
-	    (make-it-quiet
+          (progn
+            ;; make sure you autoload this function (see above):
+            (make-it-quiet
              (dashboard-insert-startupify-lists))
-	    (message
-	     "Welcome! Dashboard opened in %.2f seconds"
-	     (float-time (time-since time)))))
+            (message
+             "Welcome! Dashboard opened in %.2f seconds"
+             (float-time (time-since time)))))
       (switch-to-buffer dashboard-buffer-name)))
 
   ;; (add-hook 'after-init-hook (lambda ()
@@ -184,21 +185,21 @@
 
   (add-hook 'dashboard-mode-hook
             (lambda ()
-	      (local-set-key (kbd "C-<return>")
-			     #'show-haiku-from-line-at-point)))
+              (local-set-key (kbd "C-<return>")
+      		             #'show-haiku-from-line-at-point)))
 
   (setq dashboard-footer-icon
-	(all-the-icons-octicon "book"
-			       :height 1.1
-			       :v-adjust -0.05
-			       :face 'font-lock-keyword-face))
+        (all-the-icons-octicon "book"
+      		               :height 1.1
+      		               :v-adjust -0.05
+      		               :face 'font-lock-keyword-face))
   (defun center-and-propertize-haiku-line (line)
     (dashboard-insert-center (propertize line 'face 'dashboard-footer) "\n"))
 
   (defun dashboard-insert-footer ()
     "Insert custom haiku-footer for dashboard."
     (let ((footer (car dashboard-footer-messages))
-	  (footer-heading "Today's haiku:\n"))
+          (footer-heading "Today's haiku:\n"))
       (insert "\n\n")
       (dashboard-insert-center dashboard-footer-icon " "
                                (propertize footer-heading
@@ -209,12 +210,12 @@
   (defun find-or-write-haiku ()
     (require 'all-the-haikus)
     (if (nth (random 2) (list nil t))
-	(find-me-a-haiku)
+        (find-me-a-haiku)
       (write-me-a-haiku)))
 
   (setq dashboard-items '((recents  . 10)
                           (projects . 5)
-			  (bookmarks . 5)
+      		          (bookmarks . 5)
                           (agenda . 5)))
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
@@ -1550,7 +1551,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
