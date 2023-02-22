@@ -107,7 +107,7 @@
   (if (not window-system)
       #'modus-vivendi
     (let ((hour (nth 2 (decode-time (current-time)))))
-      (if (or (> hour 21) (< hour 8))
+      (if (or (> hour 23) (< hour 8))
 	  #'cyberpunk ; at night
         #'my-monokai)))) ; during the day
 
