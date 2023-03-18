@@ -1474,7 +1474,9 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  ("org" "java" "sc" "c" "go"))
 
 ;;;; SPECIAL VIEWS (web, PDF, ebooks)
-;; (use-package my-webkit)
+(use-package webkit-mac-enhance
+  :defer 1
+  :load-path "custom/packages/webkit-mac-enhance/")
 
 (use-package pdf-tools
   :mode ("\\.pdf\\'" . pdf-view-mode))
