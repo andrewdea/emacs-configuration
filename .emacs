@@ -788,7 +788,7 @@ Then, delete all preceding whitespace."
 
 (defun comment-out-all (arg)
   (interactive "sstring to comment out: ")
-  (while (search-forward arg nil 'noerror)
+  (while (search-forward-regexp (concat "^[[:space:]]*" arg) nil 'noerror)
     (replace-match (concat comment-start arg)))
   (message "commented-out all lines starting with %s" arg))
 
