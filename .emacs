@@ -646,16 +646,20 @@ Then, delete all preceding whitespace."
 
 (global-set-key (kbd "C-k") #'dwim-kill-line)
 
+(defun copy-current-line ()
+  (let ((orig-point (point)))
+    (kill-ring-save (dwim-move-beginning-of-line)
+		    (line-end-position))
+    (goto-char orig-point))
+  (message "%s %s"
+           (propertize "copied current line:" 'face 'minibuffer-prompt)
+           (current-kill 0))
+  (current-kill 0))
+
 (defun dwim-copy ()
   (interactive)
   (if (not mark-active)
-      (let ((orig-point (point)))
-	(kill-ring-save (dwim-move-beginning-of-line)
-			(line-end-position))
-	(goto-char orig-point)
-        (message "%s %s"
-                 (propertize "copied current line:" 'face 'minibuffer-prompt)
-                 (current-kill 0)))
+      (copy-current-line)
     (kill-ring-save (region-beginning) (region-end))))
 
 (global-set-key (kbd "M-w") #'dwim-copy)
@@ -684,6 +688,27 @@ Then, delete all preceding whitespace."
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
+(defun on-region-or-char (command)
+  (unless mark-active
+    (progn
+      (set-mark-command nil)
+      (forward-char 1)))
+  (funcall command (region-beginning) (region-end))
+  (buffer-substring (region-beginning) (region-end)))
+
+(defun my-downcase-dwim ()
+  (interactive)
+  (let ((region (on-region-or-char #'downcase-region)))
+    (message "downcasing: %s in %s" region (copy-current-line))))
+
+(defun my-upcase-dwim ()
+  (interactive)
+  (let ((region (on-region-or-char #'upcase-region)))
+    (message "UPCASING: %s in %s" region (copy-current-line))))
+
+(global-set-key (kbd "C-x C-l") #'my-downcase-dwim)
+(global-set-key (kbd "C-x C-u") #'my-upcase-dwim)
+
 ;; disable mouse-wheel-text-scale, as it can get in the way and is rarely needed
 (defun my-scroll (e)
   (interactive "e")
@@ -701,7 +726,14 @@ Then, delete all preceding whitespace."
 ;; save clipboard contents to kill-ring
 (setq save-interprogram-paste-before-kill 1000)
 
-;;;;; visual undo
+;;;;; undo
+;; make sure you use the better keyboard command
+(global-set-key (kbd "C-x u")
+                (lambda ()
+                  (interactive)
+                  (warn "to UNDO, use C-/ or other, not C-x u")))
+
+;;;;;; visual undo
 (use-package vundo
   :config
   (setq vundo-glyph-alist vundo-unicode-symbols)
