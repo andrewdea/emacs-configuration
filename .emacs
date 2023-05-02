@@ -673,7 +673,7 @@ Then, delete all preceding whitespace."
 
 (global-set-key (kbd "C-w") #'dwim-kill)
 
-(defun total-visible-lines ()
+(defun count-total-lines ()
   (interactive)
   (message "Buffer '%s' has %d total lines"
 	   (buffer-name (current-buffer))
