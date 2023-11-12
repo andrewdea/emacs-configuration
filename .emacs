@@ -385,6 +385,12 @@
   (setq org-log-done t)
   (setq org-agenda-files '("~/org/TODO.org" "~/org/ToBuy.org"))
 
+  (defun tick (&optional untick)
+    (interactive "P")
+    (if untick
+        (insert "❌")
+      (insert "✅")))
+
   (defun my-org-tab ()
     "if current line is a heading, call regular org-cycle;
 else, first move to previous visible heading, then call it"
