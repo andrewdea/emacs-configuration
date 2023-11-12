@@ -499,6 +499,10 @@ the whole region is fontified (by automatically inserting character at mark)"
 (defun todo ()
   (interactive)
   (find-file "~/org/TODO.org"))
+;; open generic to-buy
+(defun tobuy ()
+  (interactive)
+  (find-file "~/org/ToBuy.org"))
 ;; open my custom modes
 (defun my-modes ()
   (interactive)
