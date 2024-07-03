@@ -517,6 +517,10 @@ the whole region is fontified (by automatically inserting character at mark)"
 (defun crafting-interpreters ()
   (interactive)
   (dired "~/CraftingInterpreters"))
+;; open my practice notebook
+(defun practice-notebook ()
+  (interactive)
+  (find-file "~/org/practice_notebook.org"))
 
 
 (defun shell-command-open (arg &optional options)
