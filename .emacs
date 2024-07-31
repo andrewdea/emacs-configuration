@@ -144,16 +144,12 @@
 
 ;;;;; dashboard
 (use-package dashboard
-  :load-path "/Users/andyjda/repos/emacs-dashboard/"
   :if window-system
+  :autoload dashboard-insert-startupify-lists
   :init
   (defun my-dashboard-init ()
     (setq dashboard-init-info
           (format "Emacs started in %s seconds." (emacs-init-time "%.2f"))))
-
-  (autoload ; avoid loading the whole dashboad package unless needed
-    #'dashboard-insert-startupify-lists
-    "~/.emacs.d/elpa/dashboard-20221222.931/dashboard.el")
 
   (defun dashboard-open ()
     "Open the *dashboard* buffer."
