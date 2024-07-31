@@ -147,6 +147,8 @@
   :if window-system
   :autoload dashboard-insert-startupify-lists
   :init
+  (require 'all-the-haikus)
+  (require 'all-the-icons)
   (defun my-dashboard-init ()
     (setq dashboard-init-info
           (format "Emacs started in %s seconds." (emacs-init-time "%.2f"))))
@@ -204,7 +206,6 @@
       (insert "\n")))
 
   (defun find-or-write-haiku ()
-    (require 'all-the-haikus)
     (if (nth (random 2) (list nil t))
         (find-me-a-haiku)
       (write-me-a-haiku)))
