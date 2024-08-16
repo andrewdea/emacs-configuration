@@ -478,12 +478,13 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;; don't rm files with just a couple key-presses
 (setq delete-by-moving-to-trash t)
 
-;;;;; shortcuts
+;;;;; file shortcuts
 ;; open init file
 (defun init ()
   (interactive)
   (find-file user-init-file))
 
+;; TODO: use a macro or something to make writing these easier
 ;; open zsh profile
 (defun zshrc ()
   (interactive)
@@ -518,6 +519,11 @@ the whole region is fontified (by automatically inserting character at mark)"
 (defun practice-notebook ()
   (interactive)
   (find-file "~/org/practice_notebook.org"))
+;; open chtu todos
+(defun chtu-todo ()
+  (interactive)
+  (find-file "~/org/chtu_todo.org"))
+
 
 
 (defun shell-command-open (arg &optional options)
