@@ -1293,6 +1293,11 @@ Else, call find-symbol-first-occurrence"
       (add-hook 'comint-output-filter-functions #'recenter-middle 99)
     (remove-hook 'comint-output-filter-functions #'recenter-middle)))
 
+;;;;; highlight TODO words
+(use-package hl-todo
+  :hook
+  (prog-mode . global-hl-todo-mode))
+
 ;;;; PROGRAMMING-LANGUAGES
 ;;;;; java
 (use-package javadoc-lookup
