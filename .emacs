@@ -1268,6 +1268,16 @@ Else, call find-symbol-first-occurrence"
 (add-hook 'monicelli-mode-hook
 	  (lambda () (set-compile-command "mcc" t " -o ")))
 
+;; TODO: expand the compile and run command into a whole package onto itself
+;; that can take up any language
+(defun run-this ()
+  (interactive)
+  (let ((func (cond ((eq major-mode 'python-mode)
+		     #'python-run-this)
+		    (eq major-mode 'web-mode)
+		    #'js-run-this)))
+    (call-interactively func)))
+
 ;;;;; shell
 (setq shell-file-name "/bin/zsh")
 
@@ -1328,6 +1338,59 @@ Else, call find-symbol-first-occurrence"
 ;;;;; python
 (add-hook 'python-mode-hook #'subword-mode)
 (add-hook 'inferior-python-mode-hook #'subword-mode)
+
+(use-package python
+  :config
+
+  (defun python-debug (action &optional arg)
+    (let* ((thing (if (or arg (current-line-empty-p))
+		      (read-from-kill-ring (format "%s :" action))
+		    (progn
+		      (make-it-quiet (dwim-kill))
+		      (pop kill-ring))))
+	   (thing (string-replace "\"" "'" thing)))
+      (insert (format "%s(f\"%s : {%s}\")" action thing thing))))
+
+  (defun python-debug-print (&optional arg)
+    (interactive "P")
+    (python-debug "print" arg))
+
+  (defun python-debug-log (&optional arg)
+    (interactive "P")
+    (python-debug "logging.info" arg))
+
+  (defun py-query-delete-print ()
+    (interactive)
+    (query-replace-regexp "\n\s*#?\s*print(.*)" ""))
+
+  ;; NOTE the below is not really necessary
+  ;; I'm using it because when I call py-query-delete-print (defined above)
+  ;; I always get this other function as another possible option:
+  ;; gnus-summary-simplify-subject-query
+  ;; I never need these libraries, so I'm ok with unbinding all of their symbols.
+  ;; (wrapping it within a condition-case so it doesn't throw an error when it
+  ;; tries to unload something that's already been unloaded)
+  (condition-case
+      nil
+      (progn (unload-feature 'gnus-group 'force)
+	     (unload-feature 'gnus-sum 'force))
+    (error nil))
+
+  (set (make-local-variable 'delete-print) #'py-query-delete-print)
+  (set (make-local-variable #'my-testing-var) #'py-query-delete-print)
+
+  (defun query-comment-out-print ()
+    (interactive)
+    (query-comment-out "print"))
+
+  :hook
+  (python-mode . subword-mode)
+  :bind (:map python-mode-map
+	      ("M-<right>" . python-indent-shift-right)
+	      ("M-<left>" . python-indent-shift-left)
+	      ("C-M-p" . python-debug-print)
+	      ("C-M-l" . python-debug-log)))
+
 (use-package elpy
   :init
   ;; (advice-add 'python-mode :before 'elpy-enable)
@@ -1345,68 +1408,82 @@ Else, call find-symbol-first-occurrence"
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp)))  ; or lsp-deferred
-  )
+  :config
+  (setq lsp-enable-file-watchers nil)
+  :bind (:map python-mode-map
+	      ("M-p" . python-debug-print)
+	      ("C-M-p" . python-debug-print)))
 
-;; (use-package lsp-ui)
+(defun get-project-venv (&optional directory)
+  ;; possible improvement: when venv not found,
+  ;; add option to query user for venv directory
+  (let* ((root (projectile-project-root directory))
+	 (venv-dir (concat root ".venv")))
+    (if (file-directory-p venv-dir)
+	(file-name-as-directory venv-dir)
+      (progn (message "no '.venv' or 'venv' directory found in this project: %s" root) nil))))
 
 (use-package pyvenv
   :hook (python-mode . pyvenv-mode)
   :config
-  (defun get-project-pyvenv (directory)
-    (interactive)
-    (or
-     directory
-     (list (bound-and-true-p project-pyvenv))))
-  (advice-add 'pyvenv-activate :filter-args #'get-project-pyvenv)
-  (setq pyvenv-default-virtual-env-name "venv/")
+
+  (setq pyvenv-default-virtual-env-name ".venv/")
   ;; Set correct Python interpreter
   (setq pyvenv-post-activate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter
-                      (concat pyvenv-virtual-env "bin/python3")))
+                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))
 	      (lambda ()
-		(message "%s %s"
-                         (propertize "activated venv at:"
-                                     'face 'minibuffer-prompt)
-                         (getenv "VIRTUAL_ENV")))))
+		(message "activated venv at: \t%s" (getenv "VIRTUAL_ENV")))))
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
                 (setq python-shell-interpreter "python3")))))
 
-;; helper functions to quickly open a shell with venv activated
-(defun venv-shell (&optional arg)
-  (interactive "P")
-  (if (equal current-prefix-arg '(4))
-      (setf arg 2))
-  (let ((pyvenv-to-use
-	 (if (boundp 'project-pyvenv)
-	     project-pyvenv
-	   (read-directory-name "Activate venv: "))))
-    (dotimes (number (or arg 1))
-      (let ((buffer-name (format "*shell-%d-venv*" number)))
-        (named-venv-shell buffer-name pyvenv-to-use)))))
+;; when starting interpreter, automatically start the project's virtual environment
+(advice-add 'run-python :before
+	    (lambda (&optional _cmd _dedicated _show)
+	      (message "_cmd from the advice: %s" _cmd)
+	      (let ((venv (get-project-venv)))
+		;; (read-directory-name "Activate venv: ")
+		(when venv (pyvenv-activate (get-project-venv))))))
 
-(defun named-venv-shell (&optional arg pyvenv-to-use)
+;; when starting interpreter, make sure to include the default environment variables
+;; TODO: this needs some work
+;; (advice-remove 'python-shell-calculate-command :filter-return
+;; 	       (lambda (cmd)
+;; 		 (message "cmd from the advice: %s" cmd)
+;; 		 (message "concated: %s" (concat "source /Users/andrewjda/.zshrc && " cmd))
+;; 		 (concat "source /Users/andrewjda/.zshrc && " cmd)))
+
+;; helper function to quickly open a shell (optionally: activate venv)
+(defun python-activate-venv ()
+  (interactive)
+  (let ((venv (get-project-venv)))
+    (when venv
+      (comint-send-string nil
+			  (message "source %sbin/activate" venv))))
+  (comint-send-input nil t))
+
+(defun named-shell (&optional arg use-venv)
   (interactive (list (read-string "Name of the shell: " "*shell-")))
-  (let ((pyvenv-to-use
-	 (or
-	  pyvenv-to-use
-	  (bound-and-true-p project-pyvenv)
-	  (read-directory-name "Activate venv: "))))
-    (switch-to-buffer (shell arg))
-    (comint-send-string nil (concat "source " pyvenv-to-use "bin/activate"))
-    (comint-send-input nil t)))
+  (pop-to-buffer arg)
+  (shell arg)
+  (when use-venv
+    (python-activate-venv))
+  (comint-send-input nil t))
 
 (defun python-run-this (arg)
-  (interactive (list (read-file-name "run this file in a pyvenv shell: ")))
-  (named-venv-shell (format "*shell-%s*"(file-name-nondirectory arg))
-		    (bound-and-true-p project-pyvenv))
+  (interactive (list (read-file-name "run this file in a shell: ")))
+  (named-shell (format "*shell-%s*"(file-name-nondirectory arg)) t)
   (let ((desired-dir (file-name-directory arg)))
     (if (not (equal desired-dir default-directory))
-	(progn (comint-send-string nil (format "cd %s" desired-dir))
+	(progn (comint-send-string nil (message "cd %s" desired-dir))
 	       (comint-send-input nil t))))
-  (comint-send-string nil (format "python %s" arg))
-  (comint-send-input nil t))
+  (insert (concat "python " (file-name-nondirectory arg) " ")))
+
+(defun python-run-app ()
+  (interactive)
+  (message "project app: %s" (bound-and-true-p project-app))
+  (python-run-this (bound-and-true-p project-app)))
 
 (use-package blacken
   :commands blacken-mode blacken-buffer)
@@ -1467,6 +1544,7 @@ Else, call find-symbol-first-occurrence"
 	  (replace-regexp-in-string prompt-regexp "")
 	  (list))) ; string argument is actually passed as a list
     string))
+
 ;;;;; c / c++ / objective c lang
 (use-package eglot
   :init
@@ -1609,7 +1687,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
