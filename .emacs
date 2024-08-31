@@ -380,7 +380,7 @@
 						  (match-end 1) "•"))))))
 
   (setq org-log-done t)
-  (setq org-agenda-files '("~/org/TODO.org" "~/org/ToBuy.org"))
+  (setq org-agenda-files '("~/org/TODO.org" "~/org/ToBuy.org" "~/org/chtu_todo.org"))
 
   (defun tick (&optional untick)
     (interactive "P")
@@ -524,7 +524,10 @@ the whole region is fontified (by automatically inserting character at mark)"
   (interactive)
   (find-file "~/org/chtu_todo.org"))
 
-
+;; open chtu todos
+(defun gym-notes ()
+  (interactive)
+  (find-file "~/org/gym_exercise_notes.org"))
 
 (defun shell-command-open (arg &optional options)
   (interactive "Sopen ")
