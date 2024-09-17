@@ -1655,7 +1655,7 @@ Else, call find-symbol-first-occurrence"
         	      (make-it-quiet (dwim-kill))
         	      (pop kill-ring))))
            (thing (string-replace "\"" "'" thing)))
-      (insert (format "%s(\"%s : {}\", %s);" action thing thing))))
+      (insert (format "%s(\"%s : {:?}\", %s);" action thing thing))))
 
   (defun rustic-debug-print (&optional arg)
     (interactive "P")
