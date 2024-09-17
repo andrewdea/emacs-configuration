@@ -1645,6 +1645,25 @@ Else, call find-symbol-first-occurrence"
 	  (list))) ; string argument is actually passed as a list
     string))
 
+;;;;; rust
+(use-package rustic
+  :config
+  (defun rust-debug (action &optional arg)
+    (let* ((thing (if (or arg (current-line-empty-p))
+        	      (read-from-kill-ring (format "%s :" action))
+        	    (progn
+        	      (make-it-quiet (dwim-kill))
+        	      (pop kill-ring))))
+           (thing (string-replace "\"" "'" thing)))
+      (insert (format "%s(\"%s : {}\", %s);" action thing thing))))
+
+  (defun rustic-debug-print (&optional arg)
+    (interactive "P")
+    (rust-debug "println!" arg))
+
+  :bind (:map rustic-mode-map
+              ("C-M-p" . rustic-debug-print)))
+
 ;;;;; c / c++ / objective c lang
 (use-package eglot
   :init
