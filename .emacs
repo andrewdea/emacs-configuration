@@ -1459,11 +1459,11 @@ Else, call find-symbol-first-occurrence"
 
   (defun python-debug (action &optional arg)
     (let* ((thing (if (or arg (current-line-empty-p))
-		      (read-from-kill-ring (format "%s :" action))
-		    (progn
-		      (make-it-quiet (dwim-kill))
-		      (pop kill-ring))))
-	   (thing (string-replace "\"" "'" thing)))
+        	      (read-from-kill-ring (format "%s :" action))
+        	    (progn
+        	      (make-it-quiet (dwim-kill))
+        	      (pop kill-ring))))
+           (thing (string-replace "\"" "'" thing)))
       (insert (format "%s(f\"%s : {%s}\")" action thing thing))))
 
   (defun python-debug-print (&optional arg)
@@ -1488,7 +1488,7 @@ Else, call find-symbol-first-occurrence"
   (condition-case
       nil
       (progn (unload-feature 'gnus-group 'force)
-	     (unload-feature 'gnus-sum 'force))
+             (unload-feature 'gnus-sum 'force))
     (error nil))
 
   (set (make-local-variable 'delete-print) #'py-query-delete-print)
@@ -1501,33 +1501,18 @@ Else, call find-symbol-first-occurrence"
   :hook
   (python-mode . subword-mode)
   :bind (:map python-mode-map
-	      ("M-<right>" . python-indent-shift-right)
-	      ("M-<left>" . python-indent-shift-left)
-	      ("C-M-p" . python-debug-print)
-	      ("C-M-l" . python-debug-log)))
-
-(use-package elpy
-  :init
-  ;; (advice-add 'python-mode :before 'elpy-enable)
-  (setq elpy-modules '(elpy-module-sane-defaults
-		       elpy-module-company
-		       elpy-module-eldoc
-		       elpy-module-flymake
-		       elpy-module-pyvenv
-		       elpy-module-yasnippet
-		       elpy-module-django))
-  :bind (:map elpy-mode-map
-	      ("M-." . elpy-goto-definition)))
+              ("M-<right>" . python-indent-shift-right)
+              ("M-<left>" . python-indent-shift-left)
+              ("C-M-p" . python-debug-print)
+              ("C-M-l" . python-debug-log))
+  )
 
 (use-package lsp-pyright
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp)))  ; or lsp-deferred
   :config
-  (setq lsp-enable-file-watchers nil)
-  :bind (:map python-mode-map
-	      ("M-p" . python-debug-print)
-	      ("C-M-p" . python-debug-print)))
+  (setq lsp-enable-file-watchers nil))
 
 (defun get-project-venv (&optional directory)
   ;; possible improvement: when venv not found,
