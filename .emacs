@@ -1504,8 +1504,7 @@ Else, call find-symbol-first-occurrence"
               ("M-<right>" . python-indent-shift-right)
               ("M-<left>" . python-indent-shift-left)
               ("C-M-p" . python-debug-print)
-              ("C-M-l" . python-debug-log))
-  )
+              ("C-M-l" . python-debug-log)))
 
 (use-package lsp-pyright
   :hook (python-mode . (lambda ()
