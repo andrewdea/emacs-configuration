@@ -305,6 +305,7 @@
   (if (not arg)
       (load-theme 'cyberpunk))
   (load-theme 'my-monokai))
+
 (defun tango-dark ()
   (interactive)
   (un-theme "tango-dark"))
@@ -1375,10 +1376,10 @@ Else, call find-symbol-first-occurrence"
 ;; that can take up any language
 (defun run-this ()
   (interactive)
-  (let ((func (cond ((eq major-mode 'python-mode)
-		     #'python-run-this)
-		    (eq major-mode 'web-mode)
-		    #'js-run-this)))
+  (let ((func (pcase major-mode
+                ('python-mode #'python-run-this)
+                ('web-mode #'js-run-this)
+                (t (error "run-this does not currently support this mode: %s" major-mode)))))
     (call-interactively func)))
 
 ;;;;; shell
