@@ -364,6 +364,32 @@
         ("b" . help-go-back)
         ("f" . help-go-forward)))
 
+;; json files
+(defun show-paren-full-matching-sexp ()
+  "Toggle `show-paren-style' between 'parenthesis and 'expression"
+  (interactive)
+  (if (eq show-paren-style 'expression)
+      (setq-local show-paren-style 'parenthesis)
+    (setq-local show-paren-style 'expression)))
+
+(add-to-list 'auto-mode-alist '("\\.jsonl\\'" . json-mode))
+
+(defun json-pretty-print-if-scratch ()
+  (when (and (equal "*scratch*" (buffer-name (current-buffer)))
+	     (y-or-n-p "format this json doc?"))
+    (json-pretty-print-buffer)))
+
+(use-package json-mode
+  :config
+  :hook
+  (json-mode . hs-minor-mode)
+  (json-mode . json-pretty-print-if-scratch)
+  :bind (:map json-mode-map
+	      ("C-c C-s" . show-paren-full-matching-sexp)
+	      ("C-c C-h" . hs-toggle-hiding)
+	      ("C-c C-l" . hs-hide-level)
+	      ("C-c C-b" . json-pretty-print-buffer)))
+
 ;;;; ORG mode
 (use-package org
   :defer 5
@@ -579,7 +605,6 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;;;;; recent files
 (use-package recentf
   :init
-
   (defun my-recentf-open-files ()
     (interactive)
     (recentf-mode +1)
@@ -591,16 +616,39 @@ the whole region is fontified (by automatically inserting character at mark)"
   :config
   (setq recentf-max-menu-items 25
         recentf-max-saved-items 25)
-  (add-to-list 'recentf-exclude "ido.last")
+  (setq recentf-exclude
+	(append recentf-exclude
+		'("~/.emacs.d/ido.last" ".*treemacs-persist" "~/.emacs.d/bookmarks")))
   (make-it-quiet
    (recentf-mode))
+
+  (defun my-search-for-read-only-buffers ()
+    "Start an isearch with the latest inputted key"
+    (interactive)
+    (isearch-with-start (char-to-string last-input-event)))
+
+  (defun bind-alpha-keys (keymap function)
+    "Bind all alphabetical keys to FUNCTION in KEYMAP."
+    (let ((alpha-chars (append
+			(string-to-list "abcdefghijklmnopqrstuvwxyz")
+			(string-to-list "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+			(string-to-list ",./;:"))))
+      (dolist (char alpha-chars)
+	(define-key keymap (char-to-string char) function))))
+
+  ;; all alphabetical characters are bound to the search function
+  ;; this way, when in a recentf-dialog buffer:
+  ;; all digits will select a specific file
+  ;; all letters will open a search for the specific file
+  (bind-alpha-keys recentf-dialog-mode-map 'my-search-for-read-only-buffers)
+
   :hook (recentf-dialog-mode . hl-line-mode))
 
 ;;;;; projectile mode
 (use-package projectile
   :defer 6
   :config
-  (setq projectile-ignored-projects '("~/")
+  (setq projectile-ignored-projects '("~/") ;; TODO: fix this
         projectile-switch-project-action #'projectile-dired-other-window)
   :bind (:map projectile-mode-map
 	      ("s-p" . projectile-command-map)))
@@ -616,23 +664,26 @@ the whole region is fontified (by automatically inserting character at mark)"
 ;;;;; keys
 ;; allow more flexibility by binding the right-side cmd-key to C-
 (setq ns-right-command-modifier 'control)
+
 ;;;;; utilities
 (defun dwim-move-beginning-of-line (&optional arg)
   "Move point back to indentation of beginning of line.
-`move-beginning-of-line' but smarter.
+  `move-beginning-of-line' but smarter.
 
-Move point to the first non-whitespace character on this line.
-If point is already there, move to the beginning of the line.
-Effectively toggle between the first non-whitespace character and
-the beginning of the line.
+  Move point to the first non-whitespace character on this line.
+  If point is already there, move to the beginning of the line.
+  Effectively toggle between the first non-whitespace character and
+  the beginning of the line.
 
-If ARG is not nil or 1, move forward ARG - 1 lines first.  If
-point reaches the beginning or end of the buffer, stop there."
+  If ARG is not nil or 1, move forward ARG - 1 lines first.  If
+  point reaches the beginning or end of the buffer, stop there."
   (interactive "^p")
-  (let ((arg (or arg 1)))
-    (when (/= arg 1)
-      (let ((line-move-visual nil))
-        (forward-line (1- arg)))))
+  (setq arg (or arg 1))
+
+  (when (/= arg 1)
+    (let ((line-move-visual nil))
+      (forward-line (1- arg))))
+
   (let ((orig-point (point)))
     (back-to-indentation)
     (when (= orig-point (point))
@@ -645,6 +696,7 @@ point reaches the beginning or end of the buffer, stop there."
 ;; when typing in selected region, delete it
 (delete-selection-mode t)
 
+;; kill and copy
 (defun my-kill-whole-line (&optional arg)
   "Delete the line and, when appropriate, preceding newline.
 If ARG not provided or ARG > 1, first move to the beginning of the line,
@@ -659,6 +711,7 @@ Then, delete all preceding whitespace."
   (delete-horizontal-space 'backwards))
 
 (defun dwim-kill-line (&optional arg)
+  "If highlighted, `kill-region', else `my-kill-whole-line'"
   (interactive "P")
   (if mark-active
       (kill-region (region-beginning) (region-end))
@@ -691,12 +744,22 @@ Then, delete all preceding whitespace."
         (kill-region (dwim-move-beginning-of-line)
 		     (line-end-position))
         (message "%s %s"
-                 (propertize "copied line:" 'face 'minibuffer-prompt)
+                 (propertize "cut line:" 'face 'minibuffer-prompt)
                  (current-kill 0)))
     (kill-region (region-beginning) (region-end))))
 
 (global-set-key (kbd "C-w") #'dwim-kill)
 
+(defun query-delete-line (arg)
+  (interactive "sbeginning of line to delete: ")
+  (query-replace-regexp
+   (concat "\n"
+	   "\s*"
+	   arg
+	   ".*$")
+   ""))
+
+;;
 (defun count-total-lines ()
   (interactive)
   (message "Buffer '%s' has %d total lines"
@@ -705,6 +768,7 @@ Then, delete all preceding whitespace."
 
 (global-set-key (kbd "C-x l") #'goto-line)
 
+;; upcase and downcase
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
@@ -716,18 +780,36 @@ Then, delete all preceding whitespace."
   (funcall command (region-beginning) (region-end))
   (buffer-substring (region-beginning) (region-end)))
 
-(defun my-downcase-dwim ()
+(defun my-smart-upcase ()
+  "If region is selected, `upcase-region', else `upcase-char'.
+Print a message to alert of the capitalization"
   (interactive)
-  (let ((region (on-region-or-char #'downcase-region)))
-    (message "downcasing: %s in %s" region (copy-current-line))))
+  (if mark-active
+      (upcase-region (region-beginning) (region-end))
+    (upcase-char nil))
+  (message "CAPITALIZED %s, %s" (thing-at-point 'word) (what-line)))
 
-(defun my-upcase-dwim ()
+(defun my-smart-downcase ()
+  "If region is selected, `downcase-region', else `downcase-char'.
+Print a message to alert of the capitalization"
   (interactive)
-  (let ((region (on-region-or-char #'upcase-region)))
-    (message "UPCASING: %s in %s" region (copy-current-line))))
+  (if mark-active
+      (downcase-region (region-beginning) (region-end))
+    (downcase-region (point) (progn (forward-char) (point))))
+  (message "downCASED %s, %s" (thing-at-point 'word) (what-line)))
 
-(global-set-key (kbd "C-x C-l") #'my-downcase-dwim)
-(global-set-key (kbd "C-x C-u") #'my-upcase-dwim)
+(global-set-key (kbd "C-x C-u") #'my-smart-upcase)
+(global-set-key (kbd "C-x C-l") #'my-smart-downcase)
+
+;; move lines
+(defalias 'move-line-up
+  (kmacro "C-e C-SPC C-a C-w C-SPC <up> C-e <backspace> C-a C-y <return> <up>"))
+(global-set-key (kbd "M-<up>") #'move-line-up)
+
+(defalias 'move-line-down
+  (kmacro "C-e C-SPC C-a C-w <down> C-a C-SPC <up> C-e <backspace> C-e <return> C-y"))
+
+(global-set-key (kbd "M-<down>") #'move-line-down)
 
 ;; disable mouse-wheel-text-scale, as it can get in the way and is rarely needed
 (defun my-scroll (e)
@@ -741,7 +823,14 @@ Then, delete all preceding whitespace."
 (global-set-key (kbd "C-<wheel-up>") #'my-scroll)
 
 (use-package avy
-  :bind (("s-'" . avy-goto-char-2)))
+  :bind (("s-'" . avy-goto-char-2)
+	 ("C-'" . avy-goto-char-2)
+	 ("s-0" . avy-goto-word-0)))
+
+;; better text-navigation, especially with god-mode
+(global-set-key (kbd "C-b") #'left-word)
+(global-set-key (kbd "C-f") #'right-word)
+
 
 ;; save clipboard contents to kill-ring
 (setq save-interprogram-paste-before-kill 1000)
@@ -772,6 +861,13 @@ Then, delete all preceding whitespace."
 	      ("C-c f" . flyspell-correct-word-before-point)))
 
 ;;;;; search
+
+(defun isearch-with-start (str)
+  "Start an isearch with STR"
+  (isearch-resume str nil nil t str nil))
+
+(setq isearch-lazy-count t) ;; shows the number of total matches in the minibuffer
+
 ;;
 ;; from beginning of document
 (defun isearch-from-top (&optional regexp-p)
@@ -883,12 +979,14 @@ future."
 		    (concat "💪⚡" arg)
 		  arg)))
   :bind
-  ("<escape>" . god-mode-all)
-  ("s-<escape>" . god-local-mode)
-  ("M-<escape>" . god-execute-with-current-bindings)
-  ("C-z" . god-mode-all)
-  ("C-s-z" . god-local-mode)
-  ("C-M-z" . god-execute-with-current-bindings))
+  ;; I'm out of practice with god-mode, better to avoid triggering it for now
+  ;; ("<escape>" . god-mode-all)
+  ;; ("s-<escape>" . god-local-mode)
+  ;; ("M-<escape>" . god-execute-with-current-bindings)
+  ;; ("C-z" . god-mode-all)
+  ;; ("C-s-z" . god-local-mode)
+  ;; ("C-M-z" . god-execute-with-current-bindings)
+  )
 
 
 ;;;; BUFFER AND FRAME movements
@@ -1132,12 +1230,17 @@ for each open buffer with one of these files, refresh the version-control state"
   ;; this might affect performance when there are many files
   ;; but it can always be turned off
   :hook (magit-refresh-buffer . vc-refresh-all-git-buffers)
-  :bind ("C-x g" . magit-status))
+  :bind ("C-x g" . magit-status)) ; TODO: is this needed?
+
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))
 
 ;;;;; appearance
 (defun my-prog-appearance (&optional absolute)
   (interactive "P")
   (display-line-numbers-mode t)
+  (local-set-key (kbd "C-c r") #'run-this)
   (if absolute
       (absolute-line-numbers-setup)
     (relative-line-numbers-setup))
@@ -1283,11 +1386,15 @@ Else, call find-symbol-first-occurrence"
 
 (use-package sticky-shell
   :hook (sticky-shell-mode . sticky-shell-shorten-header-set-mode)
-  :defer 1)
+  :config
+  (defalias #'sticky-mode #'sticky-shell-mode))
 
 (use-package shell-output-mode
   :load-path "custom/modes/"
+  :config
+  (setq find-default-options " ")
   :defer 1)
+
 
 (defun recenter-middle (string)
   (when (eq (window-buffer (selected-window)) (current-buffer))
@@ -1297,11 +1404,19 @@ Else, call find-symbol-first-occurrence"
 (define-minor-mode center-shell-mode
   "Minor mode to show the shell output at the center of the buffer."
   :group 'comint
-  :global nil
+  :global t
   :lighter nil
   (if center-shell-mode
       (add-hook 'comint-output-filter-functions #'recenter-middle 99)
     (remove-hook 'comint-output-filter-functions #'recenter-middle)))
+
+;; comint (shell) mode
+(add-hook 'comint-mode-hook
+	  (lambda ()
+	    (visual-line-mode -1)
+	    (electric-pair-local-mode t)
+            ;; TODO center-shell doesn't appear to work, unclear why
+	    (center-shell-mode t)))
 
 ;;;;; highlight TODO words
 (use-package hl-todo
@@ -1565,7 +1680,6 @@ Else, call find-symbol-first-occurrence"
 
 ;;;;; emacs lisp
 (defmacro make-it-quiet (&rest body)
-  "Execute BODY with `inhibit-message' set to t."
   `(let ((inhibit-message t))
      (progn ,@body)))
 
@@ -1582,6 +1696,23 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
                 (if (sequencep replacement) replacement (list replacement))
                 (cdr (nthcdr pos list)))
       list)))
+
+(add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
+
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+	    (local-set-key (kbd "M-<up>")
+			   #'move-line-up)
+	    (local-set-key (kbd "M-<down>")
+			   #'move-line-down))
+	  99)
+
+(defun current-line-empty-p ()
+  "Check if the current line contains nothing but whitespace"
+  (save-excursion
+    (beginning-of-line)
+    (looking-at-p "[[:blank:]]*$")))
+
 
 (setq source-directory "~/Emacs-Build/emacs")
 
@@ -1687,7 +1818,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
