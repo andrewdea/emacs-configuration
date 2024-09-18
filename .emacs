@@ -1451,6 +1451,114 @@ Else, call find-symbol-first-occurrence"
 ;;;;; go
 (use-package go-mode)
 
+;;;;; javascript
+(use-package tide)
+
+;;;
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  ;; company is an optional dependency. You have to
+  ;; install it separately via package-install
+  ;; `M-x package-install [ret] company`
+  (company-mode +1))
+
+;; aligns annotation to the right hand side
+(setq company-tooltip-align-annotations t)
+
+;; formats the buffer before saving
+(add-hook 'before-save-hook 'tide-format-before-save)
+
+;; if you use typescript-mode
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
+;; if you use treesitter based typescript-ts-mode (emacs 29+)
+(add-hook 'typescript-ts-mode-hook #'setup-tide-mode)
+;;;
+
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (company-mode +1))
+
+;; aligns annotation to the right hand side
+(setq company-tooltip-align-annotations t)
+
+;; formats the buffer before saving
+(add-hook 'before-save-hook 'tide-format-before-save)
+
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
+
+(add-hook 'web-mode-hook #'subword-mode)
+
+(defun js-debug-log (&optional arg)
+  (interactive "P")
+  (when arg (js-json-stringify))
+  (let* ((thing (if (current-line-empty-p)
+		    (read-from-kill-ring (format "console.log :" ))
+		  (progn
+		    (make-it-quiet (dwim-kill))
+		    (pop kill-ring)))))
+    (insert (format "console.log(`%s : ${%s}`)" thing thing))))
+
+(defun js-json-stringify ()
+  (interactive)
+  (let* ((thing (if (current-line-empty-p)
+		    (read-from-kill-ring (format "JSON.stringify :" ))
+		  (progn
+		    (make-it-quiet (dwim-kill))
+		    (pop kill-ring)))))
+    (insert (format "JSON.stringify(%s)" thing))))
+
+(defun js-query-delete-console ()
+  (interactive)
+  (query-replace-regexp "\n\s*\s*console.log(.*);?" ""))
+
+(use-package web-mode
+  :config
+  (setq web-mode-enable-current-element-highlight t)
+  (set (make-local-variable 'delete-print) #'js-query-delete-console)
+  :bind (:map web-mode-map
+	      ("M-p" . js-debug-log)
+	      ("C-M-p" . js-debug-log)))
+
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (string-equal "tsx" (file-name-extension buffer-file-name))
+              (setup-tide-mode))))
+
+(defun js-run-this ()
+  (interactive)
+  (python-run-app)
+  (comint-send-input)
+  (split-window-below)
+  (named-shell "*shell-npm-dev*" nil)
+  (let ((desired-dir (projectile-project-root)))
+    (if (not (equal desired-dir default-directory))
+	(progn (comint-send-string nil (message "cd %s" desired-dir))
+	       (comint-send-input nil t))))
+  (insert "npm run dev"))
+
+(use-package prettier
+  :init
+  ;; (add-hook 'typescript-mode-hook 'prettier-mode)
+  (add-hook 'web-mode-hook 'prettier-mode))
+
+(use-package lsp-mode
+  :ensure t
+  :config
+  ;; (require 'lsp-clients)
+  (add-hook 'web-mode-hook 'lsp))
+
 ;;;;; python
 (add-hook 'python-mode-hook #'subword-mode)
 (add-hook 'inferior-python-mode-hook #'subword-mode)
@@ -1822,7 +1930,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(prettier web-mode tide ll-debug json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
