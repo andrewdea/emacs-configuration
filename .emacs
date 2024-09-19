@@ -1379,7 +1379,7 @@ Else, call find-symbol-first-occurrence"
   (let ((func (pcase major-mode
                 ('python-mode #'python-run-this)
                 ('web-mode #'js-run-this)
-                (t (error "run-this does not currently support this mode: %s" major-mode)))))
+                (_ (error "run-this does not currently support this mode: %s" major-mode)))))
     (call-interactively func)))
 
 ;;;;; shell
