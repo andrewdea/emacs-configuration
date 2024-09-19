@@ -1196,6 +1196,13 @@ open siblings (directories at its same depth)"
   (setq ido-everywhere t)
   (setq ido-enable-flex-matching t))
 
+;;;;; prog-mode
+(use-package prog-setup
+  :hook
+  (prog-mode . prog-setup)
+  :load-path "custom/packages/prog-setup/")
+
+
 ;;;;; git
 (use-package magit
   :config
@@ -1237,54 +1244,6 @@ for each open buffer with one of these files, refresh the version-control state"
   :after magit
   :config (magit-todos-mode 1))
 
-;;;;; appearance
-(defun my-prog-appearance (&optional absolute)
-  (interactive "P")
-  (display-line-numbers-mode t)
-  (local-set-key (kbd "C-c r") #'run-this)
-  (if absolute
-      (absolute-line-numbers-setup)
-    (relative-line-numbers-setup))
-  (electric-pair-local-mode t))
-
-(defun adj/:around-goto-line-read-args (origfn)
-  (let ((display-line-numbers 'absolute))
-    (funcall origfn)))
-
-(defun relative-line-numbers-setup ()
-  (interactive)
-  (display-line-numbers-mode t)
-  (setq display-line-numbers 'relative)
-  (defun adj/:around-goto-line-read-args (origfn)
-    (let ((display-line-numbers 'absolute))
-      (funcall origfn)))
-  (advice-add 'goto-line-read-args :around #'adj/:around-goto-line-read-args))
-
-(defun absolute-line-numbers-setup ()
-  (interactive)
-  (setq display-line-numbers 'absolute)
-  (display-line-numbers-mode)
-  (advice-remove 'goto-line-read-args #'adj/:around-goto-line-read-args))
-
-(defun line-numbers-global (setup)
-  (dolist (buf (buffer-list))
-    (with-current-buffer buf
-      (when display-line-numbers-mode
-        (funcall setup)))))
-
-(defun absolute-line-numbers-global ()
-  (interactive)
-  (line-numbers-global #'absolute-line-numbers-setup)
-  (remove-hook 'prog-mode-hook #'my-prog-appearance)
-  (add-hook 'prog-mode-hook (lambda () (my-prog-appearance 'absolute))))
-
-(defun relative-line-numbers-global ()
-  (interactive)
-  (line-numbers-global #'relative-line-numbers-setup)
-  (remove-hook 'prog-mode-hook (lambda () (my-prog-appearance 'absolute)))
-  (add-hook 'prog-mode-hook #'my-prog-appearance))
-
-(add-hook 'prog-mode-hook #'my-prog-appearance)
 ;;;;; outline
 (use-package dash)
 (use-package outshine
@@ -1374,13 +1333,13 @@ Else, call find-symbol-first-occurrence"
 
 ;; TODO: expand the compile and run command into a whole package onto itself
 ;; that can take up any language
-(defun run-this ()
-  (interactive)
-  (let ((func (pcase major-mode
-                ('python-mode #'python-run-this)
-                ('web-mode #'js-run-this)
-                (t (error "run-this does not currently support this mode: %s" major-mode)))))
-    (call-interactively func)))
+;; (defun run-this ()
+;;   (interactive)
+;;   (let ((func (pcase major-mode
+;;                 ('python-mode #'python-run-this)
+;;                 ('web-mode #'js-run-this)
+;;                 (t (error "run-this does not currently support this mode: %s" major-mode)))))
+;;     (call-interactively func)))
 
 ;;;;; shell
 (setq shell-file-name "/bin/zsh")
@@ -1566,22 +1525,22 @@ Else, call find-symbol-first-occurrence"
 (use-package python
   :config
 
-  (defun python-debug (action &optional arg)
-    (let* ((thing (if (or arg (current-line-empty-p))
-        	      (read-from-kill-ring (format "%s :" action))
-        	    (progn
-        	      (make-it-quiet (dwim-kill))
-        	      (pop kill-ring))))
-           (thing (string-replace "\"" "'" thing)))
-      (insert (format "%s(f\"%s : {%s}\")" action thing thing))))
+  ;; (defun python-debug (action &optional arg)
+  ;;   (let* ((thing (if (or arg (current-line-empty-p))
+  ;;       	      (read-from-kill-ring (format "%s :" action))
+  ;;       	    (progn
+  ;;       	      (make-it-quiet (dwim-kill))
+  ;;       	      (pop kill-ring))))
+  ;;          (thing (string-replace "\"" "'" thing)))
+  ;;     (insert (format "%s(f\"%s : {%s}\")" action thing thing))))
 
-  (defun python-debug-print (&optional arg)
-    (interactive "P")
-    (python-debug "print" arg))
+  ;; (defun python-debug-print (&optional arg)
+  ;;   (interactive "P")
+  ;;   (python-debug "print" arg))
 
-  (defun python-debug-log (&optional arg)
-    (interactive "P")
-    (python-debug "logging.info" arg))
+  ;; (defun python-debug-log (&optional arg)
+  ;;   (interactive "P")
+  ;;   (python-debug "logging.info" arg))
 
   (defun py-query-delete-print ()
     (interactive)
@@ -1612,8 +1571,10 @@ Else, call find-symbol-first-occurrence"
   :bind (:map python-mode-map
               ("M-<right>" . python-indent-shift-right)
               ("M-<left>" . python-indent-shift-left)
-              ("C-M-p" . python-debug-print)
-              ("C-M-l" . python-debug-log)))
+              ;; ("C-M-p" . python-debug-print)
+              ;; ("C-M-l" . python-debug-log))
+              ))
+              
 
 (use-package lsp-pyright
   :hook (python-mode . (lambda ()
