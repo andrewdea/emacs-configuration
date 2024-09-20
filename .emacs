@@ -108,7 +108,7 @@
       #'modus-vivendi
     (let ((hour (nth 2 (decode-time (current-time)))))
       (if (or (> hour 23) (< hour 8))
-	  #'cyberpunk ; at night
+	  #'modus-vivendi ; at night
         #'my-monokai)))) ; during the day
 
 ;; my daily default theme is based on standard tango-dark;
@@ -487,7 +487,7 @@ the whole region is fontified (by automatically inserting character at mark)"
             ;;   ;; this is achieved by putting it in a format string
             ;;   (message "ns-input-file: %s" ns-input-file)
             ;;   (message "Welcome %s %s" to-emacs (car ns-input-file)))
-            (message "ns-input-file: %s" ns-input-file)
+            ;; (message "ns-input-file: %s" ns-input-file)
             (message "Welcome to Emacs %s" (or (car ns-input-file) ""))
             (setq initial-buffer-choice (car ns-input-file))
             )
@@ -1338,7 +1338,7 @@ Else, call find-symbol-first-occurrence"
 ;;   (let ((func (pcase major-mode
 ;;                 ('python-mode #'python-run-this)
 ;;                 ('web-mode #'js-run-this)
-;;                 (t (error "run-this does not currently support this mode: %s" major-mode)))))
+;;                 (_ (error "run-this does not currently support this mode: %s" major-mode)))))
 ;;     (call-interactively func)))
 
 ;;;;; shell
