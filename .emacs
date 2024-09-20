@@ -108,7 +108,7 @@
       #'modus-vivendi
     (let ((hour (nth 2 (decode-time (current-time)))))
       (if (or (> hour 23) (< hour 8))
-	  #'cyberpunk ; at night
+	  #'modus-vivendi ; at night
         #'my-monokai)))) ; during the day
 
 ;; my daily default theme is based on standard tango-dark;
