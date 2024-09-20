@@ -21,7 +21,6 @@
 ;;;;; don't show compilation warnings
 ;; keeping warnings on for now to monitor native comp til I'm familiar with it
 ;; (setq native-comp-async-report-warnings-errors nil)
-
 ;;;; PACKAGES setup
 (require 'package)
 (add-to-list 'package-archives
@@ -979,7 +978,7 @@ future."
 		(if (bound-and-true-p god-local-mode)
 		    (concat "💪⚡" arg)
 		  arg)))
-  :bind
+  ;; :bind
   ;; I'm out of practice with god-mode, better to avoid triggering it for now
   ;; ("<escape>" . god-mode-all)
   ;; ("s-<escape>" . god-local-mode)
@@ -1199,7 +1198,7 @@ open siblings (directories at its same depth)"
 ;;;;; prog-mode
 (use-package prog-setup
   :hook
-  (prog-mode . prog-setup)
+  (prog-mode . prog-setup-appearance)
   :load-path "custom/packages/prog-setup/")
 
 
@@ -1313,6 +1312,8 @@ Else, call find-symbol-first-occurrence"
 (global-set-key (kbd "M-.") #'my-find-definition)
 
 ;; set appropriate default compile-command
+;; TODO: there are already some built-in compile utils, you should
+;; leverage those
 (defun set-compile-command (arg use-file &optional options)
   (setq-local compile-command
 	      (concat arg " "
@@ -1457,24 +1458,19 @@ Else, call find-symbol-first-occurrence"
 
 (add-hook 'web-mode-hook #'subword-mode)
 
+(defun js-format (&optional arg)
+  (format "console.log(`%s : ${%s}`)" arg arg))
+
+(defun js-format-stringify (&optional arg)
+  (format "console.log(`stringified %s : ${JSON.stringify(%s)}`)" arg arg))
+
 (defun js-debug-log (&optional arg)
   (interactive "P")
-  (when arg (js-json-stringify))
-  (let* ((thing (if (current-line-empty-p)
-		    (read-from-kill-ring (format "console.log :" ))
-		  (progn
-		    (make-it-quiet (dwim-kill))
-		    (pop kill-ring)))))
-    (insert (format "console.log(`%s : ${%s}`)" thing thing))))
+  (debug-print arg #'js-format))
 
-(defun js-json-stringify ()
-  (interactive)
-  (let* ((thing (if (current-line-empty-p)
-		    (read-from-kill-ring (format "JSON.stringify :" ))
-		  (progn
-		    (make-it-quiet (dwim-kill))
-		    (pop kill-ring)))))
-    (insert (format "JSON.stringify(%s)" thing))))
+(defun js-debug-log-stringify (&optional arg)
+  (interactive "P")
+  (debug-print arg #'js-format-stringify))
 
 (defun js-query-delete-console ()
   (interactive)
@@ -1485,8 +1481,9 @@ Else, call find-symbol-first-occurrence"
   (setq web-mode-enable-current-element-highlight t)
   (set (make-local-variable 'delete-print) #'js-query-delete-console)
   :bind (:map web-mode-map
+              ;; TODO verify that these work
 	      ("M-p" . js-debug-log)
-	      ("C-M-p" . js-debug-log)))
+	      ("C-M-p" . js-debug-log-stringify)))
 
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
@@ -1525,22 +1522,39 @@ Else, call find-symbol-first-occurrence"
 (use-package python
   :config
 
-  ;; (defun python-debug (action &optional arg)
-  ;;   (let* ((thing (if (or arg (current-line-empty-p))
-  ;;       	      (read-from-kill-ring (format "%s :" action))
-  ;;       	    (progn
-  ;;       	      (make-it-quiet (dwim-kill))
-  ;;       	      (pop kill-ring))))
-  ;;          (thing (string-replace "\"" "'" thing)))
-  ;;     (insert (format "%s(f\"%s : {%s}\")" action thing thing))))
+  (defun py-generic-format (arg action &optional line-number)
+    (let ((arg (if arg
+                   (string-replace "\"" "'" arg))))
+      (format (concat
+               action
+               "(f\""
+               (when line-number (format "At line number: %s; " line-number))
+               (when arg "%s : {%s}")
+               "\")")
+              arg arg)))
 
-  ;; (defun python-debug-print (&optional arg)
-  ;;   (interactive "P")
-  ;;   (python-debug "print" arg))
+  (defun py-format (arg &optional line-number)
+    (py-generic-format arg "print" line-number))
 
-  ;; (defun python-debug-log (&optional arg)
-  ;;   (interactive "P")
-  ;;   (python-debug "logging.info" arg))
+  (defun py-log-format (arg &optional line-number)
+    (py-generic-format arg "logger.info" line-number))
+
+  (defun py-debug-log (&optional arg)
+    (interactive "P")
+    (debug-print arg #'py-log-format))
+
+  (defun py-debug-print (&optional arg)
+    (interactive "P")
+    (debug-print arg #'py-format))
+
+  (defun py-run-this (arg)
+    (interactive (list (read-file-name "run this file in a shell: ")))
+    (named-shell (format "*shell-%s*"(file-name-nondirectory arg)) t)
+    (let ((desired-dir (file-name-directory arg)))
+      (if (not (equal desired-dir default-directory))
+	  (progn (comint-send-string nil (message "cd %s" desired-dir))
+	         (comint-send-input nil t))))
+    (insert (concat "python " (file-name-nondirectory arg) " ")))
 
   (defun py-query-delete-print ()
     (interactive)
@@ -1559,8 +1573,7 @@ Else, call find-symbol-first-occurrence"
              (unload-feature 'gnus-sum 'force))
     (error nil))
 
-  (set (make-local-variable 'delete-print) #'py-query-delete-print)
-  (set (make-local-variable #'my-testing-var) #'py-query-delete-print)
+  (setq-local delete-print #'py-query-delete-print)
 
   (defun query-comment-out-print ()
     (interactive)
@@ -1568,13 +1581,14 @@ Else, call find-symbol-first-occurrence"
 
   :hook
   (python-mode . subword-mode)
+  (python-mode . (lambda ()
+                   (prog-setup-commands-for-language "py")))
   :bind (:map python-mode-map
               ("M-<right>" . python-indent-shift-right)
               ("M-<left>" . python-indent-shift-left)
-              ;; ("C-M-p" . python-debug-print)
-              ;; ("C-M-l" . python-debug-log))
-              ))
-              
+              ("C-M-l" . py-debug-log)
+              ("C-M-p" . py-debug-print)))
+
 
 (use-package lsp-pyright
   :hook (python-mode . (lambda ()
@@ -1717,21 +1731,15 @@ Else, call find-symbol-first-occurrence"
 ;;;;; rust
 (use-package rustic
   :config
-  (defun rust-debug (action &optional arg)
-    (let* ((thing (if (or arg (current-line-empty-p))
-        	      (read-from-kill-ring (format "%s :" action))
-        	    (progn
-        	      (make-it-quiet (dwim-kill))
-        	      (pop kill-ring))))
-           (thing (string-replace "\"" "'" thing)))
-      (insert (format "%s(\"%s : {:?}\", %s);" action thing thing))))
+  (defun rs-format (&optional arg)
+    (format "println!(\"%s : {:?}\", %s);" action thing thing))
 
-  (defun rustic-debug-print (&optional arg)
+  (defun rs-debug-print (&optional arg)
     (interactive "P")
-    (rust-debug "println!" arg))
+    (debug-print arg #'rs-format))
 
   :bind (:map rustic-mode-map
-              ("C-M-p" . rustic-debug-print)))
+              ("C-M-p" . rs-debug-print)))
 
 ;;;;; c / c++ / objective c lang
 (use-package eglot
@@ -1747,11 +1755,34 @@ Else, call find-symbol-first-occurrence"
   (setq comment-end "*/"))
 
 (mapc
- (lambda (mode-hook)
-   (add-hook mode-hook #'use-c-style-comments))
- (list 'c-mode-hook 'c++-mode-hook 'objc-mode-hook))
+(lambda (mode-hook)
+  (add-hook mode-hook #'use-c-style-comments))
+(list 'c-mode-hook 'c++-mode-hook 'objc-mode-hook))
 
 ;;;;; emacs lisp
+
+(defun el-format (arg &optional line-number)
+  (format (concat
+           "(message \""
+           (when line-number (format "At line number: %s; " line-number))
+           "%s: %%s\" %s)")
+          arg arg))
+
+(defun el-run-this ()
+  (interactive)
+  (when (called-interactively-p)
+    (call-interactively #'elisp-eval-region-or-buffer)
+    (funcall #'elisp-eval-region-or-buffer)))
+
+(defun el-debug-print (&optional arg)
+  (interactive "P")
+  (debug-print arg #'el-format))
+
+(define-key emacs-lisp-mode-map (kbd "C-M-p") 'el-debug-print)
+(define-key emacs-lisp-mode-map (kbd "C-c r") 'el-run-this)
+
+;; TODO: due to some changes in how `inhibit-message' works,
+;; this macro no longer works
 (defmacro make-it-quiet (&rest body)
   `(let ((inhibit-message t))
      (progn ,@body)))
