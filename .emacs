@@ -487,7 +487,7 @@ the whole region is fontified (by automatically inserting character at mark)"
             ;;   ;; this is achieved by putting it in a format string
             ;;   (message "ns-input-file: %s" ns-input-file)
             ;;   (message "Welcome %s %s" to-emacs (car ns-input-file)))
-            (message "ns-input-file: %s" ns-input-file)
+            ;; (message "ns-input-file: %s" ns-input-file)
             (message "Welcome to Emacs %s" (or (car ns-input-file) ""))
             (setq initial-buffer-choice (car ns-input-file))
             )
