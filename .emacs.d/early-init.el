@@ -45,7 +45,10 @@
 
 (push '(fullscreen . maximized) default-frame-alist)
 
-(load-theme 'my-monokai 'no-confirm)
+(if (or (member "-nw" command-line-args)
+        (member "--no-window-system" command-line-args))
+    (load-theme 'my-monokai 'no-confirm)
+  (load-theme 'modus-vivendi))
 
 ;; no round corners & no title-bar
 (push '(undecorated . t) default-frame-alist)
