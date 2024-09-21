@@ -1458,11 +1458,21 @@ Else, call find-symbol-first-occurrence"
 
 (add-hook 'web-mode-hook #'subword-mode)
 
-(defun js-format (&optional arg)
-  (format "console.log(`%s : ${%s}`)" arg arg))
+(defun js-format (arg &optional line-number)
+  (format (concat
+           "console.log(`"
+           (when line-number (format "At line number: %s; " line-number))
+           (when arg "%s : ${%s}`")
+           ");")
+          arg arg))
 
-(defun js-format-stringify (&optional arg)
-  (format "console.log(`stringified %s : ${JSON.stringify(%s)}`)" arg arg))
+(defun js-format-stringify (arg &optional line-number)
+  (format (concat
+           "console.log(`"
+           (when line-number (format "At line number: %s; " line-number))
+           (when arg "%s STRINGIFIED : ${JSON.stringify(%s)}`")
+           ");")
+          arg arg))
 
 (defun js-debug-log (&optional arg)
   (interactive "P")
@@ -1482,8 +1492,8 @@ Else, call find-symbol-first-occurrence"
   (set (make-local-variable 'delete-print) #'js-query-delete-console)
   :bind (:map web-mode-map
               ;; TODO verify that these work
-	      ("M-p" . js-debug-log)
-	      ("C-M-p" . js-debug-log-stringify)))
+	      ("M-p" . js-debug-log-stringify)
+	      ("C-M-p" . js-debug-log)))
 
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
