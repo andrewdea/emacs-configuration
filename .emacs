@@ -1793,7 +1793,9 @@ Else, call find-symbol-first-occurrence"
 ;;;;; emacs lisp
 (defmacro make-it-quiet (&rest body)
   `(let ((inhibit-message t))
-     (progn ,@body)))
+     (progn ,@body)
+     ;; if message aren't actually inhibit, use this to clear the echo area:
+     (message nil)))
 
 (defun region-at-point ()
   (thing-at-point 'region 'no-properties))
