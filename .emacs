@@ -1387,6 +1387,8 @@ Else, call find-symbol-first-occurrence"
 
 (use-package sticky-shell
   :hook (sticky-shell-mode . sticky-shell-shorten-header-set-mode)
+  :load-path "custom/packages/sticky-shell/"
+  ;; put the load path here whenever you need to test things
   :config
   (defalias #'sticky-mode #'sticky-shell-mode))
 
