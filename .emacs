@@ -1731,8 +1731,8 @@ Else, call find-symbol-first-occurrence"
 ;;;;; rust
 (use-package rustic
   :config
-  (defun rs-format (&optional arg)
-    (format "println!(\"%s : {:?}\", %s);" action thing thing))
+  (defun rs-format (arg &rest line-number-etc) ; need to implement the line-number
+    (format "println!(\"%s : {:?}\", %s);"arg arg))
 
   (defun rs-debug-print (&optional arg)
     (interactive "P")
