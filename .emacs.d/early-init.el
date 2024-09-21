@@ -47,8 +47,8 @@
 
 (if (or (member "-nw" command-line-args)
         (member "--no-window-system" command-line-args))
-    (load-theme 'my-monokai 'no-confirm)
-  (load-theme 'modus-vivendi))
+    (load-theme 'modus-vivendi)
+  (load-theme 'my-monokai 'no-confirm))
 
 ;; no round corners & no title-bar
 (push '(undecorated . t) default-frame-alist)
