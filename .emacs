@@ -321,14 +321,8 @@
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
   :init
-  (defun wspace ()
-    "Shortcut for (whitespace-mode 'toggle)"
-    (interactive)
-    (let ((action-taken
-	   (if (whitespace-mode 'toggle)
-	       "enabled"
-	     "disabled")))
-      (message "Whitespace mode %s in this buffer" action-taken)))
+  ;; shortcut
+  (defalias #'wspace-test #'whitespace-mode
   :config
   (setq whitespace-style '(face lines-tail trailing)))
 
