@@ -141,6 +141,11 @@
 ;;;;; close
 (add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
 
+;;;;; windows
+(defun window-vertically-split-p (&optional window)
+  (let ((height (window-height window)))
+    (< height (- (frame-height) 1))))
+
 ;;;;; dashboard
 (use-package dashboard
   :if window-system
@@ -1472,11 +1477,11 @@ Else, call find-symbol-first-occurrence"
 
 (defun js-debug-log (&optional arg)
   (interactive "P")
-  (debug-print arg #'js-format))
+  (prog--debug-print arg #'js-format))
 
 (defun js-debug-log-stringify (&optional arg)
   (interactive "P")
-  (debug-print arg #'js-format-stringify))
+  (prog--debug-print arg #'js-format-stringify))
 
 (defun js-query-delete-console ()
   (interactive)
@@ -1547,20 +1552,17 @@ Else, call find-symbol-first-occurrence"
 
   (defun py-debug-log (&optional arg)
     (interactive "P")
-    (debug-print arg #'py-log-format))
+    (prog--debug-print arg #'py-log-format))
 
   (defun py-debug-print (&optional arg)
     (interactive "P")
-    (debug-print arg #'py-format))
+    (prog--debug-print arg #'py-format))
 
-  (defun py-run-this (arg)
+  (defun py-run-this (file)
     (interactive (list (read-file-name "run this file in a shell: ")))
-    (named-shell (format "*shell-%s*"(file-name-nondirectory arg)) t)
-    (let ((desired-dir (file-name-directory arg)))
-      (if (not (equal desired-dir default-directory))
-	  (progn (comint-send-string nil (message "cd %s" desired-dir))
-	         (comint-send-input nil t))))
-    (insert (concat "python " (file-name-nondirectory arg) " ")))
+    (prog--run-this file nil
+                    (concat "python "
+                            (file-name-nondirectory file) " ")))
 
   (defun py-query-delete-print ()
     (interactive)
@@ -1590,6 +1592,7 @@ Else, call find-symbol-first-occurrence"
   :bind (:map python-mode-map
               ("M-<right>" . python-indent-shift-right)
               ("M-<left>" . python-indent-shift-left)
+              ("C-c r" . py-run-this)
               ("C-M-l" . py-debug-log)
               ("C-M-p" . py-debug-print)))
 
@@ -1650,27 +1653,30 @@ Else, call find-symbol-first-occurrence"
 			  (message "source %sbin/activate" venv))))
   (comint-send-input nil t))
 
-(defun named-shell (&optional arg use-venv)
-  (interactive (list (read-string "Name of the shell: " "*shell-")))
-  (pop-to-buffer arg)
-  (shell arg)
-  (when use-venv
-    (python-activate-venv))
+(defun named-shell (name)
+  "Create (or switch to) a shell with *shell-NAME*  and `pop-to-buffer'."
+  ;; move or create the buffer: if the buffer is new, it'll be in
+  ;; fundamental mode so we also have to start the shell
+  (pop-to-buffer name)
+  (when (eq major-mode 'fundamental-mode)
+    (shell name))
   (comint-send-input nil t))
 
-(defun python-run-this (arg)
-  (interactive (list (read-file-name "run this file in a shell: ")))
-  (named-shell (format "*shell-%s*"(file-name-nondirectory arg)) t)
-  (let ((desired-dir (file-name-directory arg)))
+(defun named-shell-file (file)
+  "Start (or switch to) a shell for FILE.
+Start the shell with `named-shell' and cd into FILE's directory"
+  (let ((name (format "*shell-%s*" (file-name-nondirectory file)))
+        (desired-dir (file-name-directory file)))
+    (named-shell name)
+    ;; move to the desired dir if needed
     (if (not (equal desired-dir default-directory))
 	(progn (comint-send-string nil (message "cd %s" desired-dir))
-	       (comint-send-input nil t))))
-  (insert (concat "python " (file-name-nondirectory arg) " ")))
+	       (comint-send-input nil t)))))
 
 (defun python-run-app ()
   (interactive)
   (message "project app: %s" (bound-and-true-p project-app))
-  (python-run-this (bound-and-true-p project-app)))
+  (py-run-this (bound-and-true-p project-app)))
 
 (use-package blacken
   :commands blacken-mode blacken-buffer)
@@ -1740,10 +1746,19 @@ Else, call find-symbol-first-occurrence"
 
   (defun rs-debug-print (&optional arg)
     (interactive "P")
-    (debug-print arg #'rs-format))
+    (prog--debug-print arg #'rs-format))
+
+  ;; standardize this so `prog--run-this' can use it
+  (setq rustic-compilation-buffer-name "*compilation*")
+
+  (defun rs-run-this (file)
+    (interactive (list (read-file-name "run this file in a shell: ")))
+    (prog--run-this file #'rustic-compile "cargo run"))
 
   :bind (:map rustic-mode-map
-              ("C-M-p" . rs-debug-print)))
+              ("C-M-p" . rs-debug-print)
+              ("C-c r" . rs-run-this)
+              ("C-c c" . rustic-compile)))
 
 ;;;;; c / c++ / objective c lang
 (use-package eglot
@@ -1780,7 +1795,7 @@ Else, call find-symbol-first-occurrence"
 
 (defun el-debug-print (&optional arg)
   (interactive "P")
-  (debug-print arg #'el-format))
+  (prog--debug-print arg #'el-format))
 
 (define-key emacs-lisp-mode-map (kbd "C-M-p") 'el-debug-print)
 (define-key emacs-lisp-mode-map (kbd "C-c r") 'el-run-this)
