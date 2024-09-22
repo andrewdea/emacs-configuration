@@ -327,7 +327,7 @@
 (use-package whitespace
   :init
   ;; shortcut
-  (defalias #'wspace-test #'whitespace-mode
+  (defalias #'wspace-test #'whitespace-mode)
   :config
   (setq whitespace-style '(face lines-tail trailing)))
 
