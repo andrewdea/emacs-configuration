@@ -1561,9 +1561,9 @@ Else, call find-symbol-first-occurrence"
 
   (defun py-run-this (file)
     (interactive (list (read-file-name "run this file in a shell: ")))
-    (named-shell-file file)
-    (prog--run-this file (concat "python "
-                                 (file-name-nondirectory file) " ")))
+    (prog--run-this file
+                    (concat "python "
+                            (file-name-nondirectory file) " ")))
 
   (defun py-query-delete-print ()
     (interactive)
@@ -1751,10 +1751,14 @@ Start the shell with `named-shell' and cd into FILE's directory"
 
   (defun rs-run-this (file)
     (interactive (list (read-file-name "run this file in a shell: ")))
-    (named-shell-file file)
-    ;; TODO: maybe there could be an intermediary step where the
-    ;; compilation actually happens in `compilation-mode'
-    (prog--run-this file "cargo build && cargo run"))
+    ;; firt, compile
+    (rustic-cargo-build)
+    ;; compose a reasonable window setup:
+    ;; TODO: this needs some work to figure out the best way to
+    ;; consistently have compilation and run-shell vertically aligned,
+    ;; and keep the .rs buffer visible
+    (pop-to-buffer "*rustic-compilation*")
+    (prog--run-this file "cargo run"))
 
   :bind (:map rustic-mode-map
               ("C-M-p" . rs-debug-print)
