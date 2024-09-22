@@ -1495,7 +1495,11 @@ Else, call find-symbol-first-occurrence"
 (defun get-project-venv (&optional directory)
   ;; possible improvement: when venv not found,
   ;; add option to query user for venv directory
-  (let* ((root (projectile-project-root directory))
+  (let* ((root (or
+                (when (boundp 'projectile-project-root)
+                  (projectile-project-root directory))
+                directory
+                default-directory))
 	 (venv-dir (concat root ".venv")))
     (if (file-directory-p venv-dir)
 	(file-name-as-directory venv-dir)
