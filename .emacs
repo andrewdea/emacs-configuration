@@ -141,6 +141,11 @@
 ;;;;; close
 (add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
 
+;;;;; windows
+(defun window-vertically-split-p (&optional window)
+  (let ((height (window-height window)))
+    (< height (- (frame-height) 1))))
+
 ;;;;; dashboard
 (use-package dashboard
   :if window-system
@@ -1561,7 +1566,7 @@ Else, call find-symbol-first-occurrence"
 
   (defun py-run-this (file)
     (interactive (list (read-file-name "run this file in a shell: ")))
-    (prog--run-this file
+    (prog--run-this file nil
                     (concat "python "
                             (file-name-nondirectory file) " ")))
 
@@ -1655,7 +1660,7 @@ Else, call find-symbol-first-occurrence"
   (comint-send-input nil t))
 
 (defun named-shell (name)
-  "Create a shell with *shell-NAME*  and move to its buffer"
+  "Create a shell with *shell-NAME*  and `pop-to-buffer'."
   ;; move or create the buffer: if the buffer is new, it'll be in
   ;; fundamental mode so we also have to start the shell
   (pop-to-buffer name)
@@ -1749,16 +1754,12 @@ Start the shell with `named-shell' and cd into FILE's directory"
     (interactive "P")
     (prog--debug-print arg #'rs-format))
 
+  ;; standardize this so `prog--run-this' can use it
+  (setq rustic-compilation-buffer-name "*compilation*")
+
   (defun rs-run-this (file)
     (interactive (list (read-file-name "run this file in a shell: ")))
-    ;; firt, compile
-    (rustic-cargo-build)
-    ;; compose a reasonable window setup:
-    ;; TODO: this needs some work to figure out the best way to
-    ;; consistently have compilation and run-shell vertically aligned,
-    ;; and keep the .rs buffer visible
-    (pop-to-buffer "*rustic-compilation*")
-    (prog--run-this file "cargo run"))
+    (prog--run-this file #'rustic-cargo-build "cargo run"))
 
   :bind (:map rustic-mode-map
               ("C-M-p" . rs-debug-print)
