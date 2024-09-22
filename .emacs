@@ -1478,11 +1478,11 @@ Else, call find-symbol-first-occurrence"
 
 (defun js-debug-log (&optional arg)
   (interactive "P")
-  (debug-print arg #'js-format))
+  (prog--debug-print arg #'js-format))
 
 (defun js-debug-log-stringify (&optional arg)
   (interactive "P")
-  (debug-print arg #'js-format-stringify))
+  (prog--debug-print arg #'js-format-stringify))
 
 (defun js-query-delete-console ()
   (interactive)
@@ -1553,11 +1553,11 @@ Else, call find-symbol-first-occurrence"
 
   (defun py-debug-log (&optional arg)
     (interactive "P")
-    (debug-print arg #'py-log-format))
+    (prog--debug-print arg #'py-log-format))
 
   (defun py-debug-print (&optional arg)
     (interactive "P")
-    (debug-print arg #'py-format))
+    (prog--debug-print arg #'py-format))
 
   (defun py-run-this (arg)
     (interactive (list (read-file-name "run this file in a shell: ")))
@@ -1746,7 +1746,7 @@ Else, call find-symbol-first-occurrence"
 
   (defun rs-debug-print (&optional arg)
     (interactive "P")
-    (debug-print arg #'rs-format))
+    (prog--debug-print arg #'rs-format))
 
   :bind (:map rustic-mode-map
               ("C-M-p" . rs-debug-print)))
@@ -1786,7 +1786,7 @@ Else, call find-symbol-first-occurrence"
 
 (defun el-debug-print (&optional arg)
   (interactive "P")
-  (debug-print arg #'el-format))
+  (prog--debug-print arg #'el-format))
 
 (define-key emacs-lisp-mode-map (kbd "C-M-p") 'el-debug-print)
 (define-key emacs-lisp-mode-map (kbd "C-c r") 'el-run-this)
