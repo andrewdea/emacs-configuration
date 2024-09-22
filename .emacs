@@ -1660,7 +1660,7 @@ Else, call find-symbol-first-occurrence"
   (comint-send-input nil t))
 
 (defun named-shell (name)
-  "Create a shell with *shell-NAME*  and `pop-to-buffer'."
+  "Create (or switch to) a shell with *shell-NAME*  and `pop-to-buffer'."
   ;; move or create the buffer: if the buffer is new, it'll be in
   ;; fundamental mode so we also have to start the shell
   (pop-to-buffer name)
@@ -1669,7 +1669,7 @@ Else, call find-symbol-first-occurrence"
   (comint-send-input nil t))
 
 (defun named-shell-file (file)
-  "Start a shell for FILE.
+  "Start (or switch to) a shell for FILE.
 Start the shell with `named-shell' and cd into FILE's directory"
   (let ((name (format "*shell-%s*" (file-name-nondirectory file)))
         (desired-dir (file-name-directory file)))
@@ -1759,11 +1759,12 @@ Start the shell with `named-shell' and cd into FILE's directory"
 
   (defun rs-run-this (file)
     (interactive (list (read-file-name "run this file in a shell: ")))
-    (prog--run-this file #'rustic-cargo-build "cargo run"))
+    (prog--run-this file #'rustic-compile "cargo run"))
 
   :bind (:map rustic-mode-map
               ("C-M-p" . rs-debug-print)
-              ("C-c r" . rs-run-this)))
+              ("C-c r" . rs-run-this)
+              ("C-c c" . rustic-compile)))
 
 ;;;;; c / c++ / objective c lang
 (use-package eglot
