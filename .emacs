@@ -1449,7 +1449,8 @@ Else, call find-symbol-first-occurrence"
     (interactive (list (read-file-name "run this file in a shell: ")))
     (prog--run-this file nil
                     (concat "python "
-                            (file-name-nondirectory file) " ")))
+                            (file-name-nondirectory file) " ")
+                    #'python-activate-venv))
 
   (defun py-query-delete-print ()
     (interactive)
@@ -1531,30 +1532,33 @@ Else, call find-symbol-first-occurrence"
 ;; 		 (message "concated: %s" (concat "source /Users/andrewjda/.zshrc && " cmd))
 ;; 		 (concat "source /Users/andrewjda/.zshrc && " cmd)))
 
-;; helper function to quickly open a shell (optionally: activate venv)
 (defun python-activate-venv ()
   (interactive)
   (let ((venv (get-project-venv)))
     (when venv
       (comint-send-string nil
-			  (message "source %sbin/activate" venv))))
-  (comint-send-input nil t))
+			  (message "source %sbin/activate" venv))
+      (comint-send-input nil t))))
 
-(defun named-shell (name)
-  "Create (or switch to) a shell with *shell-NAME*  and `pop-to-buffer'."
+(defun named-shell (name &optional setup-funcs)
+  "Create (or switch to) a shell with *shell-NAME*  and
+  `pop-to-buffer'.
+SETUP-FUNCS is a list of functions to run when setting up the shell."
   ;; move or create the buffer: if the buffer is new, it'll be in
   ;; fundamental mode so we also have to start the shell
   (pop-to-buffer name)
   (when (eq major-mode 'fundamental-mode)
-    (shell name))
+    (shell name)
+    (dolist (func setup-funcs) (funcall func)))
   (comint-send-input nil t))
 
-(defun named-shell-file (file)
+(defun named-shell-file (file &optional setup-funcs)
   "Start (or switch to) a shell for FILE.
-Start the shell with `named-shell' and cd into FILE's directory"
+Start the shell with `named-shell' and cd into FILE's directory.
+SETUP-FUNCS is a list of functions to run when setting up the shell."
   (let ((name (format "*shell-%s*" (file-name-nondirectory file)))
         (desired-dir (file-name-directory file)))
-    (named-shell name)
+    (named-shell name setup-funcs)
     ;; move to the desired dir if needed
     (if (not (equal desired-dir default-directory))
 	(progn (comint-send-string nil (message "cd %s" desired-dir))
@@ -1678,7 +1682,7 @@ Start the shell with `named-shell' and cd into FILE's directory"
            (when line-number (format "At line number: %s; " line-number))
            (when arg "%s : ${%s}`")
            ");")
-          arg arg))
+           arg arg))
 
 (defun js-format-stringify (arg &optional line-number _)
   (format (concat
