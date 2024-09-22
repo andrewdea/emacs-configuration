@@ -1593,8 +1593,6 @@ Else, call find-symbol-first-occurrence"
 
   :hook
   (python-mode . subword-mode)
-  (python-mode . (lambda ()
-                   (prog-setup-commands-for-language "py")))
   :bind (:map python-mode-map
               ("M-<right>" . python-indent-shift-right)
               ("M-<left>" . python-indent-shift-left)
