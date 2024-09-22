@@ -327,7 +327,7 @@
 (use-package whitespace
   :init
   ;; shortcut
-  (defalias #'wspace-test #'whitespace-mode)
+  (defalias #'wspace #'whitespace-mode)
   :config
   (setq whitespace-style '(face lines-tail trailing)))
 
@@ -1412,120 +1412,6 @@ Else, call find-symbol-first-occurrence"
 ;;;;; go
 (use-package go-mode)
 
-;;;;; javascript
-(use-package tide)
-
-;;;
-(defun setup-tide-mode ()
-  (interactive)
-  (tide-setup)
-  (flycheck-mode +1)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  (tide-hl-identifier-mode +1)
-  ;; company is an optional dependency. You have to
-  ;; install it separately via package-install
-  ;; `M-x package-install [ret] company`
-  (company-mode +1))
-
-;; aligns annotation to the right hand side
-(setq company-tooltip-align-annotations t)
-
-;; formats the buffer before saving
-(add-hook 'before-save-hook 'tide-format-before-save)
-
-;; if you use typescript-mode
-(add-hook 'typescript-mode-hook #'setup-tide-mode)
-;; if you use treesitter based typescript-ts-mode (emacs 29+)
-(add-hook 'typescript-ts-mode-hook #'setup-tide-mode)
-;;;
-
-(defun setup-tide-mode ()
-  (interactive)
-  (tide-setup)
-  (flycheck-mode +1)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  (tide-hl-identifier-mode +1)
-  (company-mode +1))
-
-;; aligns annotation to the right hand side
-(setq company-tooltip-align-annotations t)
-
-;; formats the buffer before saving
-(add-hook 'before-save-hook 'tide-format-before-save)
-
-(add-hook 'typescript-mode-hook #'setup-tide-mode)
-
-(add-hook 'web-mode-hook #'subword-mode)
-
-(defun js-format (arg &optional line-number)
-  (format (concat
-           "console.log(`"
-           (when line-number (format "At line number: %s; " line-number))
-           (when arg "%s : ${%s}`")
-           ");")
-          arg arg))
-
-(defun js-format-stringify (arg &optional line-number)
-  (format (concat
-           "console.log(`"
-           (when line-number (format "At line number: %s; " line-number))
-           (when arg "%s STRINGIFIED : ${JSON.stringify(%s)}`")
-           ");")
-          arg arg))
-
-(defun js-debug-log (&optional arg)
-  (interactive "P")
-  (prog--debug-print arg #'js-format))
-
-(defun js-debug-log-stringify (&optional arg)
-  (interactive "P")
-  (prog--debug-print arg #'js-format-stringify))
-
-(defun js-query-delete-console ()
-  (interactive)
-  (query-replace-regexp "\n\s*\s*console.log(.*);?" ""))
-
-(use-package web-mode
-  :config
-  (setq web-mode-enable-current-element-highlight t)
-  (set (make-local-variable 'delete-print) #'js-query-delete-console)
-  :bind (:map web-mode-map
-              ;; TODO verify that these work
-	      ("M-p" . js-debug-log-stringify)
-	      ("C-M-p" . js-debug-log)))
-
-(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
-(add-hook 'web-mode-hook
-          (lambda ()
-            (when (string-equal "tsx" (file-name-extension buffer-file-name))
-              (setup-tide-mode))))
-
-(defun js-run-this ()
-  (interactive)
-  (python-run-app)
-  (comint-send-input)
-  (split-window-below)
-  (named-shell "*shell-npm-dev*" nil)
-  (let ((desired-dir (projectile-project-root)))
-    (if (not (equal desired-dir default-directory))
-	(progn (comint-send-string nil (message "cd %s" desired-dir))
-	       (comint-send-input nil t))))
-  (insert "npm run dev"))
-
-(use-package prettier
-  :init
-  ;; (add-hook 'typescript-mode-hook 'prettier-mode)
-  (add-hook 'web-mode-hook 'prettier-mode))
-
-(use-package lsp-mode
-  :ensure t
-  :config
-  ;; (require 'lsp-clients)
-  (add-hook 'web-mode-hook 'lsp))
-
 ;;;;; python
 (add-hook 'python-mode-hook #'subword-mode)
 (add-hook 'inferior-python-mode-hook #'subword-mode)
@@ -1533,22 +1419,23 @@ Else, call find-symbol-first-occurrence"
 (use-package python
   :config
 
-  (defun py-generic-format (arg action &optional line-number)
+  (defun py-generic-format (arg action &optional line-number block-name)
     (let ((arg (if arg
                    (string-replace "\"" "'" arg))))
       (format (concat
                action
                "(f\""
-               (when line-number (format "At line number: %s; " line-number))
+               (when line-number (format "From: %s; " block-name))
+               (when line-number (format "line number: %s; " line-number))
                (when arg "%s : {%s}")
                "\")")
               arg arg)))
 
-  (defun py-format (arg &optional line-number)
-    (py-generic-format arg "print" line-number))
+  (defun py-format (arg &optional line-number block-name)
+    (py-generic-format arg "print" line-number block-name))
 
-  (defun py-log-format (arg &optional line-number)
-    (py-generic-format arg "logger.info" line-number))
+  (defun py-log-format (arg &optional line-number block-name)
+    (py-generic-format arg "logger.info" line-number block-name))
 
   (defun py-debug-log (&optional arg)
     (interactive "P")
@@ -1738,10 +1625,124 @@ Start the shell with `named-shell' and cd into FILE's directory"
 	  (list))) ; string argument is actually passed as a list
     string))
 
+;;;;; javascript
+(use-package tide)
+
+;;;
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  ;; company is an optional dependency. You have to
+  ;; install it separately via package-install
+  ;; `M-x package-install [ret] company`
+  (company-mode +1))
+
+;; aligns annotation to the right hand side
+(setq company-tooltip-align-annotations t)
+
+;; formats the buffer before saving
+(add-hook 'before-save-hook 'tide-format-before-save)
+
+;; if you use typescript-mode
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
+;; if you use treesitter based typescript-ts-mode (emacs 29+)
+(add-hook 'typescript-ts-mode-hook #'setup-tide-mode)
+;;;
+
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (company-mode +1))
+
+;; aligns annotation to the right hand side
+(setq company-tooltip-align-annotations t)
+
+;; formats the buffer before saving
+(add-hook 'before-save-hook 'tide-format-before-save)
+
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
+
+(add-hook 'web-mode-hook #'subword-mode)
+
+(defun js-format (arg &optional line-number _)
+  (format (concat
+           "console.log(`"
+           (when line-number (format "At line number: %s; " line-number))
+           (when arg "%s : ${%s}`")
+           ");")
+          arg arg))
+
+(defun js-format-stringify (arg &optional line-number _)
+  (format (concat
+           "console.log(`"
+           (when line-number (format "At line number: %s; " line-number))
+           (when arg "%s STRINGIFIED : ${JSON.stringify(%s)}`")
+           ");")
+          arg arg))
+
+(defun js-debug-log (&optional verbose)
+  (interactive "P")
+  (prog--debug-print verbose #'js-format))
+
+(defun js-debug-log-stringify (&optional verbose)
+  (interactive "P")
+  (prog--debug-print verbose #'js-format-stringify))
+
+(defun js-query-delete-console ()
+  (interactive)
+  (query-replace-regexp "\n\s*\s*console.log(.*);?" ""))
+
+(use-package web-mode
+  :config
+  (setq web-mode-enable-current-element-highlight t)
+  (set (make-local-variable 'delete-print) #'js-query-delete-console)
+  :bind (:map web-mode-map
+              ;; TODO verify that these work
+	      ("M-p" . js-debug-log-stringify)
+	      ("C-M-p" . js-debug-log)))
+
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (string-equal "tsx" (file-name-extension buffer-file-name))
+              (setup-tide-mode))))
+
+(defun js-run-this ()
+  (interactive)
+  (python-run-app)
+  (comint-send-input)
+  (split-window-below)
+  (named-shell "*shell-npm-dev*" nil)
+  (let ((desired-dir (projectile-project-root)))
+    (if (not (equal desired-dir default-directory))
+	(progn (comint-send-string nil (message "cd %s" desired-dir))
+	       (comint-send-input nil t))))
+  (insert "npm run dev"))
+
+(use-package prettier
+  :init
+  ;; (add-hook 'typescript-mode-hook 'prettier-mode)
+  (add-hook 'web-mode-hook 'prettier-mode))
+
+(use-package lsp-mode
+  :ensure t
+  :config
+  ;; (require 'lsp-clients)
+  (add-hook 'web-mode-hook 'lsp))
+
 ;;;;; rust
 (use-package rustic
   :config
-  (defun rs-format (arg &rest line-number-etc) ; need to implement the line-number
+  (defun rs-format (arg &rest line-number-etc)
     (format "println!(\"%s : {:?}\", %s);"arg arg))
 
   (defun rs-debug-print (&optional arg)
@@ -1780,7 +1781,7 @@ Start the shell with `named-shell' and cd into FILE's directory"
 
 ;;;;; emacs lisp
 
-(defun el-format (arg &optional line-number)
+(defun el-format (arg &optional line-number block-name)
   (format (concat
            "(message \""
            (when line-number (format "At line number: %s; " line-number))
