@@ -1439,18 +1439,18 @@ Else, call find-symbol-first-occurrence"
 
   (defun py-debug-log (&optional arg)
     (interactive "P")
-    (prog--debug-print arg #'py-log-format))
+    (prog-debug-print arg #'py-log-format))
 
   (defun py-debug-print (&optional arg)
     (interactive "P")
-    (prog--debug-print arg #'py-format))
+    (prog-debug-print arg #'py-format))
 
   (defun py-run-this (file)
     (interactive (list (read-file-name "run this file in a shell: ")))
-    (prog--run-this file nil
-                    (concat "python "
-                            (file-name-nondirectory file) " ")
-                    #'python-activate-venv))
+    (prog-run-this file nil
+                   (concat "python "
+                           (file-name-nondirectory file) " ")
+                   #'python-activate-venv))
 
   (defun py-query-delete-print ()
     (interactive)
@@ -1698,11 +1698,11 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 
 (defun js-debug-log (&optional verbose)
   (interactive "P")
-  (prog--debug-print verbose #'js-format))
+  (prog-debug-print verbose #'js-format))
 
 (defun js-debug-log-stringify (&optional verbose)
   (interactive "P")
-  (prog--debug-print verbose #'js-format-stringify))
+  (prog-debug-print verbose #'js-format-stringify))
 
 (defun js-query-delete-console ()
   (interactive)
@@ -1755,14 +1755,14 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 
   (defun rs-debug-print (&optional arg)
     (interactive "P")
-    (prog--debug-print arg #'rs-format))
+    (prog-debug-print arg #'rs-format))
 
-  ;; standardize this so `prog--run-this' can use it
+  ;; standardize this so `prog-run-this' can use it
   (setq rustic-compilation-buffer-name "*compilation*")
 
   (defun rs-run-this (file)
     (interactive (list (read-file-name "run this file in a shell: ")))
-    (prog--run-this file #'rustic-compile "cargo run"))
+    (prog-run-this file #'rustic-compile "cargo run"))
 
   :bind (:map rustic-mode-map
               ("C-M-p" . rs-debug-print)
@@ -1804,7 +1804,7 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 
 (defun el-debug-print (&optional arg)
   (interactive "P")
-  (prog--debug-print arg #'el-format))
+  (prog-debug-print arg #'el-format))
 
 (define-key emacs-lisp-mode-map (kbd "C-M-p") 'el-debug-print)
 (define-key emacs-lisp-mode-map (kbd "C-c r") 'el-run-this)
