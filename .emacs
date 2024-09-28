@@ -1750,6 +1750,7 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 ;;;;; rust
 (use-package rustic
   :config
+  ;; TODO: use the dbg! macro here instead
   (defun rs-format (arg &rest line-number-etc)
     (format "println!(\"%s : {:?}\", %s);"arg arg))
 
@@ -1878,8 +1879,16 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
   :defer 1
   :load-path "custom/packages/webkit-mac-enhance/")
 
+;;;;; pdf tools & epub
 (use-package pdf-tools
-  :mode ("\\.pdf\\'" . pdf-view-mode))
+  :init
+  ;; install pdf-tools at the first call to doc-view-mode
+  (advice-add 'doc-view-mode :after #'pdf-tools-install)
+  :bind
+  (:map pdf-view-mode-map
+	("M-w" . pdf-view-kill-ring-save)
+	("C-w" . pdf-view-kill-ring-save)
+	("s-c" . pdf-view-kill-ring-save)))
 
 (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 
@@ -1890,6 +1899,9 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
   (yt-frame)
   (pixel-scroll-precision-mode -1)
   (define-key tetris-mode-map "q" #'tetris-quit)
+  ;; TODO: any time you do fancy stuff with memory, maybe take a look
+  ;; at memory-report and see if you can check from there whether or
+  ;; not it is safe to do it
   (gcmh-mode -1)
   (setq gc-cons-threshold 400000
         gc-cons-percentage 0.5))
