@@ -1372,6 +1372,10 @@ Else, call find-symbol-first-occurrence"
       (add-hook 'comint-output-filter-functions #'recenter-middle 99)
     (remove-hook 'comint-output-filter-functions #'recenter-middle)))
 
+(use-package coterm
+  :init
+  (coterm-mode)
+  :defer 1)
 ;; comint (shell) mode
 (add-hook 'comint-mode-hook
 	  (lambda ()
