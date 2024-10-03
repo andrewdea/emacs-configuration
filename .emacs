@@ -877,30 +877,29 @@ Print a message to alert of the capitalization"
 
 (setq isearch-lazy-count t) ;; shows the number of total matches in the minibuffer
 
-;;
 ;; from beginning of document
 (defun isearch-from-top (&optional regexp-p)
   (interactive "P")
-  (let ((beg (point)))
-    (beginning-of-buffer) ; this pushes the previous position to the mark ring
-    (isearch-forward regexp-p)
-    ;; isearch sets the mark to the beginning of the search
-    ;; in our case that's useless (just the beginnig of the buffer)
-    ;; so we pop that
-    (pop-mark)))
+  (push-mark) ; save the place where search started
+  (goto-char (point-min))
+  (isearch-forward regexp-p)
+  ;; isearch sets the mark to the beginning of the search
+  ;; in our case that's useless (just the beginning of the buffer)
+  ;; so we pop that
+  (pop-mark))
 
 (global-set-key (kbd "M-s") #'isearch-from-top)
 
 ;; from end of document
 (defun isearch-from-bottom (&optional regexp-p)
   (interactive "P")
-  (let ((beg (point)))
-    (end-of-buffer)  ; this pushes the previous position to the mark ring
-    (isearch-backward regexp-p)
-    ;; isearch sets the mark to the beginning of the search
-    ;; in our case that's useless (just the end of the buffer)
-    ;; so we pop that
-    (pop-mark)))
+  (push-mark) ; save the place where search started
+  (goto-char (point-max))
+  (isearch-backward regexp-p)
+  ;; isearch sets the mark to the beginning of the search
+  ;; in our case that's useless (just the end of the buffer)
+  ;; so we pop that
+  (pop-mark))
 
 (global-set-key (kbd "M-r") #'isearch-from-bottom)
 
