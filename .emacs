@@ -413,8 +413,18 @@
         (insert "❌")
       (insert "✅")))
 
+  (defun org-get-link-at-point ()
+    "Copy the link at point, and message it in the minibuffer"
+    (interactive)
+    (let* ((props (text-properties-at (point)))
+           (link (plist-get (plist-get props 'htmlize-link) :uri)))
+      (kill-new link)
+      (message "%s %s"
+               (propertize "copied:" 'face 'minibuffer-prompt)
+               link)))
+
   (defun my-org-tab ()
-    "if current line is a heading, call regular org-cycle;
+    "If current line is a heading, call regular org-cycle;
 else, first move to previous visible heading, then call it"
     (interactive)
     (move-beginning-of-line 1)
