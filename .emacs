@@ -972,7 +972,6 @@ future."
   ;; ("C-M-z" . god-execute-with-current-bindings)
   )
 
-
 ;;;; BUFFER AND FRAME movements
 (use-package ibuffer
   :config
@@ -1315,16 +1314,6 @@ Else, call find-symbol-first-occurrence"
 (add-hook 'monicelli-mode-hook
 	  (lambda () (set-compile-command "mcc" t " -o ")))
 
-;; TODO: expand the compile and run command into a whole package onto itself
-;; that can take up any language
-;; (defun run-this ()
-;;   (interactive)
-;;   (let ((func (pcase major-mode
-;;                 ('python-mode #'python-run-this)
-;;                 ('web-mode #'js-run-this)
-;;                 (_ (error "run-this does not currently support this mode: %s" major-mode)))))
-;;     (call-interactively func)))
-
 ;;;;; shell
 (setq shell-file-name "/bin/zsh")
 
@@ -1365,7 +1354,6 @@ Else, call find-symbol-first-occurrence"
 	  (lambda ()
 	    (visual-line-mode -1)
 	    (electric-pair-local-mode t)
-            ;; TODO center-shell doesn't appear to work, unclear why
 	    (center-shell-mode t)))
 
 ;;;;; highlight TODO words
@@ -1701,7 +1689,6 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   (setq web-mode-enable-current-element-highlight t)
   (set (make-local-variable 'delete-print) #'js-query-delete-console)
   :bind (:map web-mode-map
-              ;; TODO verify that these work
 	      ("M-p" . js-debug-log-stringify)
 	      ("C-M-p" . js-debug-log)))
 
