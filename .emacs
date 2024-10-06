@@ -514,56 +514,32 @@ the whole region is fontified (by automatically inserting character at mark)"
 (setq delete-by-moving-to-trash t)
 
 ;;;;; file shortcuts
-;; open init file
-(defun init ()
-  (interactive)
-  (find-file user-init-file))
+(defmacro define-file-shortcut (name file)
+  `(defun ,name ()
+     ,(concat "Interactive shortcut for " (symbol-name name))
+     (interactive)
+     (find-file ,file)))
 
-;; TODO: use a macro or something to make writing these easier
-;; open zsh profile
-(defun zshrc ()
-  (interactive)
-  (find-file "~/.zshrc"))
+(defun define-all-shortcuts (args)
+  (eval `(progn ,@(mapcar (lambda (el)
+                            `(define-file-shortcut ,(car el) ,(cadr el)))
+                          args))))
 
-;; open org folder
-(defun forg ()
-  (interactive)
-  (dired "~/org"))
-;; open mobile org folder
-(defun beorg ()
-  (interactive)
-  (dired
-   "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/"))
-;; open generic todo
-(defun todo ()
-  (interactive)
-  (find-file "~/org/TODO.org"))
-;; open generic to-buy
-(defun tobuy ()
-  (interactive)
-  (find-file "~/org/ToBuy.org"))
-;; open my custom modes
-(defun my-modes ()
-  (interactive)
-  (dired "~/.emacs.d/custom/modes"))
-;; open Crafting Interpreters
-(defun crafting-interpreters ()
-  (interactive)
-  (dired "~/CraftingInterpreters"))
-;; open my practice notebook
-(defun practice-notebook ()
-  (interactive)
-  (find-file "~/org/practice_notebook.org"))
-;; open chtu todos
-(defun chtu-todo ()
-  (interactive)
-  (find-file "~/org/chtu_todo.org"))
+(define-all-shortcuts
+ (list
+  '(init user-init-file)
+  '(zshrc "~/.zshrc")
+  '(forg "~/org")
+  '(beorg "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/")
+  '(todo "~/org/TODO.org")
+  '(tobuy "~/org/ToBuy.org")
+  '(my-modes "~/.emacs.d/custom/modes")
+  '(crafting-interpreters "~/CraftingInterpreters")
+  '(practice-notebook "~/org/practice_notebook.org")
+  '(chtu-todo "~/org/chtu_todo.org")
+  '(gym-notes "~/org/gym_exercise_notes.org")))
 
-;; open chtu todos
-(defun gym-notes ()
-  (interactive)
-  (find-file "~/org/gym_exercise_notes.org"))
-
+;;;;; open files in specialized ways
 (defun shell-command-open (arg &optional options)
   (interactive "Sopen ")
   (let ((options (or options "")))
