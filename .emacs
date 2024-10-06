@@ -1220,8 +1220,7 @@ for each open buffer with one of these files, refresh the version-control state"
 
   ;; this might affect performance when there are many files
   ;; but it can always be turned off
-  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers)
-  :bind ("C-x g" . magit-status)) ; TODO: is this needed?
+  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers))
 
 (use-package magit-todos
   :after magit
