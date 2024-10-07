@@ -293,35 +293,41 @@
 
 ;;;;; themes and colors
 (defun un-theme (&optional arg)
-  "Disable all custom themes ad load theme ARG."
-  (interactive "snew theme: ")
+  "Disable all custom themes and load theme ARG."
+  (interactive (list (intern (completing-read "New theme: "
+                                              (mapcar #'symbol-name
+				                      (custom-available-themes))))))
   (mapc #'disable-theme custom-enabled-themes)
-  (if (> (length arg) 0) (load-theme (intern arg))))
+  (if arg (load-theme arg)
+    (call-interactively #'load-theme)))
 
 (use-package cyberpunk-theme)
 
 (defun my-misterioso ()
   (interactive)
-  (un-theme "my-misterioso"))
+  (un-theme 'my-misterioso))
+
 (defun my-monokai (&optional arg)
   (interactive "P")
-  (un-theme)
-  (if (not arg)
-      (load-theme 'cyberpunk))
-  (load-theme 'my-monokai))
+  (un-theme 'my-monokai)
+  (if arg
+      (un-theme 'my-monokai)
+    (progn (un-theme 'cyberpunk)
+           (load-theme 'my-monokai))))
 
 (defun tango-dark ()
   (interactive)
-  (un-theme "tango-dark"))
+  (un-theme 'tango-dark))
 (defun cyberpunk  ()
   (interactive)
-  (un-theme "cyberpunk"))
+  (un-theme 'cyberpunk))
 (defun modus-vivendi ()
   (interactive)
-  (un-theme "modus-vivendi"))
+  (un-theme 'modus-vivendi))
+
 (defun cloud-theme ()
   (interactive)
-  (un-theme "cloud"))
+  (un-theme 'cloud))
 
 ;; this highlights characters beyond the 80 char limit
 (use-package whitespace
@@ -436,7 +442,7 @@
 
   (defun my-org-tab ()
     "If current line is a heading, call regular org-cycle;
-else, first move to previous visible heading, then call it"
+    else, first move to previous visible heading, then call it"
     (interactive)
     (move-beginning-of-line 1)
     (if (null (looking-at org-outline-regexp))
@@ -461,8 +467,8 @@ else, first move to previous visible heading, then call it"
 
   (defun electric-fontify ()
     "If in org-mode (or a derived mode),
-when a region is highlighted and we've inserted a character that fontifies text,
-the whole region is fontified (by automatically inserting character at mark)"
+    when a region is highlighted and we've inserted a character that fontifies text,
+    the whole region is fontified (by automatically inserting character at mark)"
     (if (and (boundp 'to-fontify) to-fontify)
 	(progn (exchange-point-and-mark)
 	       (insert last-command-event)
@@ -629,8 +635,8 @@ the whole region is fontified (by automatically inserting character at mark)"
 			(string-to-list "abcdefghijklmnopqrstuvwxyz")
 			(string-to-list "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 			(string-to-list ",./;:"))))
-      (dolist (char alpha-chars)
-	(define-key keymap (char-to-string char) function))))
+    (dolist (char alpha-chars)
+      (define-key keymap (char-to-string char) function))))
 
   ;; all alphabetical characters are bound to the search function
   ;; this way, when in a recentf-dialog buffer:
@@ -1950,7 +1956,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(prettier web-mode tide ll-debug json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
