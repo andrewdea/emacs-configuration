@@ -121,7 +121,6 @@
   "Set (or restore) the initial appearance."
   (interactive)
   (setq column-number-mode t)
-  (un-theme)
   (funcall (default-theme))
   ;; if not already maximized, maximize
   (or (eq (frame-parameter (selected-frame) 'fullscreen) 'maximized)
