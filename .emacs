@@ -413,15 +413,26 @@
         (insert "❌")
       (insert "✅")))
 
-  (defun org-get-link-at-point ()
-    "Copy the link at point, and message it in the minibuffer"
+  (defun org-link-at-point ()
+    "Copy the link at point, message it in the minibuffer, and return it"
     (interactive)
     (let* ((props (text-properties-at (point)))
            (link (plist-get (plist-get props 'htmlize-link) :uri)))
-      (kill-new link)
-      (message "%s %s"
-               (propertize "copied:" 'face 'minibuffer-prompt)
-               link)))
+      (if link
+          (progn (kill-new link)
+                 (message "%s %s"
+                          (propertize "copied:" 'face 'minibuffer-prompt)
+                          link)
+                 link)
+        (progn (message (propertize "No link found at point" 'face
+                                    'minibuffer-prompt))
+               nil))))
+
+  ;; TODO: this functionality should be added to eww as well
+  (advice-add 'thing-at-point :after-until
+              (lambda (thing &optional no-properties)
+                (when (eq thing 'url)
+                  (org-link-at-point))))
 
   (defun my-org-tab ()
     "If current line is a heading, call regular org-cycle;
