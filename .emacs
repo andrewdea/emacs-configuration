@@ -1741,9 +1741,24 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 ;;;;; rust
 (use-package rustic
   :config
-  ;; TODO: use the dbg! macro here instead
+  (defun first-non-whitespace-char (str)
+    (let ((pos (string-match "[^ \t\n\r]" str)))
+      (when pos
+        (aref str pos))))
+
+  (defun add-ref-if-needed (str)
+    (if (not str)
+        ""
+      (if (eq (first-non-whitespace-char str) ?&)
+          str
+        (concat "&" str))))
+
+  ;; (defun rs-format (arg &rest line-number-etc)
+  ;;   (format "println!(\"%s : {:?}\", %s);"arg arg))
+
   (defun rs-format (arg &rest line-number-etc)
-    (format "println!(\"%s : {:?}\", %s);"arg arg))
+    (let ((arg (add-ref-if-needed arg)))
+      (format "dbg!(%s);" arg)))
 
   (defun rs-debug-print (&optional arg)
     (interactive "P")
