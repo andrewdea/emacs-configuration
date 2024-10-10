@@ -39,8 +39,8 @@
 (setq use-package-always-ensure t)
 
 ;;;; PATH from shell
-;; (when (memq window-system '(mac ns x))
-;;   (exec-path-from-shell-initialize))
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
 
 ;;;; PERFORMANCE
 ;;;;; garbage collection
@@ -1816,6 +1816,35 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
               ("C-c r" . rs-run-this)
               ("C-c c" . rustic-compile)))
 
+;; debugging
+(when (executable-find "lldb-mi")
+  (use-package dap-mode
+    :ensure
+    :config
+    (dap-ui-mode)
+    (dap-ui-controls-mode 1)
+
+
+    (require 'dap-lldb)
+    (require 'dap-codelldb)
+    (require 'dap-cpptools)
+
+    (dap-codelldb-setup)
+    (setq dap-auto-configure-features '(sessions locals controls tooltip))
+
+    (dap-register-debug-template
+     "LLDB::Run Rust"
+     (list :type "lldb"
+           :request "launch"
+           :name "LLDB::Run"
+           :miDebuggerPath "~/.cargo/bin/rust-lldb"
+           :target nil
+           :cwd nil
+           :program "~/programming-exercises/rust-book/rectangles/target/debug/rectangles"
+           ))
+    ))
+
+
 ;;;;; c / c++ / objective c lang
 (use-package eglot
   :init
@@ -2010,7 +2039,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
