@@ -496,6 +496,46 @@
 	 ("C-c n f" . org-roam-node-find)
 	 ("C-c n i" . org-roam-node-insert)))
 
+;;;; MARKDOWN mode
+(use-package markdown-mode
+  :config
+
+  ;; preview mode
+
+  ;; TODO figure out how to actually disable auto-insert-mode
+  ;; (defun adv/disable-auto-insert-mode (func)
+  ;;   (message "func: %s" func)
+  ;;   (let ((auto-insert-mode nil))
+  ;;     (message "auto-insert-mode: %s" auto-insert-mode)
+  ;;     (apply func)))
+
+  ;; (advice-add 'markdown-live-preview-export :around
+  ;; #'adv/disable-auto-insert-mode)
+
+  ;; TODO: add logic to save the HTML file to a temp directory
+  ;; TODO: look into the export logic and if there's way to make it better at
+  ;; dealing with eg latex etc
+  (defun markdown-live-preview-window-xwidget (file)
+    "Preview FILE with xwidget.
+  To be used with `markdown-live-preview-window-function'."
+    (xwidget-webkit-browse-url (concat "file://" file))
+    (xwidget-buffer (xwidget-webkit-current-session)))
+
+  (setq markdown-live-preview-window-function
+	#'markdown-live-preview-window-xwidget)
+
+  (defvar markdown-electric-pairs '((?` . ?`) (?* . ?*)) "Electric pairs for markdown-mode.")
+
+  (defun markdown-add-electric-pairs ()
+    (setq-local electric-pair-pairs (append electric-pair-pairs markdown-electric-pairs))
+    (setq-local electric-pair-text-pairs electric-pair-pairs))
+
+  (add-hook 'markdown-mode-hook 'markdown-add-electric-pairs)
+
+  :hook
+  (markdown-mode . turn-on-flyspell)
+  (markdown-mode . markdown-add-electric-pairs))
+
 ;;;; FILE utilities
 ;;;;; dialog boxes
 (setq use-file-dialog nil)
