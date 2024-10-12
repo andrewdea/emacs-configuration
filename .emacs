@@ -1352,8 +1352,6 @@ Else, call find-symbol-first-occurrence"
 (global-set-key (kbd "M-.") #'my-find-definition)
 
 ;; set appropriate default compile-command
-;; TODO: there are already some built-in compile utils, you should
-;; leverage those
 (defun set-compile-command (arg use-file &optional options)
   (setq-local compile-command
 	      (concat arg " "
