@@ -1336,6 +1336,10 @@ With optional argument PUSH, get the pushRemote"
   "Open the remote URL for the current file or directory.
   With prefix argument IN-XWIDGET, open it within emacs in a Safari
   xwidget."
+  ;; TODO: keep an eye on this: it might be useful to also prompt the
+  ;; user for the desired file & branch.
+  ;; on the other hand, if the goal is mostly to check the contents of
+  ;; a file in a different branch, use `magit-find-file'
   (interactive "P")
   (let ((url (git-remote-url)))
     (message "%s %s"
