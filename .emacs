@@ -433,11 +433,13 @@
                                     'minibuffer-prompt))
                nil))))
 
-  ;; TODO: this functionality should be added to eww as well
+  ;; ensure we can pick up a link in org:
+  ;; xwidget-webkit uses (thing-at-point 'url):
   (advice-add 'thing-at-point :after-until
               (lambda (thing &optional no-properties)
                 (when (eq thing 'url)
                   (org-link-at-point))))
+  ;; eww uses eww-suggest-uris, which is modified in the eww section below
 
   (defun my-org-tab ()
     "If current line is a heading, call regular org-cycle;
@@ -609,7 +611,7 @@
   (interactive (list (ido-read-file-name "open in Finder: ")))
   (shell-command-open arg "-R"))
 
-(setq eww-suggest-uris (append eww-suggest-uris '(region-at-point word-at-point)))
+(nconc eww-suggest-uris '(region-at-point org-link-at-point word-at-point))
 
 (setq eww-search-prefix "https://search.brave.com/search?q=")
 
