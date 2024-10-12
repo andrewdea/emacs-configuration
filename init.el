@@ -1876,8 +1876,9 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   :custom
   (lsp-rust-analyzer-cargo-watch-command "clippy")
 
-  :hook
-  (rustic-mode . rust-format-on-save)
+  :custom
+  ;; doesn't seem to work for some reason
+  (rust-format-on-save t)
 
   :bind (:map rustic-mode-map
               ("C-M-p" . rs-debug-print)
