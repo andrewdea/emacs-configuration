@@ -1,10 +1,7 @@
-# Ignore everything
-*
+# Mac OS
+.DS_Store
 
-# But not these files...
-!.gitignore
-!.emacs
-# etc...
-
-# some files to be tracked are in subdirectories
-!*/.emacs.d/*
+# IDE - Emacs
+*~
+\#*\#
+*.dir-locals.el

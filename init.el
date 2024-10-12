@@ -676,8 +676,8 @@
 			(string-to-list "abcdefghijklmnopqrstuvwxyz")
 			(string-to-list "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 			(string-to-list ",./;:"))))
-    (dolist (char alpha-chars)
-      (define-key keymap (char-to-string char) function))))
+      (dolist (char alpha-chars)
+        (define-key keymap (char-to-string char) function))))
 
   ;; all alphabetical characters are bound to the search function
   ;; this way, when in a recentf-dialog buffer:
@@ -1718,7 +1718,7 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
            (when line-number (format "At line number: %s; " line-number))
            (when arg "%s : ${%s}`")
            ");")
-           arg arg))
+          arg arg))
 
 (defun js-format-stringify (arg &optional line-number _)
   (format (concat
@@ -1865,9 +1865,9 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   (setq comment-end "*/"))
 
 (mapc
-(lambda (mode-hook)
-  (add-hook mode-hook #'use-c-style-comments))
-(list 'c-mode-hook 'c++-mode-hook 'objc-mode-hook))
+ (lambda (mode-hook)
+   (add-hook mode-hook #'use-c-style-comments))
+ (list 'c-mode-hook 'c++-mode-hook 'objc-mode-hook))
 
 ;;;;; emacs lisp
 
@@ -2045,7 +2045,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
 
 (custom-set-faces
