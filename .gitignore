@@ -12,3 +12,14 @@ custom/packages/prog-setup
 custom/packages/sticky-shell
 custom/packages/webkit-mac-enhance
 custom/web_history.csv
+
+# caches
+var
+etc
+eln-cache
+
+# packages
+elpa
+
+# games
+games

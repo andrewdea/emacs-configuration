@@ -46,6 +46,10 @@
 
 (push '(fullscreen . maximized) default-frame-alist)
 
+(setq custom-theme-directory
+      (expand-file-name "custom/themes" user-emacs-directory))
+
+;; (load-theme 'my-monokai 'no-confirm)
 (if (or (member "-nw" command-line-args)
         (member "--no-window-system" command-line-args))
     (load-theme 'modus-vivendi)
