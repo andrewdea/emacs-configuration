@@ -25,7 +25,7 @@
 ;;;; setup variables
 (if (native-comp-available-p)
     (startup-redirect-eln-cache
-     "/Users/andyjda/.emacs.d/var/eln-cache"))
+     "eln-cache"))
 
 ;;;; early GUI customizations for nice appearance
 (push '(tool-bar-lines . 0)   default-frame-alist)
