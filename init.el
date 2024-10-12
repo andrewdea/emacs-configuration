@@ -914,7 +914,7 @@ Print a message to alert of the capitalization"
 
 (defun isearch-with-start (str)
   "Start an isearch with STR"
-  (isearch-resume str nil nil t str nil))
+  (isearch-resume str nil nil t str t))
 
 (setq isearch-lazy-count t) ;; shows the number of total matches in the minibuffer
 
