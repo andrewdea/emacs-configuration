@@ -5,3 +5,10 @@
 *~
 \#*\#
 *.dir-locals.el
+
+# custom packages (they have their own repos)
+custom/packages/icloud-utilities
+custom/packages/prog-setup
+custom/packages/sticky-shell
+custom/packages/webkit-mac-enhance
+custom/web_history.csv

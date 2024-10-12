@@ -23,8 +23,9 @@
 
 ;;; Code:
 ;;;; setup variables
-(if (and (native-comp-available-p) (= emacs-build-number 1))
-    (startup-redirect-eln-cache "eln-cache"))
+(if (native-comp-available-p)
+    (startup-redirect-eln-cache
+     "/Users/andyjda/.emacs.d/var/eln-cache"))
 
 ;;;; early GUI customizations for nice appearance
 (push '(tool-bar-lines . 0)   default-frame-alist)
