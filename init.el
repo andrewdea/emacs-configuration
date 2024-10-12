@@ -1291,6 +1291,60 @@ for each open buffer with one of these files, refresh the version-control state"
   :after magit
   :config (magit-todos-mode 1))
 
+(defun git-remote-url (&optional push)
+  "Get the remote URL for the current file or directory.
+Copy it, message it in the minibuffer, and return it.
+With optional argument PUSH, get the pushRemote"
+  (interactive "P")
+  (let* (;; get the url in a format suitable for a browser
+         (url-from-command
+          (shell-command-to-string
+           (concat "git remote get-url "
+                   (if push "--push" "") "origin")))
+         (trimmed (if (string-prefix-p "fatal: not a git repository"
+                                       url-from-command)
+                      (error url-from-command)
+                    (string-trim url-from-command)))
+         (no-colon (subst-char-in-string ?: ?/ trimmed
+                                         'inplace)) ; avoid copy
+         (no-git (replace-regexp-in-string ".git$" "" no-colon))
+         (repo-url (replace-regexp-in-string "git@" "https://"
+                                             no-git))
+         ;; determine the path of the current file/directory from the repo root
+         (filename (buffer-file-name))
+         (here-path (or filename
+                        (string-trim (shell-command-to-string
+                                      "pwd"))))
+         (root (string-trim (shell-command-to-string
+                             "git rev-parse --show-toplevel")))
+         (relative (replace-regexp-in-string
+                    (regexp-quote root) "" here-path))
+
+         ;; get the current branch
+         (branch (string-trim (shell-command-to-string
+                               "git rev-parse --abbrev-ref HEAD")))
+         (final-url (concat repo-url
+                            (if filename "/blob/" "/tree/")
+                            branch relative)))
+    (kill-new final-url)
+    (message "%s %s"
+             (propertize "copied:" 'face 'minibuffer-prompt)
+             final-url)
+    final-url))
+
+(defun git-open-remote (&optional in-xwidget push)
+  "Open the remote URL for the current file or directory.
+  With prefix argument IN-XWIDGET, open it within emacs in a Safari
+  xwidget."
+  (interactive "P")
+  (let ((url (git-remote-url)))
+    (message "%s %s"
+             (propertize "Opening:" 'face 'minibuffer-prompt)
+             url)
+    (if in-xwidget
+        (xwidget-webkit-browse-url url)
+      (shell-command-open url))))
+
 ;;;;; outline
 (use-package dash)
 (use-package outshine
@@ -1298,7 +1352,7 @@ for each open buffer with one of these files, refresh the version-control state"
   ;; collapse the current level even when I'm not at the heading
   (defun my-outline-tab ()
     "if current line is a heading, call regular outshine-kbd-TAB;
-else, first move to previous visible heading, then call it"
+  else, first move to previous visible heading, then call it"
     (interactive)
     (move-beginning-of-line 1)
     (if (null (looking-at outline-regexp))
@@ -1351,7 +1405,7 @@ else, first move to previous visible heading, then call it"
 ;; where the backend for xref has not been set
 (defun my-find-definition ()
   "If an xref-backend has been set, call `xref-find-definitions'.
-Else, call find-symbol-first-occurrence"
+  Else, call find-symbol-first-occurrence"
   (interactive)
   (if (equal '(etags--xref-backend) xref-backend-functions)
       (find-symbol-first-occurrence)
@@ -1469,7 +1523,7 @@ Else, call find-symbol-first-occurrence"
                (when line-number (format "line number: %s; " line-number))
                (when arg "%s : {%s}")
                "\")")
-              arg arg)))
+  arg arg)))
 
   (defun py-format (arg &optional line-number block-name)
     (py-generic-format arg "print" line-number block-name))
