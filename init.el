@@ -1483,7 +1483,7 @@ With optional argument PUSH, get the pushRemote"
   :hook
   (prog-mode . global-hl-todo-mode))
 
-;;;; PROGRAMMING-LANGUAGES
+;;;; PROGRAMMING LANGUAGES
 ;;;;; java
 (use-package javadoc-lookup
   :bind (("C-c s" . org-store-link)))
@@ -1508,9 +1508,27 @@ With optional argument PUSH, get the pushRemote"
 (use-package cider)
 
 ;;;;; go
-(use-package go-mode)
+(use-package go-mode
 
-;;;;; python
+  :config
+  (defun go-run-this (dir)
+    (interactive (list (read-directory-name "run this go-mod in a shell: ")))
+    (prog-run-this dir nil
+                   (concat "go run "
+                           dir " ")))
+
+  (defun go-format (arg &rest line-number-etc)
+    (format "fmt.Printf(\"%s : %%v\\n\", %s)" arg arg))
+
+  (defun go-debug-print (&optional arg)
+    (interactive "P")
+    (prog-debug-print arg #'go-format))
+  :hook (go-mode . lsp)
+  :bind (:map go-mode-map
+              ("C-c r" . go-run-this)
+              ("C-M-p" . go-debug-print)))
+
+;;;;; python mode
 (add-hook 'python-mode-hook #'subword-mode)
 (add-hook 'inferior-python-mode-hook #'subword-mode)
 
