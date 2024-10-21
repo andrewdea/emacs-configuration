@@ -441,7 +441,14 @@
               (lambda (thing &optional no-properties)
                 (when (eq thing 'url)
                   (org-link-at-point))))
-  ;; eww uses eww-suggest-uris, which is modified in the eww section below
+
+  ;; eww uses eww-suggest-uris:
+  (if (member 'word-at-point eww-suggest-uris)
+      (setq eww-suggest-uris (replace-in-list 'word-at-point
+                                              (list #'org-link-at-point
+                                                    'word-at-point)
+                                              eww-suggest-uris))
+    (nconc eww-suggest-uris (list #'org-link-at-point 'word-at-point)))
 
   (defun my-org-tab ()
     "If current line is a heading, call regular org-cycle;
@@ -613,7 +620,7 @@
   (interactive (list (ido-read-file-name "open in Finder: ")))
   (shell-command-open arg "-R"))
 
-(nconc eww-suggest-uris '(region-at-point org-link-at-point word-at-point))
+(nconc eww-suggest-uris '(region-at-point word-at-point))
 
 (setq eww-search-prefix "https://search.brave.com/search?q=")
 
