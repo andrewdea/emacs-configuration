@@ -1988,7 +1988,7 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   (thing-at-point 'region 'no-properties))
 
 (defun replace-in-list (to-replace replacement list)
-  "Replace TO-REPLACE with REPLACEMENT in LIST.
+  "Return a new list, replacing TO-REPLACE with REPLACEMENT in LIST.
 If REPLACEMENT is a list, each element is inserted.
 If TO-REPLACE is not found in LIST, return LIST unaltered"
   (let ((pos (seq-position list to-replace)))
