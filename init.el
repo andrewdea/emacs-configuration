@@ -1242,6 +1242,18 @@ open siblings (directories at its same depth)"
   :bind
   (("C-x 1" . treemacs-close-and-other-windows)))
 
+;;;; which key
+(use-package which-key
+  :config
+  (which-key-setup-minibuffer)
+  ;; Allow C-h to trigger which-key before it is done automatically
+  (setq which-key-show-early-on-C-h t)
+  ;; make sure which-key doesn't show normally but refreshes quickly after it is
+  ;; triggered.
+  (setq which-key-idle-delay 10000)
+  (setq which-key-idle-secondary-delay 0.05)
+  (which-key-mode))
+
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
 (use-package ido
