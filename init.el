@@ -705,8 +705,8 @@
 (use-package projectile
   :defer 6
   :config
-  (setq projectile-ignored-projects '("~/") ;; TODO: fix this
-        projectile-switch-project-action #'projectile-dired-other-window)
+  (setq
+   projectile-switch-project-action #'projectile-dired-other-window)
   :bind (:map projectile-mode-map
 	      ("s-p" . projectile-command-map)))
 
