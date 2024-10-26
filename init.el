@@ -512,8 +512,20 @@
   :config
 
   ;; preview mode
+  ;; NOTE actually it seems the package `gh-md' already does pretty
+  ;; much what I needed
+  ;; TODO might still be good to make
+  ;; `markdown-live-preview-window-xwidget' available for others?
+  ;; and do some of the other improvements:
+  ;; 1. add logic to save the HTML file in a temp directory, rather
+  ;; than the current directory
+  ;; 2. improve the export logic?
+  ;; 3. see if there's an easy way to temporarily disable
+  ;; `auto-insert-mode' in situations where we are filling up a
+  ;; buffer/file automatically and already know what the expected
+  ;; contents look like
 
-  ;; TODO figure out how to actually disable auto-insert-mode
+  ;; below is an attempt at disabling auto-insert-mode
   ;; (defun adv/disable-auto-insert-mode (func)
   ;;   (message "func: %s" func)
   ;;   (let ((auto-insert-mode nil))
@@ -523,9 +535,6 @@
   ;; (advice-add 'markdown-live-preview-export :around
   ;; #'adv/disable-auto-insert-mode)
 
-  ;; TODO: add logic to save the HTML file to a temp directory
-  ;; TODO: look into the export logic and if there's way to make it better at
-  ;; dealing with eg latex etc
   (defun markdown-live-preview-window-xwidget (file)
     "Preview FILE with xwidget.
   To be used with `markdown-live-preview-window-function'."
@@ -546,6 +555,13 @@
   :hook
   (markdown-mode . turn-on-flyspell)
   (markdown-mode . markdown-add-electric-pairs))
+
+;; TODO: could maybe try to integrate gh-md functionalities into
+;; `markdown-live-preview-mode'
+;; also potentially use `xwidget-webkit' rather than `eww' to show the buffer
+(use-package gh-md
+  :init
+  (defalias #'gh-md-preview #'gh-md-render-buffer))
 
 ;;;; FILE utilities
 ;;;;; dialog boxes
