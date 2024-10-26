@@ -552,11 +552,11 @@
     (setq-local electric-pair-pairs (append electric-pair-pairs markdown-electric-pairs))
     (setq-local electric-pair-text-pairs electric-pair-pairs))
 
-  (add-hook 'markdown-mode-hook 'markdown-add-electric-pairs)
-
   :hook
   (markdown-mode . turn-on-flyspell)
-  (markdown-mode . markdown-add-electric-pairs))
+  (markdown-mode . markdown-add-electric-pairs)
+  (markdown-mode . electric-pair-local-mode))
+
 
 ;; TODO: could maybe try to integrate gh-md functionalities into
 ;; `markdown-live-preview-mode'
