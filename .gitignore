@@ -20,3 +20,6 @@ eln-cache
 
 # packages
 elpa
+
+# ts
+tree-sitter
