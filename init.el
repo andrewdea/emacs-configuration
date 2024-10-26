@@ -518,7 +518,9 @@
   ;; `markdown-live-preview-window-xwidget' available for others?
   ;; and do some of the other improvements:
   ;; 1. add logic to save the HTML file in a temp directory, rather
-  ;; than the current directory
+  ;; than the current directory (NOTE this might be tricky and not
+  ;; worth the effort: the .HTML needs to have access to the same paths
+  ;; as the .md file)
   ;; 2. improve the export logic?
   ;; 3. see if there's an easy way to temporarily disable
   ;; `auto-insert-mode' in situations where we are filling up a
@@ -1579,6 +1581,7 @@ With optional argument PUSH, get the pushRemote"
 (use-package python
   :config
 
+  ;; functionalities for `prog-setup'
   (defun py-generic-format (arg action &optional line-number block-name)
     (let ((arg (if arg
                    (string-replace "\"" "'" arg))))
@@ -1589,7 +1592,7 @@ With optional argument PUSH, get the pushRemote"
                (when line-number (format "line number: %s; " line-number))
                (when arg "%s : {%s}")
                "\")")
-  arg arg)))
+              arg arg)))
 
   (defun py-format (arg &optional line-number block-name)
     (py-generic-format arg "print" line-number block-name))
@@ -1637,6 +1640,12 @@ With optional argument PUSH, get the pushRemote"
 
   :hook
   (python-mode . subword-mode)
+  (python-mode . ruff-format-on-save-mode)
+  (python-mode . (lambda () (setq-local
+                             ;; TODO would be great to have a way to
+                             ;; apply `auto-fill' only to docstrings as well
+                             comment-auto-fill-only-comments t)))
+
   :bind (:map python-mode-map
               ("M-<right>" . python-indent-shift-right)
               ("M-<left>" . python-indent-shift-left)
