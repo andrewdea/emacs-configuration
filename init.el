@@ -1549,7 +1549,7 @@ With optional argument PUSH, get the pushRemote"
   :custom
   (treesit-auto-install 'prompt)
   :config
-  (treesit-auto-add-to-auto-mode-alist 'all)
+  (treesit-auto-add-to-auto-mode-alist 'python)
   (global-treesit-auto-mode))
 
 ;;;; PROGRAMMING LANGUAGES
