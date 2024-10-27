@@ -355,9 +355,6 @@
 (add-hook 'csv-mode-hook
 	  (lambda () (visual-line-mode -1) (setq-local truncate-lines t)))
 
-(add-hook 'comint-mode-hook
-	  (lambda () (visual-line-mode -1) (electric-pair-local-mode t)))
-
 ;; (define-key help-mode-map "b" #'help-go-back)
 ;; (define-key help-mode-map "f" #'help-go-forward)
 (use-package help-mode
@@ -1473,7 +1470,7 @@ With optional argument PUSH, get the pushRemote"
 (add-hook 'monicelli-mode-hook
 	  (lambda () (set-compile-command "mcc" t " -o ")))
 
-;;;;; shell
+;;;;; shells & comint modes
 (setq shell-file-name "/bin/zsh")
 
 (use-package sticky-shell
@@ -1508,12 +1505,38 @@ With optional argument PUSH, get the pushRemote"
   :init
   (coterm-mode)
   :defer 1)
-;; comint (shell) mode
+
+(define-minor-mode comint-output-read-only-mode
+  "Minor mode to set the shell output to read only."
+  :group 'comint
+  :global t
+  :lighter nil
+  (defun comint-set-read-only (_str)
+    "_STR is 'the text as originally inserted', which all functions in
+`comint-output-filter-functions' must take, but we don't need so we ignore"
+    (catch 'no-previous-prompt
+      (save-excursion (add-text-properties (or (comint-previous-prompt 1)
+                                               (throw
+                                                'no-previous-prompt
+                                                (message "no previous prompt")))
+                                           (point-max) '(read-only
+                                                         t)))))
+  ;; TODO: add logic so when the mode is disabled, it sets all of the
+  ;; buffer's outputs back to read-only nil?
+  (if comint-output-read-only-mode
+      (add-hook 'comint-output-filter-functions #'comint-set-read-only 100)
+    (remove-hook 'comint-output-filter-functions
+                 #'comint-set-read-only)))
+
+
 (add-hook 'comint-mode-hook
 	  (lambda ()
 	    (visual-line-mode -1)
 	    (electric-pair-local-mode t)
-	    (center-shell-mode t)))
+	    (center-shell-mode t)
+            (setq comint-prompt-read-only t)
+            (comint-output-read-only-mode t)))
+
 
 ;;;;; highlight TODO words
 (use-package hl-todo
