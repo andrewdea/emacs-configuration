@@ -1550,7 +1550,47 @@ With optional argument PUSH, get the pushRemote"
   (treesit-auto-install 'prompt)
   :config
   (treesit-auto-add-to-auto-mode-alist 'python)
-  (global-treesit-auto-mode))
+  (global-treesit-auto-mode)
+
+  ;; markdown setup
+  ;; minimal mode using tree-sitter
+  (define-derived-mode markdown-ts-mode markdown-mode "Markdown ts"
+    "Major mode for editing markdown.
+tree-sitter is only used for other embedded languages.
+
+\\{markdown-mode-map}"
+    :syntax-table markdown-mode-syntax-table
+    (when (treesit-ready-p 'markdown)
+      (treesit-parser-create 'markdown)
+      (treesit-major-mode-setup)
+      ;; set ranges of code-blocks
+      (setq md-query
+            '((fenced_code_block (code_fence_content)
+                                 @capture)))
+      (setq treesit-range-settings
+            (treesit-range-rules
+             :embed 'python
+             :host 'markdown
+             md-query))
+      (treesit-update-ranges)))
+
+  ;; to help with debugging: automatically start `treesit-inspect-mode'
+  (add-hook 'markdown-ts-mode-hook #'treesit-inspect-mode)
+
+
+  ;; add the recipe for markdown (only needed once tbh)
+  (add-to-list 'treesit-auto-recipe-list
+               (make-treesit-auto-recipe
+                :lang 'markdown
+                :ts-mode 'markdown-ts-mode
+                :remap 'markdown-mode
+                :url "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
+                :revision "split_parser"
+                :source-dir "tree-sitter-markdown/src"
+                :ext "\\.md\\'"))
+
+
+  )
 
 ;;;; PROGRAMMING LANGUAGES
 ;;;;; java
