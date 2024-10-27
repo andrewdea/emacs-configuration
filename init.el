@@ -1598,9 +1598,7 @@ With optional argument PUSH, get the pushRemote"
               ("C-M-p" . go-debug-print)))
 
 ;;;;; python mode
-(add-hook 'python-mode-hook #'subword-mode)
 (add-hook 'inferior-python-mode-hook #'subword-mode)
-
 (use-package python
   :config
 
@@ -1662,14 +1660,14 @@ With optional argument PUSH, get the pushRemote"
     (query-comment-out "print"))
 
   :hook
-  (python-mode . subword-mode)
-  (python-mode . ruff-format-on-save-mode)
-  (python-mode . (lambda () (setq-local
-                             ;; TODO would be great to have a way to
-                             ;; apply `auto-fill' only to docstrings as well
-                             comment-auto-fill-only-comments t)))
+  (python-base-mode . subword-mode)
+  (python-base-mode . ruff-format-on-save-mode)
+  (python-base-mode . (lambda () (setq-local
+                                  ;; TODO would be great to have a way to
+                                  ;; apply `auto-fill' only to docstrings as well
+                                  comment-auto-fill-only-comments t)))
 
-  :bind (:map python-mode-map
+  :bind (:map python-base-mode-map
               ("M-<right>" . python-indent-shift-right)
               ("M-<left>" . python-indent-shift-left)
               ("C-c r" . py-run-this)
@@ -1678,9 +1676,9 @@ With optional argument PUSH, get the pushRemote"
 
 
 (use-package lsp-pyright
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (lsp)))  ; or lsp-deferred
+  :hook (python-base-mode . (lambda ()
+                              (require 'lsp-pyright)
+                              (lsp)))  ; or lsp-deferred
   :config
   (setq lsp-enable-file-watchers nil))
 
@@ -1698,7 +1696,7 @@ With optional argument PUSH, get the pushRemote"
       (progn (message "no '.venv' or 'venv' directory found in this project: %s" root) nil))))
 
 (use-package pyvenv
-  :hook (python-mode . pyvenv-mode)
+  :hook (python-base-mode . pyvenv-mode)
   :config
 
   (setq pyvenv-default-virtual-env-name ".venv/")
