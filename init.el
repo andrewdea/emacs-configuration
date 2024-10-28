@@ -1487,10 +1487,30 @@ With optional argument PUSH, get the pushRemote"
   :defer 1)
 
 
-(defun recenter-middle (string)
-  (when (eq (window-buffer (selected-window)) (current-buffer))
-    (recenter nil t))
-  string)
+(defun comint-postoutput-scroll-to-center (_string)
+  "Just like `comint-postoutput-scroll-to-bottom', but scroll to the
+middle of the window instead."
+  (let* ((current (current-buffer))
+	 (process (get-buffer-process current)))
+    (unwind-protect
+	(cond
+	 ((null process))
+	 ((bound-and-true-p follow-mode)
+	  (warn "follow-mode not supported in comint-postoutput-scroll-to-center"))
+	 (t
+          (dolist (w (get-buffer-window-list current nil t))
+            (comint-adjust-window-point w process)
+            ;; Optionally scroll to the bottom of the window.
+            (and comint-scroll-show-maximum-output
+                 (eq (window-point w) (point-max))
+                 (with-selected-window w
+                   (recenter nil))))))
+      (set-buffer current))))
+
+;; (defun recenter-middle (string)
+;;   (when (eq (window-buffer (selected-window)) (current-buffer))
+;;     (recenter nil t))
+;;   string)
 
 (define-minor-mode center-shell-mode
   "Minor mode to show the shell output at the center of the buffer."
@@ -1498,8 +1518,20 @@ With optional argument PUSH, get the pushRemote"
   :global t
   :lighter nil
   (if center-shell-mode
-      (add-hook 'comint-output-filter-functions #'recenter-middle 99)
-    (remove-hook 'comint-output-filter-functions #'recenter-middle)))
+      (progn
+        (remove-hook
+         'comint-output-filter-functions
+         #'comint-postoutput-scroll-to-bottom)
+        (add-hook
+         'comint-output-filter-functions
+         #'comint-postoutput-scroll-to-center 99))
+    (progn
+      (remove-hook
+       'comint-output-filter-functions
+       #'comint-postoutput-scroll-to-center)
+      (add-hook
+       'comint-output-filter-functions
+       #'comint-postoutput-scroll-to-bottom 99))))
 
 (use-package coterm
   :init
