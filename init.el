@@ -549,6 +549,9 @@
     (setq-local electric-pair-pairs (append electric-pair-pairs markdown-electric-pairs))
     (setq-local electric-pair-text-pairs electric-pair-pairs))
 
+  :custom
+  (markdown-fontify-code-blocks-natively t)
+
   :hook
   (markdown-mode . turn-on-flyspell)
   (markdown-mode . markdown-add-electric-pairs)
@@ -1581,7 +1584,7 @@ middle of the window instead."
   :custom
   (treesit-auto-install 'prompt)
   :config
-  (treesit-auto-add-to-auto-mode-alist 'python)
+  (treesit-auto-add-to-auto-mode-alist (list 'python))
   (global-treesit-auto-mode))
 
 ;;;; PROGRAMMING LANGUAGES
