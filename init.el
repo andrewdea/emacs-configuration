@@ -1260,7 +1260,8 @@ open siblings (directories at its same depth)"
   :bind
   (("C-x 1" . treemacs-close-and-other-windows)))
 
-;;;; which key
+;;;; TRANSIENT menus and KEY help
+;;;;; which key
 (use-package which-key
   :config
   (which-key-setup-minibuffer)
@@ -1271,6 +1272,79 @@ open siblings (directories at its same depth)"
   (setq which-key-idle-delay 10000)
   (setq which-key-idle-secondary-delay 0.05)
   (which-key-mode))
+
+;;;;; casual
+(defmacro define-casual-subpkg (sub pkg-dir &rest init-forms)
+  ;; TODO also pass more forms for any additional stuff you may want
+  ;; to bind
+  `(use-package ,(intern (format "casual-%s" sub))
+     :init
+     ,@(or init-forms '())
+     :after (,(intern sub))
+     :load-path ,(package-desc-dir
+                  (cadr (assq 'casual package-alist)))
+     :bind
+     (:map ,(intern (format "%s-mode-map" sub))
+           ("C-o" . ,(intern (format "casual-%s-tmenu" sub))))))
+
+(use-package casual
+  :init
+  (let ((pkg-dir (package-desc-dir
+                  (cadr (assq 'casual package-alist)))))
+    (define-casual-subpkg "calc" pkg-dir)
+    (define-casual-subpkg "dired" pkg-dir
+                          (autoload
+                            #'casual-dired-search-replace-tmenu
+                            (format "%s/%s" pkg-dir
+                                    "casual-dired-utils.el"))
+                          (define-key dired-mode-map "/"
+                                      #'casual-dired-search-replace-tmenu)
+                          (autoload
+                            #'casual-dired-sort-by-tmenu
+                            (format "%s/%s" pkg-dir
+                                    "casual-dired-sort-by.el"))
+                          (define-key dired-mode-map "\\" #'casual-dired-sort-by-tmenu))
+    (define-casual-subpkg "ibuffer" pkg-dir
+                          (autoload
+                            #'casual-ibuffer-filter-tmenu
+                            (format "%s/%s" pkg-dir
+                                    "casual-ibuffer-filter.el"))
+                          (autoload
+                            #'casual-ibuffer-sortby-tmenu
+                            (format "%s/%s" pkg-dir "casual-ibuffer.el"))
+                          (define-key ibuffer-mode-map "F" #'casual-ibuffer-filter-tmenu)
+                          (define-key ibuffer-mode-map
+                                      "\\" #'casual-ibuffer-sortby-tmenu)))
+  (define-casual-subpkg "isearch" pkg-dir))
+;; (use-package casual-calc
+;;   :after (calc)
+;;   :load-path the-dir
+;;   :bind
+;;   (:map calc-mode-map
+;;         ("C-o" . casual-calc-tmenu)))
+;; (use-package casual-dired
+;;   :after (dired)
+;;   :load-path the-dir
+;;   :bind
+;;   (:map dired-mode-map
+;;         ("C-o" . casual-dired-tmenu)
+;;         ("/" . casual-dired-search-replace-tmenu)
+;;         ("\\" . casual-dired-sort-by-tmenu)))
+;; (use-package casual-ibuffer
+;;   :after (ibuffer)
+;;   :load-path (package-desc-dir
+;;               (cadr (assq 'casual package-alist)))
+;;   :bind
+;;   (:map ibuffer-mode-map
+;;         ("C-o" . casual-ibuffer-tmenu)
+;;         ("F" . casual-ibuffer-filter-tmenu)
+;;         ("\\" . casual-ibuffer-sortby-tmenu)))
+;; (use-package casual-isearch
+;;   :after (isearch)
+;;   :load-path the-dir
+;;   :bind
+;;   (:map isearch-mode-map
+;;         ("C-o" . casual-isearch-tmenu)))
 
 ;;;; PROGRAMMING support and utilities
 ;;;;; ido completion mode
@@ -2239,7 +2313,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(package-vc-selected-packages
    '((transient-showcase :url "https://github.com/positron-solutions/transient-showcase.git")))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
