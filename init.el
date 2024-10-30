@@ -1274,7 +1274,7 @@ open siblings (directories at its same depth)"
   (which-key-mode))
 
 ;;;;; casual
-(defmacro define-casual-subpkg (sub pkg-dir &rest init-forms)
+(defmacro define-casual-subpkg (sub &rest init-forms)
   ;; TODO also pass more forms for any additional stuff you may want
   ;; to bind
   `(use-package ,(intern (format "casual-%s" sub))
@@ -1291,20 +1291,21 @@ open siblings (directories at its same depth)"
   :init
   (let ((pkg-dir (package-desc-dir
                   (cadr (assq 'casual package-alist)))))
-    (define-casual-subpkg "calc" pkg-dir)
-    (define-casual-subpkg "dired" pkg-dir
+    (define-casual-subpkg "calc")
+    (define-casual-subpkg "dired"
                           (autoload
                             #'casual-dired-search-replace-tmenu
                             (format "%s/%s" pkg-dir
                                     "casual-dired-utils.el"))
-                          (define-key dired-mode-map "/"
-                                      #'casual-dired-search-replace-tmenu)
                           (autoload
                             #'casual-dired-sort-by-tmenu
                             (format "%s/%s" pkg-dir
                                     "casual-dired-sort-by.el"))
-                          (define-key dired-mode-map "\\" #'casual-dired-sort-by-tmenu))
-    (define-casual-subpkg "ibuffer" pkg-dir
+                          (define-key dired-mode-map
+                                      "/" #'casual-dired-search-replace-tmenu)
+                          (define-key dired-mode-map
+                                      "\\" #'casual-dired-sort-by-tmenu))
+    (define-casual-subpkg "ibuffer"
                           (autoload
                             #'casual-ibuffer-filter-tmenu
                             (format "%s/%s" pkg-dir
@@ -1312,10 +1313,11 @@ open siblings (directories at its same depth)"
                           (autoload
                             #'casual-ibuffer-sortby-tmenu
                             (format "%s/%s" pkg-dir "casual-ibuffer.el"))
-                          (define-key ibuffer-mode-map "F" #'casual-ibuffer-filter-tmenu)
+                          (define-key ibuffer-mode-map
+                                      "F" #'casual-ibuffer-filter-tmenu)
                           (define-key ibuffer-mode-map
                                       "\\" #'casual-ibuffer-sortby-tmenu)))
-  (define-casual-subpkg "isearch" pkg-dir))
+  (define-casual-subpkg "isearch"))
 ;; (use-package casual-calc
 ;;   :after (calc)
 ;;   :load-path the-dir
