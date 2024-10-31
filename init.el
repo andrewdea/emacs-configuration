@@ -1445,6 +1445,10 @@ With optional argument PUSH, get the pushRemote"
              final-url)
     final-url))
 
+;; NOTE more complex and featurefull implementation here:
+;; https://www.reddit.com/r/emacs/comments/xdw6ok/comment/iodig8c/
+;; OR, leverage this package:
+;; https://github.com/sshaw/git-link/
 (defun git-open-remote (&optional in-xwidget push)
   "Open the remote URL for the current file or directory.
   With prefix argument IN-XWIDGET, open it within emacs in a Safari
@@ -1646,7 +1650,8 @@ middle of the window instead."
 	    (electric-pair-local-mode t)
 	    (center-shell-mode t)
             (setq comint-prompt-read-only t)
-            (comint-output-read-only-mode t)))
+            ;; (comint-output-read-only-mode t)
+            ))
 
 
 ;;;;; highlight TODO words
