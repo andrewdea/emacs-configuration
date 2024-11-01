@@ -359,7 +359,7 @@
 ;; (define-key help-mode-map "f" #'help-go-forward)
 (use-package help-mode
   :load-path
-  "/opt/homebrew/Cellar/emacs-plus@29/29.0.60/share/emacs/29.0.60/lisp/"
+  lisp-directory
   :init
   (setq help-window-select t)
   :bind
@@ -644,7 +644,7 @@
 
 (autoload ; so `open-in-browser' works, even if we haven't loaded eww yet
   #'eww-suggested-uris
-  "/opt/homebrew/Cellar/emacs-plus@29/29.0.60/share/emacs/29.0.60/lisp/net/eww.el")
+  (concat lisp-directory "net/eww.el"))
 
 (defun open-in-browser (url)
   (interactive
