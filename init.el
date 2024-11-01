@@ -657,8 +657,9 @@
 
 ;;;;; dired mode
 (use-package all-the-icons-dired
-  :init
-  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+  :after dired
+  :hook
+  (dired-mode-hook . all-the-icons-dired-mode)
   :bind
   (:map dired-mode-map
 	("<mouse-2>" . dired-mouse-find-file))
@@ -671,6 +672,12 @@
   (:map dired-mode-map
 	("<tab>" . dired-subtree-toggle)
 	("<backtab>" . dired-subtree-cycle)))
+
+(use-package dired
+  :load-path lisp-directory
+  :bind
+  (:map dired-mode-map
+        ("E" . wdired-change-to-wdired-mode)))
 
 ;;;;; recent files
 (use-package recentf
@@ -2336,7 +2343,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(dired casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(package-vc-selected-packages
    '((transient-showcase :url "https://github.com/positron-solutions/transient-showcase.git")))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
