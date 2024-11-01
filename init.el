@@ -1775,6 +1775,18 @@ middle of the window instead."
     (interactive)
     (query-comment-out "print"))
 
+  (setq ruff-format-command "/Users/andyjda/.pyenv/shims/ruff")
+
+  (defun ruff-fix ()
+    (interactive)
+    (let* ((default-directory (project-root (project-current t)))
+	   (venv-cmd (python-venv--activate-cmd))
+	   (ruff-cmd "ruff check --fix")
+	   (cmd (if venv-cmd
+		    (format "%s && %ss" venv-cmd ruff-cmd)
+		  ruff-cmd)))
+      (shell-command ruff-cmd)))
+
   :hook
   (python-base-mode . subword-mode)
   (python-base-mode . ruff-format-on-save-mode)
@@ -1842,12 +1854,16 @@ middle of the window instead."
 ;; 		 (message "concated: %s" (concat "source /Users/andrewjda/.zshrc && " cmd))
 ;; 		 (concat "source /Users/andrewjda/.zshrc && " cmd)))
 
-(defun python-activate-venv ()
-  (interactive)
+(defun python-venv--activate-cmd ()
   (let ((venv (get-project-venv)))
     (when venv
-      (comint-send-string nil
-			  (message "source %sbin/activate" venv))
+      (format "source %sbin/activate" venv))))
+
+(defun python-activate-venv ()
+  (interactive)
+  (let ((venv-cmd (python-venv--activate-cmd)))
+    (when venv-cmd
+      (comint-send-string nil venv-cmd)
       (comint-send-input nil t))))
 
 (defun named-shell (name &optional setup-funcs)
