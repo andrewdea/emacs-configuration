@@ -1623,6 +1623,7 @@ middle of the window instead."
        'comint-output-filter-functions
        #'comint-postoutput-scroll-to-bottom 99))))
 
+
 (use-package coterm
   :init
   (coterm-mode)
@@ -1633,22 +1634,20 @@ middle of the window instead."
   :group 'comint
   :global t
   :lighter nil
-  (defun comint-set-read-only (_str)
-    "_STR is 'the text as originally inserted', which all functions in
-`comint-output-filter-functions' must take, but we don't need so we ignore"
-    (catch 'no-previous-prompt
-      (save-excursion (add-text-properties (or (comint-previous-prompt 1)
-                                               (throw
-                                                'no-previous-prompt
-                                                (message "no previous prompt")))
-                                           (point-max) '(read-only
-                                                         t)))))
+
+  (defun comint--set-read-only (beg end)
+    (add-text-properties beg end '(read-only t front-sticky t)))
+
+  (defun comint-undo-read-only-props ()
+    ;; still doesn't seem to be working :( 
+    (remove-text-properties (point-min) (point-max) '(read-only nil)))
+
   ;; TODO: add logic so when the mode is disabled, it sets all of the
   ;; buffer's outputs back to read-only nil?
   (if comint-output-read-only-mode
-      (add-hook 'comint-output-filter-functions #'comint-set-read-only 100)
-    (remove-hook 'comint-output-filter-functions
-                 #'comint-set-read-only)))
+      (advice-add 'comint--mark-as-output :after #'comint--set-read-only)
+    (progn
+      (advice-remove 'comint--mark-as-output #'comint--set-read-only))))
 
 
 (add-hook 'comint-mode-hook
@@ -1657,8 +1656,7 @@ middle of the window instead."
 	    (electric-pair-local-mode t)
 	    (center-shell-mode t)
             (setq comint-prompt-read-only t)
-            ;; (comint-output-read-only-mode t)
-            ))
+            (comint-output-read-only-mode t)))
 
 
 ;;;;; highlight TODO words
