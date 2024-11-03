@@ -1498,8 +1498,8 @@ With optional argument PUSH, get the pushRemote"
 	      ("TAB" . my-outline-tab)
 	      ("C-c C-p" . outline-previous-visible-heading)
 	      ("C-c C-n" . outline-next-visible-heading)
-	      ("M-<down>" . outline-move-subtree-down)
-	      ("M-<up>" . outline-move-subtree-up)))
+	      ("C-M-<down>" . outline-move-subtree-down)
+	      ("C-M-<up>" . outline-move-subtree-up)))
 
 ;; outshine
 (add-hook 'outline-minor-mode-hook #'outshine-mode)
