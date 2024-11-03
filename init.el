@@ -2464,6 +2464,16 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
 ;; for testing xwidgets
 (setq load-prefer-newer t)
 
+;;;;; LLMs
+(use-package gptel
+  :config
+  (setq
+   gptel-model 'granite3-dense:2b
+   gptel-backend (gptel-make-ollama "Granite 3"
+                   :host "localhost:11434"
+                   :stream t
+                   :models '(granite3-dense:2b))))
+
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, tango-dark,
 ;; cyberpunk, and my-misterioso
