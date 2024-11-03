@@ -27,6 +27,8 @@
     (startup-redirect-eln-cache
      "eln-cache"))
 
+(setenv "LSP_USE_PLISTS" "true")
+
 ;;;; early GUI customizations for nice appearance
 (push '(tool-bar-lines . 0)   default-frame-alist)
 (push '(vertical-scroll-bars) default-frame-alist)
