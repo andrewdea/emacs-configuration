@@ -122,7 +122,6 @@
 (defun startup-look ()
   "Set (or restore) the initial appearance."
   (interactive)
-  (setq column-number-mode t)
   (funcall (default-theme))
   ;; if not already maximized, maximize
   (or (eq (frame-parameter (selected-frame) 'fullscreen) 'maximized)
@@ -133,7 +132,9 @@
   (set-fringe-style '(2 . nil))
   (pixel-scroll-precision-mode t)
   (setq-default indent-tabs-mode nil)
-  (setq blink-cursor-blinks 5))
+  (setq blink-cursor-blinks 5
+        fast-but-imprecise-scrolling t
+        column-number-mode t))
 
 (add-hook 'after-init-hook #'startup-look -99)
 
@@ -622,7 +623,8 @@
   '(crafting-interpreters "~/CraftingInterpreters")
   '(practice-notebook "~/org/practice_notebook.org")
   '(chtu-todo "~/org/chtu_todo.org")
-  '(gym-notes "~/org/gym_exercise_notes.org")))
+  '(gym-notes "~/org/gym_exercise_notes.org")
+  '(temp "~/temp")))
 
 ;;;;; open files in specialized ways
 (defun shell-command-open (arg &optional options)
@@ -1289,8 +1291,6 @@ open siblings (directories at its same depth)"
 
 ;;;;; casual
 (defmacro define-casual-subpkg (sub &rest init-forms)
-  ;; TODO also pass more forms for any additional stuff you may want
-  ;; to bind
   `(use-package ,(intern (format "casual-%s" sub))
      :init
      ,@(or init-forms '())
