@@ -675,6 +675,13 @@
 
 (use-package dired
   :load-path lisp-directory
+  :config
+  (defun my-advice-dired-always-copy-absolute (&rest args)
+    "if no arg is passed, return 0.
+This used as an advice to `dired-copy-filename-as-kill' so that its default behavior is to copy the absolute filename"
+    (if (caar args) args (list 0)))
+  (advice-add #'dired-copy-filename-as-kill
+	      :filter-args #'my-advice-dired-always-copy-absolute)
   :bind
   (:map dired-mode-map
         ("E" . wdired-change-to-wdired-mode)))
