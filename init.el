@@ -1567,6 +1567,101 @@ With optional argument PUSH, get the pushRemote"
 (add-hook 'monicelli-mode-hook
 	  (lambda () (set-compile-command "mcc" t " -o ")))
 
+;;;;; folding
+;; My own very simple implementation of folding mechanisms
+;; If it gets more complex or I want more features, consider switching
+;; to `origami' or `hs-minor-mode' etc, or "folding" these
+;; functionalities into them
+(defcustom folding-functions
+  '((fold-func . origami-close-node)
+    (unfold-func . origami-show-node)
+    (unfold-all-func . origami-open-all-nodes))
+  "Functions to use in folding commands such as `fold-this',
+  `unfold-this', and `unfold-all'")
+
+(defcustom folded-appearance
+  (propertize "..." 'face 'comint-highlight-prompt)
+  "String to put in folded overlays")
+
+(use-package origami
+  :custom
+  (origami-fold-replacement folded-appearance)
+  :hook
+  (after-init . global-origami-mode))
+
+(defun default-folding-setup ()
+  "Ensure that any mode needed for folding is activated. Call this
+from `startup-look'"
+  (make-it-quiet
+   (global-origami-mode)))
+
+(defun my--fold (start end)
+  (save-excursion
+    (let ((ov (make-overlay start end)))
+      (overlay-put ov 'display folded-appearance)
+      (overlay-put ov 'category 'folded))))
+
+(defun fold-this ()
+  (interactive)
+  (if (region-active-p)
+      (my--fold (region-beginning) (region-end))
+    (call-interactively (alist-get 'fold-func folding-functions))))
+
+(defun my--unfold (start end)
+  (save-excursion
+    (remove-overlays
+     start end
+     'category 'folded)))
+
+(defun unfold-this ()
+  (interactive)
+  (if (region-active-p)
+      (my--unfold (region-beginning) (region-end)))
+  (call-interactively (alist-get 'unfold-func folding-functions)))
+
+(defun unfold-all ()
+  (interactive)
+  (my--unfold (point-min) (point-max))
+  (call-interactively (alist-get 'unfold-all-func folding-functions)))
+
+(defun comint-fold ()
+  (interactive)
+  (my--fold
+   (progn (comint-previous-prompt 1)(end-of-line) (point))
+   (progn (comint-next-prompt 1) (previous-line)
+          (end-of-line) (point))))
+
+(defun comint-unfold ()
+  (interactive)
+  (save-excursion
+    (my--unfold (progn (comint-previous-prompt 1) (end-of-line)
+                       (point))
+                (progn (comint-next-prompt 1)
+                       (previous-line) (end-of-line)
+                       (point)))))
+
+(defun comint-fold-all ()
+  (interactive)
+  (save-excursion
+    (goto-char (point-max))
+    (while-let ((previous (comint-previous-prompt 1))
+                (start (progn previous (end-of-line)
+                              (point)))
+                (end (progn (comint-next-prompt 1)
+                            (previous-line) (end-of-line)
+                            (point))))
+      (my--fold start end)
+      (comint-previous-prompt 1))))
+
+(defun comint-fold-setup ()
+  (setq-local
+   folding-functions
+   '((fold-func . comint-fold)
+     (unfold-func . comint-unfold)
+     (unfold-all-func . ignore))
+   folded-appearance (concat "\n" folded-appearance)))
+
+
 ;;;;; shells & comint modes
 (setq shell-file-name "/bin/zsh")
 
@@ -1663,8 +1758,8 @@ middle of the window instead."
 	    (electric-pair-local-mode t)
 	    (center-shell-mode t)
             (setq comint-prompt-read-only t)
-            (comint-output-read-only-mode t)))
-
+            (comint-output-read-only-mode t)
+            (comint-fold-setup)))
 
 ;;;;; highlight TODO words
 (use-package hl-todo
@@ -2378,7 +2473,7 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(dired casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(origami dired casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(package-vc-selected-packages
    '((transient-showcase :url "https://github.com/positron-solutions/transient-showcase.git")))
  '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
