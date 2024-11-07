@@ -1741,7 +1741,12 @@ middle of the window instead."
   :lighter nil
 
   (defun comint--set-read-only (beg end)
-    (add-text-properties beg end '(read-only t front-sticky t)))
+    (add-text-properties
+     (save-excursion
+       (goto-char beg)
+       (comint-previous-prompt 1)
+       (point))
+     end '(read-only t front-sticky t)))
 
   (defun comint-undo-read-only-props ()
     ;; still doesn't seem to be working :( 
