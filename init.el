@@ -1668,6 +1668,18 @@ from `startup-look'"
 ;;;;; shells & comint modes
 (setq shell-file-name "/bin/zsh")
 
+(defun cmd (program)
+  "Run PROGRAM synchronously.
+Show the output in the echo area and
+return it"
+  (interactive "sexecute: ")
+  (let* ((split (string-split program))
+         (program (car split))
+         (args (cdr split)))
+    (message
+     (with-output-to-string
+       (apply #'call-process program nil standard-output nil args)))))
+
 (use-package sticky-shell
   :hook (sticky-shell-mode . sticky-shell-shorten-header-set-mode)
   :load-path "custom/packages/sticky-shell/"
