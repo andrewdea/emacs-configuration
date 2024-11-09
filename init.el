@@ -1742,13 +1742,14 @@ from `startup-look'"
   :config
 
   ;; functionalities for `prog-setup'
-  (defun py-generic-format (arg action &optional line-number block-name)
+  (defun py-generic-format (arg action &optional line-number
+                                block-name)
     (let ((arg (if arg
                    (string-replace "\"" "'" arg))))
       (format (concat
                action
                "(f\""
-               (when line-number (format "From: %s; " block-name))
+               (when block-name (format "From: '%s'; " block-name))
                (when line-number (format "line number: %s; " line-number))
                (when arg "%s : {%s}")
                "\")")
@@ -2075,7 +2076,7 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   (python-run-app)
   (comint-send-input)
   (split-window-below)
-  (named-shell "*shell-npm-dev*" nil)
+  (named-shell "*shell-npm-dev*")
   (let ((desired-dir (projectile-project-root)))
     (if (not (equal desired-dir default-directory))
 	(progn (comint-send-string nil (message "cd %s" desired-dir))
@@ -2218,11 +2219,15 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 ;;;;; emacs lisp
 
 (defun el-format (arg &optional line-number block-name)
-  (format (concat
-           "(message \""
-           (when line-number (format "At line number: %s; " line-number))
-           "%s: %%s\" %s)")
-          arg arg))
+  (let ((arg (if arg
+                 (string-replace "\"" "'" arg))))
+    (concat
+     "("
+     "message \""
+     (when block-name (format "From: `%s'; " block-name))
+     (when line-number (format "At line number: %s; " line-number))
+     (if arg (format "%s: %%s\" %s" arg arg arg) "\"")
+     ")")))
 
 (defun el-run-this ()
   (interactive)
