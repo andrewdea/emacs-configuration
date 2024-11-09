@@ -850,6 +850,44 @@ Then, delete all preceding whitespace."
 	   ".*$")
    ""))
 
+(defun current-line-empty-p ()
+  "Check if the current line contains nothing but whitespace"
+  (save-excursion
+    (beginning-of-line)
+    (looking-at-p "[[:blank:]]*$")))
+
+;; TODO: due to some changes in how `inhibit-message' works,
+;; this macro no longer works
+(defmacro make-it-quiet (&rest body)
+  `(let ((inhibit-message t))
+     (progn ,@body)
+     ;; if message aren't actually inhibit, use this to clear the echo area:
+     (message nil)))
+
+(defun region-at-point ()
+  (thing-at-point 'region 'no-properties))
+
+(defun replace-in-list (to-replace replacement list)
+  "Return a new list, replacing TO-REPLACE with REPLACEMENT in LIST.
+If REPLACEMENT is a list, each element is inserted.
+If TO-REPLACE is not found in LIST, return LIST unaltered"
+  (let ((pos (seq-position list to-replace)))
+    (if pos
+        (append (take pos list)
+                (if (sequencep replacement) replacement (list replacement))
+                (cdr (nthcdr pos list)))
+      list)))
+
+(add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
+
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+	    (local-set-key (kbd "M-<up>")
+			   #'move-line-up)
+	    (local-set-key (kbd "M-<down>")
+			   #'move-line-down))
+	  99)
+
 ;;
 (defun count-total-lines ()
   (interactive)
@@ -2338,45 +2376,6 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 
 (define-key emacs-lisp-mode-map (kbd "C-M-p") 'el-debug-print)
 (define-key emacs-lisp-mode-map (kbd "C-c r") 'el-run-this)
-
-;; TODO: due to some changes in how `inhibit-message' works,
-;; this macro no longer works
-(defmacro make-it-quiet (&rest body)
-  `(let ((inhibit-message t))
-     (progn ,@body)
-     ;; if message aren't actually inhibit, use this to clear the echo area:
-     (message nil)))
-
-(defun region-at-point ()
-  (thing-at-point 'region 'no-properties))
-
-(defun replace-in-list (to-replace replacement list)
-  "Return a new list, replacing TO-REPLACE with REPLACEMENT in LIST.
-If REPLACEMENT is a list, each element is inserted.
-If TO-REPLACE is not found in LIST, return LIST unaltered"
-  (let ((pos (seq-position list to-replace)))
-    (if pos
-        (append (take pos list)
-                (if (sequencep replacement) replacement (list replacement))
-                (cdr (nthcdr pos list)))
-      list)))
-
-(add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
-
-(add-hook 'emacs-lisp-mode-hook
-          (lambda ()
-	    (local-set-key (kbd "M-<up>")
-			   #'move-line-up)
-	    (local-set-key (kbd "M-<down>")
-			   #'move-line-down))
-	  99)
-
-(defun current-line-empty-p ()
-  "Check if the current line contains nothing but whitespace"
-  (save-excursion
-    (beginning-of-line)
-    (looking-at-p "[[:blank:]]*$")))
-
 
 (setq source-directory "~/Emacs-Build/emacs")
 
