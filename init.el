@@ -618,44 +618,18 @@
   '(forg "~/org")
   '(beorg "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/")
   '(todo "~/org/TODO.org")
+  '(todo-emacs "~/org/Emacs.org")
   '(tobuy "~/org/ToBuy.org")
   '(my-modes "~/.emacs.d/custom/modes")
   '(crafting-interpreters "~/CraftingInterpreters")
   '(practice-notebook "~/org/practice_notebook.org")
   '(chtu-todo "~/org/chtu_todo.org")
-  '(gym-notes "~/org/gym_exercise_notes.org")
-  '(temp "~/temp")))
+  '(gym-notes "~/org/gym_exercise_notes.org")))
 
-;;;;; open files in specialized ways
-(defun shell-command-open (arg &optional options)
-  (interactive "Sopen ")
-  (let ((options (or options "")))
-    (shell-command (message "open %s %s" options arg))
-    (with-current-buffer "*Shell Command Output*"
-      (if (eq (buffer-size) 0)
-          (kill-buffer)))))
-
-(defun reveal-in-finder (arg)
-  "Use the shell command \"open -R ARG\" to select file in Finder."
-  (interactive (list (ido-read-file-name "open in Finder: ")))
-  (shell-command-open arg "-R"))
-
-(nconc eww-suggest-uris '(region-at-point word-at-point))
-
-(setq eww-search-prefix "https://search.brave.com/search?q=")
-
-(autoload ; so `open-in-browser' works, even if we haven't loaded eww yet
-  #'eww-suggested-uris
-  (concat lisp-directory "net/eww.el"))
-
-(defun open-in-browser (url)
-  (interactive
-   (let ((uris (eww-suggested-uris)))
-     (list (read-string (format-prompt "Enter URL or keywords"
-                                       (and uris (car uris)))
-                        nil 'eww-prompt-history uris))))
-  (let ((url (concat "\"" (eww--dwim-expand-url url) "\"")))
-    (shell-command-open url)))
+;; open a file in my temp directory
+(defun temp ()
+  (interactive)
+  (find-file (read-file-name "find-file " "~/temp/")))
 
 ;;;;; dired mode
 (use-package all-the-icons-dired
@@ -1703,122 +1677,6 @@ from `startup-look'"
    folded-appearance (concat "\n" folded-appearance)))
 
 
-;;;;; shells & comint modes
-(setq shell-file-name "/bin/zsh")
-
-(defun cmd (program)
-  "Run PROGRAM synchronously.
-Show the output in the echo area and
-return it"
-  (interactive "sexecute: ")
-  (let* ((split (string-split program))
-         (program (car split))
-         (args (cdr split)))
-    (message
-     (with-output-to-string
-       (apply #'call-process program nil standard-output nil args)))))
-
-(use-package sticky-shell
-  :hook (sticky-shell-mode . sticky-shell-shorten-header-set-mode)
-  :load-path "custom/packages/sticky-shell/"
-  ;; put the load path here whenever you need to test things
-  :config
-  (defalias #'sticky-mode #'sticky-shell-mode))
-
-(use-package shell-output-mode
-  :load-path "custom/modes/"
-  :config
-  (setq find-default-options " ")
-  :defer 1)
-
-
-(defun comint-postoutput-scroll-to-center (_string)
-  "Just like `comint-postoutput-scroll-to-bottom', but scroll to the
-middle of the window instead."
-  (let* ((current (current-buffer))
-	 (process (get-buffer-process current)))
-    (unwind-protect
-	(cond
-	 ((null process))
-	 ((bound-and-true-p follow-mode)
-	  (warn "follow-mode not supported in comint-postoutput-scroll-to-center"))
-	 (t
-          (dolist (w (get-buffer-window-list current nil t))
-            (comint-adjust-window-point w process)
-            ;; Optionally scroll to the bottom of the window.
-            (and comint-scroll-show-maximum-output
-                 (eq (window-point w) (point-max))
-                 (with-selected-window w
-                   (recenter nil))))))
-      (set-buffer current))))
-
-;; (defun recenter-middle (string)
-;;   (when (eq (window-buffer (selected-window)) (current-buffer))
-;;     (recenter nil t))
-;;   string)
-
-(define-minor-mode center-shell-mode
-  "Minor mode to show the shell output at the center of the buffer."
-  :group 'comint
-  :global t
-  :lighter nil
-  (if center-shell-mode
-      (progn
-        (remove-hook
-         'comint-output-filter-functions
-         #'comint-postoutput-scroll-to-bottom)
-        (add-hook
-         'comint-output-filter-functions
-         #'comint-postoutput-scroll-to-center 99))
-    (progn
-      (remove-hook
-       'comint-output-filter-functions
-       #'comint-postoutput-scroll-to-center)
-      (add-hook
-       'comint-output-filter-functions
-       #'comint-postoutput-scroll-to-bottom 99))))
-
-
-(use-package coterm
-  :init
-  (coterm-mode)
-  :defer 1)
-
-(define-minor-mode comint-output-read-only-mode
-  "Minor mode to set the shell output to read only."
-  :group 'comint
-  :global t
-  :lighter nil
-
-  (defun comint--set-read-only (beg end)
-    (add-text-properties
-     (save-excursion
-       (goto-char beg)
-       (comint-previous-prompt 1)
-       (point))
-     end '(read-only t front-sticky t)))
-
-  (defun comint-undo-read-only-props ()
-    ;; still doesn't seem to be working :( 
-    (remove-text-properties (point-min) (point-max) '(read-only nil)))
-
-  ;; TODO: add logic so when the mode is disabled, it sets all of the
-  ;; buffer's outputs back to read-only nil?
-  (if comint-output-read-only-mode
-      (advice-add 'comint--mark-as-output :after #'comint--set-read-only)
-    (progn
-      (advice-remove 'comint--mark-as-output #'comint--set-read-only))))
-
-
-(add-hook 'comint-mode-hook
-	  (lambda ()
-	    (visual-line-mode -1)
-	    (electric-pair-local-mode t)
-	    (center-shell-mode t)
-            (setq comint-prompt-read-only t)
-            (comint-output-read-only-mode t)
-            (comint-fold-setup)))
-
 ;;;;; highlight TODO words
 (use-package hl-todo
   :hook
@@ -2402,6 +2260,161 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 (define-all-templates
  ("org" "java" "sc" "c" "go"))
 
+;;;; shell commands, term & comint
+(setq shell-file-name "/bin/zsh")
+
+;;;;; commands
+
+(defun cmd (program-and-args)
+  "Run PROGRAM-AND-ARGS synchronously.
+Show the output in the echo area and return it.
+NOTE that this doesn't use a shell: if needed,
+use `call-process-shell-command'."
+  (interactive "sexecute: ")
+  (let* ((split (split-string-shell-command program-and-args))
+         (program (car split))
+         (args (cdr split))
+         (output (with-output-to-string
+                   (apply #'call-process program nil standard-output
+                          nil args))))
+    (if (string-empty-p output)
+        (message (concat "✅ " program-and-args))
+      (message (concat "❓ " output)))))
+
+(defun quit-app (app)
+  "Use the recommended MacOS script to quit the app.
+This allows for a graceful shutdown."
+  (interactive "squit: ")
+  (cmd (format "osascript -e 'quit app \"%s.app\"'" app)))
+
+(defun open-app (app)
+  (interactive "Sopen app: ")
+  (cmd (format "open -a %s" app)))
+
+(defun reveal-in-finder (arg)
+  "Use \"open -R ARG\" to select file in Finder."
+  (interactive (list (ido-read-file-name "open in Finder: ")))
+  (cmd (format "open -R %s" arg)))
+
+(nconc eww-suggest-uris '(region-at-point word-at-point))
+
+(setq eww-search-prefix "https://search.brave.com/search?q=")
+
+(autoload ; so `open-in-browser' works, even if we haven't loaded eww yet
+  #'eww-suggested-uris
+  (concat lisp-directory "net/eww.el"))
+
+(defun open-in-browser (url)
+  (interactive
+   (let ((uris (eww-suggested-uris)))
+     (list (read-string (format-prompt "Enter URL or keywords"
+                                       (and uris (car uris)))
+                        nil 'eww-prompt-history uris))))
+  (cmd
+   (format "open \"%s\"" (eww--dwim-expand-url url))))
+
+;;;;; shell appearance
+(use-package sticky-shell
+  :hook (sticky-shell-mode . sticky-shell-shorten-header-set-mode)
+  :load-path "custom/packages/sticky-shell/"
+  ;; put the load path here whenever you need to test things
+  :config
+  (defalias #'sticky-mode #'sticky-shell-mode))
+
+(use-package shell-output-mode
+  :load-path "custom/modes/"
+  :config
+  (setq find-default-options " ")
+  :defer 1)
+
+
+(defun comint-postoutput-scroll-to-center (_string)
+  "Just like `comint-postoutput-scroll-to-bottom', but scroll to the
+middle of the window instead."
+  (let* ((current (current-buffer))
+	 (process (get-buffer-process current)))
+    (unwind-protect
+	(cond
+	 ((null process))
+	 ((bound-and-true-p follow-mode)
+	  (warn "follow-mode not supported in comint-postoutput-scroll-to-center"))
+	 (t
+          (dolist (w (get-buffer-window-list current nil t))
+            (comint-adjust-window-point w process)
+            ;; Optionally scroll to the bottom of the window.
+            (and comint-scroll-show-maximum-output
+                 (eq (window-point w) (point-max))
+                 (with-selected-window w
+                   (recenter nil))))))
+      (set-buffer current))))
+
+;; (defun recenter-middle (string)
+;;   (when (eq (window-buffer (selected-window)) (current-buffer))
+;;     (recenter nil t))
+;;   string)
+
+(define-minor-mode center-shell-mode
+  "Minor mode to show the shell output at the center of the buffer."
+  :group 'comint
+  :global t
+  :lighter nil
+  (if center-shell-mode
+      (progn
+        (remove-hook
+         'comint-output-filter-functions
+         #'comint-postoutput-scroll-to-bottom)
+        (add-hook
+         'comint-output-filter-functions
+         #'comint-postoutput-scroll-to-center 99))
+    (progn
+      (remove-hook
+       'comint-output-filter-functions
+       #'comint-postoutput-scroll-to-center)
+      (add-hook
+       'comint-output-filter-functions
+       #'comint-postoutput-scroll-to-bottom 99))))
+
+
+(use-package coterm
+  :init
+  (coterm-mode)
+  :defer 1)
+
+(define-minor-mode comint-output-read-only-mode
+  "Minor mode to set the shell output to read only."
+  :group 'comint
+  :global t
+  :lighter nil
+
+  (defun comint--set-read-only (beg end)
+    (add-text-properties
+     (save-excursion
+       (goto-char beg)
+       (comint-previous-prompt 1)
+       (point))
+     end '(read-only t front-sticky t)))
+
+  (defun comint-undo-read-only-props ()
+    ;; still doesn't seem to be working :(
+    (remove-text-properties (point-min) (point-max) '(read-only nil)))
+
+  ;; TODO: add logic so when the mode is disabled, it sets all of the
+  ;; buffer's outputs back to read-only nil?
+  (if comint-output-read-only-mode
+      (advice-add 'comint--mark-as-output :after #'comint--set-read-only)
+    (progn
+      (advice-remove 'comint--mark-as-output #'comint--set-read-only))))
+
+
+(add-hook 'comint-mode-hook
+	  (lambda ()
+	    (visual-line-mode -1)
+	    (electric-pair-local-mode t)
+	    (center-shell-mode t)
+            (setq comint-prompt-read-only t)
+            (comint-output-read-only-mode t)
+            (comint-fold-setup)))
+
 ;;;; SPECIAL VIEWS (web, PDF, ebooks)
 (use-package webkit-mac-enhance
   :defer 1
@@ -2482,6 +2495,7 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 
 ;;;;; LLMs
 (use-package gptel
+  :load-path "custom/packages/gptel"
   :config
   (setq
    gptel-model 'granite3-dense:2b
@@ -2502,10 +2516,14 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(origami dired casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary gptel prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask magit outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(osm ein jupyter magit origami dired casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(package-vc-selected-packages
    '((transient-showcase :url "https://github.com/positron-solutions/transient-showcase.git")))
- '(safe-local-variable-values '((eval when (fboundp 'rainbow-mode) (rainbow-mode 1)))))
+ '(safe-local-variable-values
+   '((checkdoc-minor-mode . t)
+     (eval when
+           (fboundp 'rainbow-mode)
+           (rainbow-mode 1)))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
