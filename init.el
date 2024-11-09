@@ -650,14 +650,20 @@
 	("<backtab>" . dired-subtree-cycle)))
 
 (use-package dired
+  ;; it's weird that I have to use `use-package' here,
+  ;; but if I don't I get weird errors telling me `dired-mode-map' is
+  ;; not a bound variable (yet) when I try to edit it
   :load-path lisp-directory
   :config
-  (defun my-advice-dired-always-copy-absolute (&rest args)
+  (defun my-advice-dired-copy-absolute (&rest args)
     "if no arg is passed, return 0.
-This used as an advice to `dired-copy-filename-as-kill' so that its default behavior is to copy the absolute filename"
+This used as an advice to `dired-copy-filename-as-kill', reversing its
+default behavior:
+ - with prefix arg, copy relative name
+ - with no prefix arg, copy absolute"
     (if (caar args) args (list 0)))
   (advice-add #'dired-copy-filename-as-kill
-	      :filter-args #'my-advice-dired-always-copy-absolute)
+	      :filter-args #'my-advice-dired-copy-absolute)
   :bind
   (:map dired-mode-map
         ("E" . wdired-change-to-wdired-mode)))
