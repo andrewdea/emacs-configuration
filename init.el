@@ -1773,7 +1773,7 @@ from `startup-look'"
     (prog-run-this file nil
                    (concat "python "
                            (file-name-nondirectory file) " ")
-                   #'python-activate-venv))
+                   #'python-activate-venv-in-shell))
 
   (defun py-query-delete-print ()
     (interactive)
@@ -1871,6 +1871,8 @@ from `startup-look'"
 
 ;; when starting interpreter, make sure to include the default environment variables
 ;; TODO: this needs some work
+;; `exec-path-from-shell' is probably the way to fix this
+;; you just need to add the relevant variables before you initialize it
 ;; (advice-remove 'python-shell-calculate-command :filter-return
 ;; 	       (lambda (cmd)
 ;; 		 (message "cmd from the advice: %s" cmd)
@@ -1882,7 +1884,7 @@ from `startup-look'"
     (when venv
       (format "source %sbin/activate" venv))))
 
-(defun python-activate-venv ()
+(defun python-activate-venv-in-shell ()
   (interactive)
   (let ((venv-cmd (python-venv--activate-cmd)))
     (when venv-cmd
