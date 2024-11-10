@@ -27,6 +27,7 @@
     (startup-redirect-eln-cache
      "eln-cache"))
 
+;;;; emacs-lsp-booster
 (setenv "LSP_USE_PLISTS" "true")
 
 ;;;; early GUI customizations for nice appearance
@@ -51,10 +52,11 @@
 (setq custom-theme-directory
       (expand-file-name "custom/themes" user-emacs-directory))
 
-;; (load-theme 'my-monokai 'no-confirm)
 (if (or (member "-nw" command-line-args)
         (member "--no-window-system" command-line-args))
     (load-theme 'modus-vivendi)
+  ;; monokai is a custom theme so we need to specify no-confirm
+  ;; TODO we could also simply set `custom-safe-themes' to t here?
   (load-theme 'my-monokai 'no-confirm))
 
 ;; no round corners & no title-bar

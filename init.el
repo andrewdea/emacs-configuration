@@ -128,17 +128,17 @@
       (toggle-frame-maximized))
   (mood-line-mode t)
   (scroll-bar-mode -1)
+  (electric-pair-mode)
   (global-visual-line-mode t)
   (set-fringe-style '(2 . nil))
   (pixel-scroll-precision-mode t)
   (setq-default indent-tabs-mode nil)
   (setq blink-cursor-blinks 5
         fast-but-imprecise-scrolling t
-        column-number-mode t))
+        column-number-mode t
+        use-short-answers))
 
 (add-hook 'after-init-hook #'startup-look -99)
-
-(setq use-short-answers t)
 
 ;;;;; close
 (add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
@@ -176,12 +176,6 @@
              "Welcome! Dashboard opened in %.2f seconds"
              (float-time (time-since time)))))
       (switch-to-buffer dashboard-buffer-name)))
-
-  ;; (add-hook 'after-init-hook (lambda ()
-  ;;                              (or initial-buffer-choice (cdr command-line-args)
-  ;;                                  (dashboard-open)))
-  ;;           99)
-
   :defer 4
 
   :config
@@ -412,12 +406,6 @@
   (setq org-log-done t)
   (setq org-agenda-files '("~/org/TODO.org" "~/org/ToBuy.org" "~/org/chtu_todo.org"))
 
-  (defun tick (&optional untick)
-    (interactive "P")
-    (if untick
-        (insert "❌")
-      (insert "✅")))
-
   (defun org-link-at-point ()
     "Copy the link at point, message it in the minibuffer, and return it"
     (interactive)
@@ -572,20 +560,25 @@
 (setq use-dialog-box nil)
 ;;;;; open file properly at startup
 ;; this is already handled properly if the file was passed as CLI argument
-;; but if Emacs was opened through the GUI, we have to check the ns-input-file
-(add-hook 'after-init-hook
-          (lambda ()
-            ;; (let ((to-emacs "to Emacs"))
-            ;;   ;; ensure that ns-input-file is available
-            ;;   ;; not sure why, but somehow
-            ;;   ;; this is achieved by putting it in a format string
-            ;;   (message "ns-input-file: %s" ns-input-file)
-            ;;   (message "Welcome %s %s" to-emacs (car ns-input-file)))
-            ;; (message "ns-input-file: %s" ns-input-file)
-            (message "Welcome to Emacs %s" (or (car ns-input-file) ""))
-            (setq initial-buffer-choice (car ns-input-file))
-            )
-          98)
+;; but if Emacs was opened through the GUI, we have to check the
+;; `ns-input-file'
+;; TODO it seems tricky to get Emacs to see `ns-input-file' before it opens the
+;; initial buffer. The value of `ns-input-file' is not set until
+;; pretty late in the startup process. An approach that, for very
+;; unclear reasons, seems to work is to put it in a format string:
+;; (message "ns-input-file: %s" (car ns-input-file))
+;; (and call this a few times for good measure)
+;; MAYBE hopefully we can use `advice-add' for a later function?
+(setq initial-buffer-choice
+      (when (progn
+              (format "ns-input-file: %s" ns-input-file)
+              (format "(car ns-input-file): %s" (car ns-input-file))
+              ns-input-file)
+        (lambda () (find-file-noselect (car ns-input-file)))))
+;; (advice-add 'command-line-1 :before
+;;             (lambda (_args-left)
+;;               (setq initial-buffer-choice (car ns-input-file))))
+
 ;;;;; load faster
 ;; these are useful especially in VERY large files
 (defun jit-lock-optimize-settings ()
@@ -602,7 +595,7 @@
 ;;;;; file shortcuts
 (defmacro define-file-shortcut (name file)
   `(defun ,name ()
-     ,(concat "Interactive shortcut for " (symbol-name name))
+     ,(format "Interactive shortcut for %s" (eval file))
      (interactive)
      (find-file ,file)))
 
@@ -625,8 +618,7 @@
   '(crafting-interpreters "~/CraftingInterpreters")
   '(practice-notebook "~/org/practice_notebook.org")
   '(chtu-todo "~/org/chtu_todo.org")
-  '(gym-notes "~/org/gym_exercise_notes.org")
-  '(pvr-trip "~/org/pvr_trip.org")))
+  '(gym-notes "~/org/gym_exercise_notes.org")))
 
 ;; open a file in my temp directory
 (defun temp ()
@@ -1501,7 +1493,7 @@ With optional argument PUSH, get the pushRemote"
              url)
     (if in-xwidget
         (xwidget-webkit-browse-url url)
-      (shell-command-open url))))
+      (open-in-browser url))))
 
 ;;;;; outline
 (use-package dash)
@@ -2551,7 +2543,7 @@ middle of the window instead."
   :config
   (setq
    gptel-model 'granite3-dense:2b
-   gptel-backend (gptel-make-ollama "🦙"
+   gptel-backend (gptel-make-ollama "OLL🦙M🦙"
                    :host "localhost:11434"
                    :stream t
                    :models '(granite3-dense:2b
@@ -2569,11 +2561,16 @@ middle of the window instead."
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(osm ein jupyter magit origami dired casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(ellama detached osm ein jupyter magit origami dired casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(package-vc-selected-packages
    '((transient-showcase :url "https://github.com/positron-solutions/transient-showcase.git")))
  '(safe-local-variable-values
-   '((checkdoc-minor-mode . t)
+   '((vc-default-patch-addressee . "bug-gnu-emacs@gnu.org")
+     (etags-regen-ignores "test/manual/etags/")
+     (etags-regen-regexp-alist
+      (("c" "objc")
+       "/[ \11]*DEFVAR_[A-Z_ \11(]+\"\\([^\"]+\\)\"/\\1/" "/[ \11]*DEFVAR_[A-Z_ \11(]+\"[^\"]+\",[ \11]\\([A-Za-z0-9_]+\\)/\\1/"))
+     (checkdoc-minor-mode . t)
      (eval when
            (fboundp 'rainbow-mode)
            (rainbow-mode 1)))))
