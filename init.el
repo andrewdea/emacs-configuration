@@ -2528,10 +2528,11 @@ middle of the window instead."
   :config
   (setq
    gptel-model 'granite3-dense:2b
-   gptel-backend (gptel-make-ollama "Granite 3"
+   gptel-backend (gptel-make-ollama "🦙"
                    :host "localhost:11434"
                    :stream t
-                   :models '(granite3-dense:2b))))
+                   :models '(granite3-dense:2b
+                             qwen2.5:7b))))
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, tango-dark,
