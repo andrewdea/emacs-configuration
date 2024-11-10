@@ -614,6 +614,7 @@
 (define-all-shortcuts
  (list
   '(init user-init-file)
+  '(early-init early-init-file)
   '(zshrc "~/.zshrc")
   '(forg "~/org")
   '(beorg "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/")
@@ -624,7 +625,8 @@
   '(crafting-interpreters "~/CraftingInterpreters")
   '(practice-notebook "~/org/practice_notebook.org")
   '(chtu-todo "~/org/chtu_todo.org")
-  '(gym-notes "~/org/gym_exercise_notes.org")))
+  '(gym-notes "~/org/gym_exercise_notes.org")
+  '(pvr-trip "~/org/pvr_trip.org")))
 
 ;; open a file in my temp directory
 (defun temp ()
@@ -2245,8 +2247,22 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   (interactive "P")
   (prog-debug-print arg #'el-format))
 
+;; will use this for a 'find references' thing
+(defun elisp-refs-symbol-at-point (path-prefix)
+  "Find all the references to the symbol at point."
+  (interactive
+   (list (ido-read-directory-name
+          (format
+           "Search for `%s' in loaded files in: " (symbol-at-point))
+          (if-let ((current (project-current nil)))
+              (project-root current)))))
+  (elisp-refs-symbol (symbol-at-point) path-prefix))
+
 (define-key emacs-lisp-mode-map (kbd "C-M-p") 'el-debug-print)
 (define-key emacs-lisp-mode-map (kbd "C-c r") 'el-run-this)
+;; TODO here I'm using the same keybindings as `lsp-mode' but I think
+;; I should find a common more ergonomical binding
+(define-key emacs-lisp-mode-map (kbd "s-l g r") 'elisp-refs-symbol-at-point)
 
 (setq source-directory "~/Emacs-Build/emacs")
 
