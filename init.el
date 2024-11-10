@@ -2294,21 +2294,28 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 
 ;;;;; commands
 
-(defun cmd (program-and-args)
+(defun cmd (program-and-args &optional async)
   "Run PROGRAM-AND-ARGS synchronously.
 Show the output in the echo area and return it.
-NOTE that this doesn't use a shell: if needed,
-use `call-process-shell-command'."
+NOTE that this doesn't use a shell, so it might not always behave as
+  expected: for example, some programs prefer to print to stdout
+  rather than return values, and this doesn't give them a chance to do
+  that. If use `call-process-shell-command'."
   (interactive "sexecute: ")
+  ;; TODO check if there's a way to make this asynchronous (maybe
+  ;; leveraging `detached')
   (let* ((split (split-string-shell-command program-and-args))
          (program (car split))
          (args (cdr split))
          (output (with-output-to-string
                    (apply #'call-process program nil standard-output
                           nil args))))
-    (if (string-empty-p output)
-        (message (concat "✅ " program-and-args))
-      (message (concat "❓ " output)))))
+    (message (format "%s%s"
+                     (propertize program-and-args 'face 'minibuffer-prompt)
+                     (if (string-empty-p output)
+                         "✅"
+                       (concat " 🤖:\n" output))))
+    output))
 
 (defun quit-app (app)
   "Use the recommended MacOS script to quit the app.
@@ -2341,6 +2348,22 @@ This allows for a graceful shutdown."
                         nil 'eww-prompt-history uris))))
   (cmd
    (format "open \"%s\"" (eww--dwim-expand-url url))))
+
+;;;;; detached
+(use-package detached
+  :init
+  (detached-init)
+  ;; keeping the original commands for now, I want to get an explicit
+  ;; of when/how I use the detached commands, and what benefits they provide
+  ;; :bind (;; Replace `async-shell-command' with `detached-shell-command'
+  ;;        ([remap async-shell-command] . detached-shell-command)
+  ;;        ;; Replace `compile' with `detached-compile'
+  ;;        ([remap compile] . detached-compile)
+  ;;        ([remap recompile] . detached-compile-recompile)
+  ;;        ;; Replace built in completion of sessions with `consult'
+  ;;        ([remap detached-open-session] . detached-consult-session))
+  :custom ((detached-show-output-on-attach t)
+           (detached-terminal-data-command system-type)))
 
 ;;;;; shell appearance
 (use-package sticky-shell
