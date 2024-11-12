@@ -2312,18 +2312,50 @@ For interactive use, it's better to call `shell-command'
                        (concat " 🤖:\n" output))))
     output))
 
-(defun quit-app (app)
+
+(defun app-list-running ()
+  (let ((raw (shell-command-to-string
+              "ps -A | grep \".*\\.app\"")))
+    ;; TODO maybe also remove things "{app-name} Helper"
+    ;; and the ones that are all lowercase
+    (delete-dups
+     (regexp-all-matches "\/.*/\\(.*\\)\.app\/" raw 1))))
+
+(defun app-quit (app)
   "Use the recommended MacOS script to quit the app.
 This allows for a graceful shutdown."
-  (interactive "squit: ")
+  (interactive
+   (list (completing-read "quit: "
+                          (app-list-running))))
+  ;; TODO need to add a space before uppercase letters, eg:
+  ;; 'ActivityMonitor' -> 'Activity Monitor'
   (cmd (format "osascript -e 'quit app \"%s.app\"'" app)))
 
-(defun open-app (app)
+(defun app-open (app)
+  ;; TODO list the available apps as options
+  ;; (probably just look at the Applications directory)
   (interactive "Sopen app: ")
-  (cmd (format "open -a %s" app)))
+  (cmd (format "open -a \"%s\"" app)))
 
+(defun app-switch (app)
+  "This is just like `app-open', but it lists running apps for
+  convenience.
+We could also use the appropriate osascript:
+```sh
+osascript -e 'tell application \"{app_name}\" to activate'
+```"
+  (interactive
+   (list (completing-read "switch to app: "
+                          (app-list-running))))
+  (app-open app))
+
+;; TODO probably limit this to just apps as default?
+;; BUT need to make sure it allows other options as well
+;; and give the option for which signal to use
 (defun kill-other-process (name)
-  (interactive "Spkill ")
+  (interactive
+   (list (completing-read "pkill: "
+                          (app-list-running))))
   (cmd (format "pkill %s" name)))
 
 (defun reveal-in-finder (arg)
