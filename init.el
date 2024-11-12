@@ -569,12 +569,12 @@
 ;; (message "ns-input-file: %s" (car ns-input-file))
 ;; (and call this a few times for good measure)
 ;; MAYBE hopefully we can use `advice-add' for a later function?
-(setq initial-buffer-choice
-      (when (progn
-              (format "ns-input-file: %s" ns-input-file)
-              (format "(car ns-input-file): %s" (car ns-input-file))
-              ns-input-file)
-        (lambda () (find-file-noselect (car ns-input-file)))))
+;; (setq initial-buffer-choice
+;;       (with-temp-buffer
+;;         (insert (or (car ns-input-file) ""))
+;; 	(insert (or (car ns-input-file) ""))
+;;         ns-input-file))
+
 ;; (advice-add 'command-line-1 :before
 ;;             (lambda (_args-left)
 ;;               (setq initial-buffer-choice (car ns-input-file))))
@@ -2324,28 +2324,57 @@ For interactive use, it's better to call `shell-command'
     output))
 
 
-(defun app-list-running ()
-  (let ((raw (shell-command-to-string
-              "ps -A | grep \".*\\.app\"")))
-    ;; TODO maybe also remove things "{app-name} Helper"
-    ;; and the ones that are all lowercase
-    (delete-dups
-     (regexp-all-matches "\/.*/\\(.*\\)\.app\/" raw 1))))
+
+(defun app-list-running (&optional no-filter)
+  "List all running apps.
+This uses the shell commands ps and grep to get a first list of apps.
+We then do some filtering to return relevant apps.
+By default, remove any apps that are just 'Helper's to other apps, and
+  remove the ones whose name is all lowercase (by convention, these
+  are OS agents and not user-facing).
+If optional arg NO-FILTER is non-nil, don't do any filtering."
+  (let* ((raw (shell-command-to-string
+               "ps -A | grep \".*\\.app\""))
+         ;; NOTE this regex might not catch anything, for example it
+         ;; misses 'plugin-container'
+         (all
+          (delete-dups
+           (regexp-all-matches
+            "/.*/.*.app/Contents/MacOS/\\([^ ][^-\n]*\\)" raw 1))))
+    (if no-filter
+        all
+      ;; remove any app whose name doesn't match (ignoring case)
+      ;; one of the apps in the Applications directory
+      (let ((available-apps (app-list-all)))
+        (cl-remove-if-not
+         (lambda (app)
+           (cl-some (lambda (available-app)
+                      (cl-equalp app available-app))
+                    available-apps))
+         all)))))
+
+(defun app-list-all ()
+  "List all directories in the /Applications/ directory whose name
+ends in '.app'."
+  ;; TODO: find a way to list the Utilities as well.
+  ;; oddly:
+  ;; ls -al /Applications/Utilities/ returns nothing
+  (string-split
+   (shell-command-to-string "ls /Applications/ | grep \".*\\.app\"")
+   ".app\n"
+   'omit-nulls))
 
 (defun app-quit (app)
   "Use the recommended MacOS script to quit the app.
 This allows for a graceful shutdown."
   (interactive
-   (list (completing-read "quit: "
+   (list (completing-read "quit "
                           (app-list-running))))
-  ;; TODO need to add a space before uppercase letters, eg:
-  ;; 'ActivityMonitor' -> 'Activity Monitor'
   (cmd (format "osascript -e 'quit app \"%s.app\"'" app)))
 
 (defun app-open (app)
-  ;; TODO list the available apps as options
-  ;; (probably just look at the Applications directory)
-  (interactive "Sopen app: ")
+  (interactive (list (completing-read "open "
+                                      (app-list-all))))
   (cmd (format "open -a \"%s\"" app)))
 
 (defun app-switch (app)
@@ -2486,7 +2515,7 @@ middle of the window instead."
        (goto-char beg)
        (comint-previous-prompt 1)
        (point))
-     end '(read-only t front-sticky t)))
+     end '(read-only t)))
 
   (defun comint-undo-read-only-props ()
     ;; still doesn't seem to be working :(
@@ -2597,7 +2626,8 @@ middle of the window instead."
                    :host "localhost:11434"
                    :stream t
                    :models '(granite3-dense:2b
-                             qwen2.5:7b))))
+                             qwen2.5:7b
+                             newgranite:latest))))
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, tango-dark,
