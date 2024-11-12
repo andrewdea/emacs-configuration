@@ -136,7 +136,7 @@
   (setq blink-cursor-blinks 5
         fast-but-imprecise-scrolling t
         column-number-mode t
-        use-short-answers))
+        use-short-answers t))
 
 (add-hook 'after-init-hook #'startup-look -99)
 
