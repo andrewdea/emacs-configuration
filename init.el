@@ -2322,6 +2322,10 @@ This allows for a graceful shutdown."
   (interactive "Sopen app: ")
   (cmd (format "open -a %s" app)))
 
+(defun kill-other-process (name)
+  (interactive "Spkill ")
+  (cmd (format "pkill %s" name)))
+
 (defun reveal-in-finder (arg)
   "Use \"open -R ARG\" to select file in Finder."
   (interactive (list (ido-read-file-name "open in Finder: ")))
