@@ -2282,17 +2282,20 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
  ("org" "java" "sc" "c" "go"))
 
 ;;;; shell commands, term & comint
-(setq shell-file-name "/bin/zsh")
+(setq shell-file-name "/bin/zsh"
+      async-shell-command-buffer 'new-buffer)
 
 ;;;;; commands
 
-(defun cmd (program-and-args &optional async)
+(defun cmd (program-and-args)
   "Run PROGRAM-AND-ARGS synchronously.
 Show the output in the echo area and return it.
 NOTE that this doesn't use a shell, so it might not always behave as
   expected: for example, some programs prefer to print to stdout
   rather than return values, and this doesn't give them a chance to do
-  that. If use `call-process-shell-command'."
+  that.
+For interactive use, it's better to call `shell-command'
+  (asynchronously, if needed), or `call-process-shell-command'."
   (interactive "sexecute: ")
   ;; TODO check if there's a way to make this asynchronous (maybe
   ;; leveraging `detached')
