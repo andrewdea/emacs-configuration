@@ -852,6 +852,17 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
                 (cdr (nthcdr pos list)))
       list)))
 
+(defun regexp-all-matches (regexp string &optional capture-group-n)
+  "Get a list of all regexp matches in a string"
+  (save-match-data
+    (let ((capture-group-n (or capture-group-n 0))
+          (pos 0)
+          matches)
+      (while (string-match regexp string pos)
+        (push (match-string capture-group-n string) matches)
+        (setq pos (match-end capture-group-n)))
+      matches)))
+
 (add-hook 'kill-emacs-hook (lambda () (setq inhibit-message t)) -99)
 
 (add-hook 'emacs-lisp-mode-hook
