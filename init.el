@@ -661,7 +661,7 @@ default behavior:
   (advice-add #'dired-copy-filename-as-kill
 	      :filter-args #'my-advice-dired-copy-absolute)
   :custom
-  (dired-listing-switches "-alhF")
+  (dired-listing-switches "-alh")
   :bind
   (:map dired-mode-map
         ("E" . wdired-change-to-wdired-mode)))
