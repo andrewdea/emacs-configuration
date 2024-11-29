@@ -719,6 +719,7 @@ default behavior:
   :config
   (setq
    projectile-switch-project-action #'projectile-dired-other-window)
+  (advice-add #'project-shell :after #'python-activate-venv-in-shell)
   :bind (:map projectile-mode-map
 	      ("s-p" . projectile-command-map)))
 
@@ -1333,6 +1334,7 @@ open siblings (directories at its same depth)"
   (let ((pkg-dir (package-desc-dir
                   (cadr (assq 'casual package-alist)))))
     (define-casual-subpkg "calc")
+    (define-casual-subpkg "calendar")
     (define-casual-subpkg "dired"
                           (autoload
                             #'casual-dired-search-replace-tmenu
