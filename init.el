@@ -126,6 +126,8 @@
   ;; if not already maximized, maximize
   (or (eq (frame-parameter (selected-frame) 'fullscreen) 'maximized)
       (toggle-frame-maximized))
+  ;; TODO `mood-line-mode' doesn't work well with PDF View: it doesn't
+  ;; display the current page-number and the total number of pages.
   (mood-line-mode t)
   (scroll-bar-mode -1)
   (electric-pair-mode)
@@ -658,6 +660,8 @@ default behavior:
     (if (caar args) args (list 0)))
   (advice-add #'dired-copy-filename-as-kill
 	      :filter-args #'my-advice-dired-copy-absolute)
+  :custom
+  (dired-listing-switches "-alhF")
   :bind
   (:map dired-mode-map
         ("E" . wdired-change-to-wdired-mode)))
@@ -1668,6 +1672,7 @@ from `startup-look'"
 
 (defun comint-fold-all ()
   (interactive)
+  ;; TODO would be nice to be able to do this within a region as well
   (save-excursion
     (goto-char (point-max))
     (while-let ((previous (comint-previous-prompt 1))
