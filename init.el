@@ -1410,7 +1410,6 @@ open siblings (directories at its same depth)"
   :load-path "~/.emacs.d/elpa/transient-20241102.1229/")
 
 (use-package magit
-  :after transient
   :config
   ;; instead of `magit-insert-unpushed-to-upstream-or-recent',
   ;; show both `magit-insert-unpushed-to-upstream' and
