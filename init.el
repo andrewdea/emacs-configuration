@@ -627,6 +627,14 @@
   (interactive)
   (find-file (read-file-name "find-file " "~/temp/")))
 
+;;;;; resolve home dir
+(defun user-home-dir ()
+  (getenv "HOME"))
+
+(defun path-expand-user (path)
+  "Expand '~' in a path to the full home directory"
+  (string-replace "~" (getenv "HOME") path))
+
 ;;;;; dired mode
 (use-package all-the-icons-dired
   :after dired
@@ -1597,6 +1605,8 @@ With optional argument PUSH, get the pushRemote"
 	  (lambda () (set-compile-command "go install" nil)))
 (add-hook 'monicelli-mode-hook
 	  (lambda () (set-compile-command "mcc" t " -o ")))
+(add-hook 'clojurescript-mode-hook
+          (lambda () (set-compile-command "lein cljsbuild once" nil)))
 
 ;;;;; folding
 ;; My own very simple implementation of folding mechanisms
@@ -1728,7 +1738,31 @@ from `startup-look'"
   :mode "\\.mc\\'")
 
 ;;;;; clojure
-(use-package clojure-mode)
+(use-package clojure-mode
+  :hook (clojure-mode . lsp)
+  :config
+  (defun cljs-open-index-html (_proc res)
+    "Open the index.html file for this project.
+_PROC and RES are the default arguments given to a `process-sentinel'.
+We check the RES to ensure the process finished successfully"
+    (if (string-prefix-p "finished" res)
+        (xw-url
+         (concat "file://"
+                 (path-expand-user
+                  (project-root (project-current t)))
+                 "resources/public/index.html"))
+      (message "compilation seems to have gone wrong, not opening index")))
+
+  (defun cljs-run-this ()
+    (interactive)
+    (compile compile-command)
+    (set-process-sentinel
+     (get-buffer-process (compilation-find-buffer))
+     #'cljs-open-index-html))
+
+  :bind
+  (:map clojurescript-mode-map
+        ("C-c r" . cljs-run-this)))
 
 (use-package cider)
 
