@@ -1746,22 +1746,55 @@ from `startup-look'"
 _PROC and RES are the default arguments given to a `process-sentinel'.
 We check the RES to ensure the process finished successfully"
     (if (string-prefix-p "finished" res)
-        (xw-url
-         (concat "file://"
-                 (path-expand-user
-                  (project-root (project-current t)))
-                 "resources/public/index.html"))
-      (message "compilation seems to have gone wrong, not opening index")))
+        (progn
+          (xw-url
+           (concat "file://"
+                   (path-expand-user
+                    (project-root (project-current t)))
+                   "resources/public/index.html"))
+          (xwidget-webkit-reload))
+      (progn
+        (message
+         "*compilation* result: %s" res)
+        (switch-to-buffer (compilation-find-buffer))
+        (delete-window))))
+
 
   (defun cljs-run-this ()
     (interactive)
-    (compile compile-command)
+    (prog--compile (lambda () (compile compile-command)))
     (set-process-sentinel
      (get-buffer-process (compilation-find-buffer))
      #'cljs-open-index-html))
 
+  (defun cljs-format (arg &optional line-number _)
+    (format (concat
+             "(js/console.log \""
+             (when line-number (format "At line number: %s; " line-number))
+             (when arg "%s : \" %s")
+             ")")
+            arg arg))
+
+  ;; (defun cljs-format-stringify (arg &optional line-number _)
+  ;;   (format (concat
+  ;;            "(js/console.log \""
+  ;;            (when line-number (format "At line number: %s; " line-number))
+  ;;            (when arg "%s STRINGIFIED : ${JSON.stringify(%s)}")
+  ;;            "\")")
+  ;;           arg arg))
+
+  (defun cljs-debug-log (&optional verbose)
+    (interactive "P")
+    (prog-debug-print verbose #'cljs-format))
+
+  ;; (defun cljs-debug-log-stringify (&optional verbose)
+  ;;   (interactive "P")
+  ;;   (prog-debug-print verbose #'cljs-format-stringify))
+
   :bind
   (:map clojurescript-mode-map
+        ;; ("M-p" . cljs-debug-log-stringify)
+	("C-M-p" . cljs-debug-log)
         ("C-c r" . cljs-run-this)))
 
 (use-package cider)
