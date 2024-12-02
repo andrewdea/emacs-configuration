@@ -1759,13 +1759,17 @@ We check the RES to ensure the process finished successfully"
         (switch-to-buffer (compilation-find-buffer))
         (delete-window))))
 
+  (defun cljs-open-figwheel (&optional in-browser)
+    (let ((url "http://localhost:3449"))
+      (if in-browser
+          (open-in-browser url)
+        (xw-url url))))
+
 
   (defun cljs-run-this ()
     (interactive)
-    (prog--compile (lambda () (compile compile-command)))
-    (set-process-sentinel
-     (get-buffer-process (compilation-find-buffer))
-     #'cljs-open-index-html))
+    (prog--compile (lambda () (compile "lein figwheel" t)))
+    (cljs-open-figwheel 'in-browser))
 
   (defun cljs-format (arg &optional line-number _)
     (format (concat
