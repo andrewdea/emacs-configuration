@@ -36,6 +36,9 @@
 (setq tool-bar-mode   nil
       scroll-bar-mode nil)
 
+;;font
+(set-face-attribute 'default nil :family "Menlo" :height 120)
+
 ;; scratch buffer in fundamental mode
 (setq initial-major-mode 'fundamental-mode)
 (setq initial-scratch-message
