@@ -670,6 +670,7 @@ default behavior:
 	      :filter-args #'my-advice-dired-copy-absolute)
   :custom
   (dired-listing-switches "-alh")
+  (dired-kill-when-opening-new-dired-buffer t)
   :bind
   (:map dired-mode-map
         ("E" . wdired-change-to-wdired-mode)))
