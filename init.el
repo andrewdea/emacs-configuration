@@ -1719,6 +1719,21 @@ from `startup-look'"
   (treesit-auto-add-to-auto-mode-alist (list 'python))
   (global-treesit-auto-mode))
 
+
+;;;;; LLMs
+(use-package gptel
+  :load-path "custom/packages/gptel"
+  :config
+  (setq
+   gptel-model 'granite3-dense:2b
+   gptel-backend (gptel-make-ollama "OLL🦙M🦙"
+                   :host "localhost:11434"
+                   :stream t
+                   :request-params '(:options (:temperature 0.3 :test t))
+                   :models '(granite3-dense:2b
+                             qwen2.5:7b
+                             thinkverse/towerinstruct:latest))))
+
 ;;;; PROGRAMMING LANGUAGES
 ;;;;; java
 (use-package javadoc-lookup
@@ -2694,18 +2709,17 @@ middle of the window instead."
 ;; for testing xwidgets
 (setq load-prefer-newer t)
 
-;;;;; LLMs
-(use-package gptel
-  :load-path "custom/packages/gptel"
+;;;;; difftastic
+(use-package difftastic
+  ;; :demand t
+  :bind (:map magit-blame-read-only-mode-map
+              ("D" . difftastic-magit-show)
+              ("S" . difftastic-magit-show))
   :config
-  (setq
-   gptel-model 'granite3-dense:2b
-   gptel-backend (gptel-make-ollama "OLL🦙M🦙"
-                   :host "localhost:11434"
-                   :stream t
-                   :models '(granite3-dense:2b
-                             qwen2.5:7b
-                             newgranite:latest))))
+  (eval-after-load 'magit-diff
+    '(transient-append-suffix 'magit-diff '(-1 -1)
+       [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
+        ("S" "Difftastic show" difftastic-magit-show)])))
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, tango-dark,
@@ -2719,7 +2733,7 @@ middle of the window instead."
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(ellama detached osm ein jupyter magit origami dired casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(clojurescript-mode difftastic elm-mode code-cells detached osm jupyter magit origami dired casual gh-md treesit-auto calfw which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(package-vc-selected-packages
    '((transient-showcase :url "https://github.com/positron-solutions/transient-showcase.git")))
  '(safe-local-variable-values
@@ -2731,14 +2745,8 @@ middle of the window instead."
      (checkdoc-minor-mode . t)
      (eval when
            (fboundp 'rainbow-mode)
-           (rainbow-mode 1)))))
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+           (rainbow-mode 1))))
+ '(tool-bar-mode nil))
 
 (provide '.emacs)
 ;;; .emacs ends here
