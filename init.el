@@ -112,11 +112,6 @@
 	  #'modus-vivendi ; at night
         #'my-monokai)))) ; during the day
 
-;; my daily default theme is based on standard tango-dark;
-;; with some small edits in ~/.emacs.d/tango-dark-theme.el
-;; I also really like monokai:
-;; made some edits in ~/.emacs.d/my-monokai-theme.el
-
 (use-package mood-line)
 
 (defun startup-look ()
