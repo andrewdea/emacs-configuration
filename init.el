@@ -2354,6 +2354,12 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
    (add-hook mode-hook #'use-c-style-comments))
  (list 'c-mode-hook 'c++-mode-hook 'objc-mode-hook))
 
+;;;;; zig
+(use-package zig-mode
+  :hook
+  (zig-mode . subword-mode)
+  (zig-mode . lsp))
+
 ;;;;; emacs lisp
 
 (defun el-format (arg &optional line-number block-name)
