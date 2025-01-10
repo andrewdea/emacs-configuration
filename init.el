@@ -1740,14 +1740,33 @@ from `startup-look'"
   :load-path "custom/packages/gptel"
   :config
   (setq
-   gptel-model 'granite3-dense:2b
+   ollama-models '
+   ((llava:7b
+     :description
+     "multimodal model that combines a vision encoder and Vicuna for \
+general-purpose visual and language understanding"
+     :capabilities (media)
+     :mime-types ("image/png" "image/jpeg" "image/webp" "image/heic" "image/heif"
+                  "application/pdf" "text/plain" "text/csv" "text/html"))
+
+    (granite3.1-dense:2b
+     :description
+     "text-only dense LLMs trained on over 12 trillion tokens of data"
+     :capabilities (tool))
+
+    (qwen2.5:7b
+     :description
+     "latest series of Qwen large language models"
+     :capabilities (json)))
+
+   gptel-model 'granite3.1-dense:2b
    gptel-backend (gptel-make-ollama "OLL🦙M🦙"
                    :host "localhost:11434"
                    :stream t
-                   :request-params '(:options (:temperature 0.3 :test t))
-                   :models '(granite3-dense:2b
-                             qwen2.5:7b
-                             thinkverse/towerinstruct:latest))))
+                   ;; :request-params '(:options (:temperature 0.3 :test t))
+                   :models ollama-models))
+
+  (setq gptel-use-context 'user))
 
 ;;;; PROGRAMMING LANGUAGES
 ;;;;; java
