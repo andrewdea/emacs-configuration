@@ -630,7 +630,8 @@
   '(crafting-interpreters "~/CraftingInterpreters")
   '(practice-notebook "~/org/practice_notebook.org")
   '(chtu-todo "~/org/chtu_todo.org")
-  '(gym-notes "~/org/gym_exercise_notes.org")))
+  '(gym-notes "~/org/gym_exercise_notes.org")
+  '(papers-and-notes "~/papers and notes/notes.org")))
 
 ;; open a file in my temp directory
 (defun temp ()
