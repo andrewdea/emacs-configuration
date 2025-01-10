@@ -1600,7 +1600,7 @@ With optional argument PUSH, get the pushRemote"
 (global-set-key (kbd "M-.") #'my-find-definition)
 
 ;; set appropriate default compile-command
-(defun set-compile-command (arg use-file &optional options)
+(defun set-compile-command (arg &optional use-file options)
   (setq-local compile-command
 	      (concat arg " "
 		      (if (and buffer-file-name use-file)
@@ -1614,11 +1614,15 @@ With optional argument PUSH, get the pushRemote"
 (add-hook 'scala-mode-hook
 	  (lambda () (set-compile-command "scalac" t)))
 (add-hook 'go-mode-hook
-	  (lambda () (set-compile-command "go install" nil)))
+	  (lambda () (set-compile-command "go install")))
 (add-hook 'monicelli-mode-hook
 	  (lambda () (set-compile-command "mcc" t " -o ")))
 (add-hook 'clojurescript-mode-hook
-          (lambda () (set-compile-command "lein cljsbuild once" nil)))
+          (lambda () (set-compile-command "lein cljsbuild once")))
+(add-hook 'zig-mode-hook
+          (lambda () (set-compile-command
+                      ;; TEMP thing for ziglings
+                      "/Users/andyjda/programming-exercises/zig/zig-lang/zig build")))
 
 ;;;;; folding
 ;; My own very simple implementation of folding mechanisms
