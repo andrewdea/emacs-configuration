@@ -490,6 +490,21 @@
 	 ("C-c n f" . org-roam-node-find)
 	 ("C-c n i" . org-roam-node-insert)))
 
+;;;;; org journal
+(use-package org-journal
+  ;; TODO one behavior that I'd like to see is for the buffer to
+  ;; automatically narrow to the entry that I opened
+  :config
+  (set-face-attribute 'org-journal-calendar-entry-face
+                      nil :inherit 'diary :foreground "yellow")
+  (set-face-attribute 'org-journal-calendar-scheduled-face
+                      nil :inherit 'diary :foreground "green")
+  (autoload #'org-element--cache-active-p (concat lisp-directory "org/org-element.el"))
+  :custom
+  (org-journal-dir "~/org/journal/")
+  (org-journal-file-type 'yearly)
+  (org-journal-time-format ""))
+
 ;;;; MARKDOWN mode
 (use-package markdown-mode
   :config
