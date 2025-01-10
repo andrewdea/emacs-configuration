@@ -2194,11 +2194,11 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   (interactive)
   (query-replace-regexp "\n\s*\s*console.log(.*);?" ""))
 
-(use-package web-mode
+(use-package js
   :config
-  (setq web-mode-enable-current-element-highlight t)
+  ;; (setq web-mode-enable-current-element-highlight t)
   (set (make-local-variable 'delete-print) #'js-query-delete-console)
-  :bind (:map web-mode-map
+  :bind (:map js-mode-map
 	      ("M-p" . js-debug-log-stringify)
 	      ("C-M-p" . js-debug-log)))
 
@@ -2214,7 +2214,7 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   (python-run-app)
   (comint-send-input)
   (split-window-below)
-  (named-shell "*shell-npm-dev*")
+  (named-shell "*shell-npm-dev*" nil)
   (let ((desired-dir (projectile-project-root)))
     (if (not (equal desired-dir default-directory))
 	(progn (comint-send-string nil (message "cd %s" desired-dir))
@@ -2227,6 +2227,8 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   (add-hook 'web-mode-hook 'prettier-mode))
 
 (use-package lsp-mode
+  :hook
+  (web-mode . lsp)
   :ensure t
   :config
   ;; (require 'lsp-clients)
@@ -2260,7 +2262,9 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
             (message "Using emacs-lsp-booster for %s!" orig-result)
             (cons "emacs-lsp-booster" orig-result))
         orig-result)))
-  (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command))
+
+  (advice-add 'lsp-resolve-final-command :around
+              #'lsp-booster--advice-final-command))
 
 ;;;;; rust
 (use-package rustic
