@@ -492,14 +492,22 @@
 
 ;;;;; org journal
 (use-package org-journal
-  ;; TODO one behavior that I'd like to see is for the buffer to
-  ;; automatically narrow to the entry that I opened
   :config
   (set-face-attribute 'org-journal-calendar-entry-face
                       nil :inherit 'diary :foreground "yellow")
   (set-face-attribute 'org-journal-calendar-scheduled-face
                       nil :inherit 'diary :foreground "green")
-  (autoload #'org-element--cache-active-p (concat lisp-directory "org/org-element.el"))
+  (autoload #'org-element--cache-active-p (concat lisp-directory
+                                                  "org/org-element.el"))
+  ;; a new entry is narrowed to display only that day in the buffer
+  (advice-add 'org-journal-new-entry :after
+              (lambda (&rest _)
+                (save-excursion
+                  (org-previous-visible-heading 1)
+                  (org-narrow-to-subtree))))
+
+  ;; TODO edit `org-journal-date-format' to something like:
+  ;; weekday, month (as word), day, year
   :custom
   (org-journal-dir "~/org/journal/")
   (org-journal-file-type 'yearly)
@@ -910,6 +918,9 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
 ;; upcase and downcase
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
+
+;; narrowing
+(put 'narrow-to-region 'disabled nil)
 
 (defun on-region-or-char (command)
   (unless mark-active
