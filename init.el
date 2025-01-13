@@ -2133,6 +2133,8 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 ;;;;; javascript
 (use-package tide)
 
+(add-hook 'js-base-mode-hook #'subword-mode)
+
 ;;;
 (defun setup-tide-mode ()
   (interactive)
@@ -2209,7 +2211,7 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   :config
   ;; (setq web-mode-enable-current-element-highlight t)
   (set (make-local-variable 'delete-print) #'js-query-delete-console)
-  :bind (:map js-mode-map
+  :bind (:map js-base-mode-map
 	      ("M-p" . js-debug-log-stringify)
 	      ("C-M-p" . js-debug-log)))
 
