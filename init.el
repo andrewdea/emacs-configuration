@@ -2595,7 +2595,7 @@ osascript -e 'tell application \"{app_name}\" to activate'
 (use-package detached
   :init
   (detached-init)
-  ;; keeping the original commands for now, I want to get an explicit
+  ;; keeping the original commands for now, I want to get an explicit understanding
   ;; of when/how I use the detached commands, and what benefits they provide
   ;; :bind (;; Replace `async-shell-command' with `detached-shell-command'
   ;;        ([remap async-shell-command] . detached-shell-command)
@@ -2692,7 +2692,7 @@ middle of the window instead."
     ;; still doesn't seem to be working :(
     (remove-text-properties (point-min) (point-max) '(read-only nil)))
 
-  ;; TODO: add logic so when the mode is disabled, it sets all of the
+  ;; MAYBE: add logic so when the mode is disabled, it sets all of the
   ;; buffer's outputs back to read-only nil?
   (if comint-output-read-only-mode
       (advice-add 'comint--mark-as-output :after #'comint--set-read-only)
