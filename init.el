@@ -1495,37 +1495,57 @@ With optional argument PUSH, get the pushRemote"
                                        url-from-command)
                       (error url-from-command)
                     (string-trim url-from-command)))
-         (no-colon (subst-char-in-string ?: ?/ trimmed
-                                         'inplace)) ; avoid copy
-         (no-git (replace-regexp-in-string ".git$" "" no-colon))
-         (repo-url (replace-regexp-in-string "git@" "https://"
-                                             no-git))
-         ;; determine the path of the current file/directory from the repo root
-         (filename (buffer-file-name))
-         (here-path (or filename
-                        (string-trim (shell-command-to-string
+	 (no-at-git (string-replace "@git" "" trimmed))
+	 ;; TODO: ensure this can work with both https and @git urls
+	 ;; (no-colon (subst-char-in-string ?: ?/ trimmed
+	 ;;                                 'inplace)) ; avoid copy
+	 ;; (no-git (replace-regexp-in-string ".git$" "" trimmed))
+	 ;; (repo-url (replace-regexp-in-string "git@" "https://"
+	 ;;                                     no-git))
+	 (httped (replace-regexp-in-string
+		  "https?///" "https://"
+		  (string-replace ":" "/" no-at-git)))
+	 (repo-url (replace-regexp-in-string ".git$" "" httped))
+	 ;; determine the path of the current file/directory from the repo root
+	 (filename (buffer-file-name))
+	 (here-path (or filename
+			(string-trim (shell-command-to-string
                                       "pwd"))))
-         (root (string-trim (shell-command-to-string
+	 (root (string-trim (shell-command-to-string
                              "git rev-parse --show-toplevel")))
-         (relative (replace-regexp-in-string
-                    (regexp-quote root) "" here-path))
+	 (relative (replace-regexp-in-string
+		    (regexp-quote root) "" here-path))
 
-         ;; get the current branch
-         (branch (string-trim (shell-command-to-string
-                               "git rev-parse --abbrev-ref HEAD")))
-         (final-url (concat repo-url
-                            (if filename "/blob/" "/tree/")
-                            branch relative)))
+	 ;; get the current branch
+	 (branch (string-trim (shell-command-to-string
+			       "git rev-parse --abbrev-ref HEAD")))
+	 ;; get the current-line or region
+	 ;; TODO would be cool if this was an optional additional bit:
+	 ;; the user should specify whether or not they want to go to the
+	 ;; specific line
+	 (line-or-region (when (and filename
+				    (not (string-suffix-p ".md" filename)))
+			   (if (region-active-p)
+			       (save-excursion
+				 (concat "#L" (number-to-string
+					       (progn
+						 (goto-char (region-beginning))
+						 (line-number-at-pos)))
+					 "-L" (number-to-string
+					       (progn
+						 (goto-char (region-end))
+						 (line-number-at-pos)))))
+			     (concat "#L" (number-to-string (line-number-at-pos))))))
+	 (final-url (concat repo-url
+			    (if filename "/blob/" "/tree/")
+			    branch relative
+			    line-or-region)))
     (kill-new final-url)
     (message "%s %s"
              (propertize "copied:" 'face 'minibuffer-prompt)
              final-url)
     final-url))
 
-;; NOTE more complex and featurefull implementation here:
-;; https://www.reddit.com/r/emacs/comments/xdw6ok/comment/iodig8c/
-;; OR, leverage this package:
-;; https://github.com/sshaw/git-link/
 (defun git-open-remote (&optional in-xwidget push)
   "Open the remote URL for the current file or directory.
   With prefix argument IN-XWIDGET, open it within emacs in a Safari
