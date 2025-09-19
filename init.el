@@ -401,7 +401,8 @@
 						  (match-end 1) "•"))))))
 
   (setq org-log-done t)
-  (setq org-agenda-files '("~/org/TODO.org" "~/org/ToBuy.org" "~/org/chtu_todo.org"))
+  (setq org-agenda-files '("~/org/TODO.org" "~/org/ToBuy.org"
+                           "~/org/chtu_todo.org" "~/org/saved_links.org"))
 
   (defun org-link-at-point ()
     "Copy the link at point, message it in the minibuffer, and return it"
