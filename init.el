@@ -401,8 +401,17 @@
 						  (match-end 1) "•"))))))
 
   (setq org-log-done t)
-  (setq org-agenda-files '("~/org/TODO.org" "~/org/ToBuy.org"
-                           "~/org/chtu_todo.org" "~/org/saved_links.org"))
+  ;; NOTE there's a weird bug that breaks the
+  ;; `org-tag-view' when I have
+  ;; "~/org/TODO.org" as one of the agenda
+  ;; files. Not sure what's causing it, but
+  ;; since I'm not using many agenda
+  ;; features, seems fine?
+  (setq org-agenda-files '(
+                           ;; "~/org/TODO.org"
+                           "~/org/ToBuy.org"
+                           "~/org/chtu_todo.org"
+                           "~/org/saved_links.org"))
 
   (defun org-link-at-point ()
     "Copy the link at point, message it in the minibuffer, and return it"
@@ -513,6 +522,41 @@
   (org-journal-dir "~/org/journal/")
   (org-journal-file-type 'yearly)
   (org-journal-time-format ""))
+
+;;;;; saved links
+(defvar saved-links-file "~/org/saved_links.org"
+  "File to store links (typically found inside the org directory)")
+
+(defun org-set-date-property (property)
+  (interactive "sdated property: ")
+  (org-set-property property (format-time-string "%Y-%m-%d")))
+
+(defun link-new ()
+  (interactive )
+  (find-file saved-links-file)
+  (goto-char (point-min))
+  (search-forward "* to read")
+  (insert "\n** ")
+  (insert (read-from-minibuffer "title: "))
+  (org-set-date-property "CREATED")
+  (org-set-tags-command)
+  ;; MAYBE there's a better way to go past the propreties and start
+  ;; editing the contents?
+  (search-forward ":END:")
+  (end-of-line)
+  (insert "\n"))
+
+(defun link-archive ()
+  (interactive)
+  ;; TODO
+  ;; kill the link at point, paste it under "archived -
+  ;; miscellaneous", then add the ARCHIVED property
+  (org-cut-subtree)
+  (goto-char (point-max))
+  (org-fold-show-subtree)
+  (goto-char (point-max))
+  (yank)
+  (org-set-date-property "ARCHIVED"))
 
 ;;;; MARKDOWN mode
 (use-package markdown-mode
