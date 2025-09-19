@@ -692,7 +692,13 @@
   '(chtu-todo "~/org/chtu_todo.org")
   '(gym-notes "~/org/gym_exercise_notes.org")
   '(papers-and-notes "~/papers and notes/notes.org")
-  '(books "~/org/books.org")))
+  '(books "~/org/books.org")
+  '(sanctuary "~/org/sanctuary_jam_plan.org")
+  '(braxton "~/org/anthony_braxton.org")
+  '(jazz-notes "~/org/jazz_notes.org")
+  '(links "~/org/saved_links.org")
+  '(cooking "~/org/cooking.org")
+  '(languages "~/org/language_learning.org")))
 
 ;; open a file in my temp directory
 (defun temp ()
