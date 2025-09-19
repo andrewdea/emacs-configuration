@@ -555,9 +555,6 @@
 
 (defun link-archive ()
   (interactive)
-  ;; TODO
-  ;; kill the link at point, paste it under "archived -
-  ;; miscellaneous", then add the ARCHIVED property
   (org-cut-subtree)
   (goto-char (point-max))
   (org-fold-show-subtree)
