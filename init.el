@@ -502,6 +502,13 @@
 
 ;;;;; org journal
 (use-package org-journal
+  :init
+  (defun journal ()
+    (interactive)
+    (let ((result (org-journal-read-or-display-entry (current-time))))
+      (when (equal result "No journal entry for this date.")
+        (org-journal-open-current-journal-file))))
+
   :config
   (set-face-attribute 'org-journal-calendar-entry-face
                       nil :inherit 'diary :foreground "yellow")
