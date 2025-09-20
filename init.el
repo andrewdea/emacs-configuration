@@ -492,13 +492,25 @@
 	 ("C-M-<backspace>" . org-cut-subtree)
 	 ("TAB" . my-org-tab)))
 
+;;;;; org roam
 (use-package org-roam
+  :defer 3
+  :config
+  (org-roam-db-autosync-mode)
+  ;; TODO need to figure out a way to tell `org' NOT to use the
+  ;; template when it's an org-roam node
   :custom
-  (org-roam-directory "~/RoamNotes")
-  (org-roam-database-connector 'sqlite-builtin)
+  (org-roam-directory "~/org-roam")
+  ;; (org-roam-database-connector 'sqlite-builtin)
   :bind (("C-c n l" . org-roam-buffer-toggle)
 	 ("C-c n f" . org-roam-node-find)
 	 ("C-c n i" . org-roam-node-insert)))
+
+(use-package org-roam-tags
+  :load-path "custom/packages/org-roam-tags/"
+  ;; TODO how to make sure this map is loaded together with org-roam?
+  :bind (:map org-mode-map
+	      ("C-c q" . org-roam-tags-tag-note)))
 
 ;;;;; org journal
 (use-package org-journal
