@@ -570,9 +570,13 @@
   (org-cut-subtree)
   (goto-char (point-max))
   (org-fold-show-subtree)
-  (goto-char (point-max))
-  (yank)
-  (org-set-date-property "ARCHIVED"))
+  (let ((latest-max (point-max)))
+    (goto-char latest-max)
+    (yank)
+    ;; go back to where the yank started, to make sure we set the
+    ;; property for this node's top-level
+    (goto-char (1+ latest-max))
+    (org-set-date-property "ARCHIVED")))
 
 ;;;; MARKDOWN mode
 (use-package markdown-mode
