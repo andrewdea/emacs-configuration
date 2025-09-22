@@ -497,10 +497,18 @@
   :defer 3
   :config
   (org-roam-db-autosync-mode)
-  ;; TODO need to figure out a way to tell `org' NOT to use the
-  ;; template when it's an org-roam node
+
+  ;; TEMP hack to avoid templates when using org-capture
+  (advice-add #'org-capture :before (lambda (&rest r) (setq auto-insert nil)))
+  (advice-add #'org-capture :after (lambda (&rest r) (setq auto-insert t)))
+
   :custom
   (org-roam-directory "~/org-roam")
+  (org-roam-capture-templates
+   '(("d" "default" plain "%?"
+      :target (file+head "${slug}.org"
+                         "#+title: ${title}\n%T\n")
+      :unnarrowed t)))
   ;; (org-roam-database-connector 'sqlite-builtin)
   :bind (("C-c n l" . org-roam-buffer-toggle)
 	 ("C-c n f" . org-roam-node-find)
@@ -511,6 +519,8 @@
   ;; TODO how to make sure this map is loaded together with org-roam?
   :bind (:map org-mode-map
 	      ("C-c q" . org-roam-tags-tag-note)))
+
+;; TODO: org-roam-ui
 
 ;;;;; org journal
 (use-package org-journal
@@ -674,6 +684,7 @@
   (interactive)
   (setq jit-lock-defer-time nil))
 
+;;;;; trash
 ;; don't rm files with just a couple key-presses
 (setq delete-by-moving-to-trash t)
 
