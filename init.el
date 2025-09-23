@@ -1860,13 +1860,7 @@ from `startup-look'"
   :config
   (setq
    ollama-models '
-   ((llava:7b
-     :description
-     "multimodal model that combines a vision encoder and Vicuna for \
-general-purpose visual and language understanding"
-     :capabilities (media)
-     :mime-types ("image/png" "image/jpeg" "image/webp" "image/heic" "image/heif"
-                  "application/pdf" "text/plain" "text/csv" "text/html"))
+   (
 
     (granite3.1-dense:2b
      :description
@@ -2874,17 +2868,27 @@ middle of the window instead."
 ;; for testing xwidgets
 (setq load-prefer-newer t)
 
-;;;;; difftastic
-(use-package difftastic
-  ;; :demand t
-  :bind (:map magit-blame-read-only-mode-map
-              ("D" . difftastic-magit-show)
-              ("S" . difftastic-magit-show))
-  :config
-  (eval-after-load 'magit-diff
-    '(transient-append-suffix 'magit-diff '(-1 -1)
-       [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
-        ("S" "Difftastic show" difftastic-magit-show)])))
+
+;;;;; noaa weather forecast
+(use-package noaa
+  :init
+  (defalias #'weather #'noaa)
+  (load-file "custom/noaa-local-vars.el")
+  :custom
+  (noaa-location "Brooklyn, NY")
+  ;; `calendar-latitude' and `calendar-longitude' are set in
+  ;; "custom/noaa-local-vars.el"
+  (noaa-latitude calendar-latitude)
+  (noaa-longitude calendar-longitude)
+  ;; TODO can't quite figure out how to actually set the default style.
+  ;; I must not be getting something right, this should be a lot easier!
+  (defun noaa-set-defaults (&rest r)
+    (interactive)
+    (setq noaa--daily-current-style 1
+	  noaa--hourly-current-style 1))
+
+  (advice-add 'noaa-mode :after #'noaa-set-defaults))
+
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, tango-dark,
@@ -2898,7 +2902,7 @@ middle of the window instead."
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(org-journal lsp-mode clojurescript-mode difftastic elm-mode code-cells detached osm jupyter magit origami dired casual gh-md treesit-auto which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin org-roam rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(noaa org-roam org-journal lsp-mode clojurescript-mode elm-mode code-cells detached osm jupyter magit origami dired casual gh-md treesit-auto which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(package-vc-selected-packages
    '((transient-showcase :url "https://github.com/positron-solutions/transient-showcase.git")))
  '(safe-local-variable-values
