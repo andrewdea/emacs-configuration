@@ -413,6 +413,10 @@
                            "~/org/chtu_todo.org"
                            "~/org/saved_links.org"))
 
+  (defun org-headline-text ()
+    "Return the text of the current headline"
+    (nth 4 (org-heading-components)))
+
   (defun org-link-at-point ()
     "Copy the link at point, message it in the minibuffer, and return it"
     (interactive)
