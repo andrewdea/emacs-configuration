@@ -1,4 +1,4 @@
-;;; .emacs --- init file at HOME  -*- lexical-binding: t; -*-
+;;; init.el --- init file at HOME  -*- lexical-binding: t; -*-
 ;; Copyright (C) 2022  Andrew De Angelis
 
 ;; Author: Andrew De Angelis <bobodeangelis@gmail.com>
@@ -2917,5 +2917,5 @@ middle of the window instead."
            (rainbow-mode 1))))
  '(tool-bar-mode nil))
 
-(provide '.emacs)
-;;; .emacs ends here
+(provide 'init.el)
+;;; init.el ends here
