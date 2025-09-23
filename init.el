@@ -575,9 +575,10 @@
 (defvar saved-links-file "~/org/saved_links.org"
   "File to store links (typically found inside the org directory)")
 
-(defun org-set-date-property (property)
-  (interactive "sdated property: ")
-  (org-set-property property (format-time-string "%Y-%m-%d")))
+(defun org-set-dated-property (property)
+  (interactive (list nil))
+  (let ((property (or property (org-read-property-name))))
+    (org-set-property property (format-time-string "%Y-%m-%d"))))
 
 (defun link-new ()
   (interactive )
@@ -586,7 +587,7 @@
   (search-forward "* to read")
   (insert "\n** ")
   (insert (read-from-minibuffer "title: "))
-  (org-set-date-property "CREATED")
+  (org-set-dated-property "CREATED")
   (org-set-tags-command)
   ;; MAYBE there's a better way to go past the propreties and start
   ;; editing the contents?
@@ -605,7 +606,7 @@
     ;; go back to where the yank started, to make sure we set the
     ;; property for this node's top-level
     (goto-char (1+ latest-max))
-    (org-set-date-property "ARCHIVED"))
+    (org-set-dated-property "ARCHIVED"))
   (org-roam-node-find 'other-window  (org-headline-text)))
 
 ;;;; MARKDOWN mode
