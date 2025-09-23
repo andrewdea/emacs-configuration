@@ -448,8 +448,10 @@
     else, first move to previous visible heading, then call it"
     (interactive)
     (move-beginning-of-line 1)
-    (if (null (looking-at org-outline-regexp))
-	(org-previous-visible-heading 1))
+    (when (save-excursion
+            (not (looking-at
+                  (concat org-outline-regexp "\\|" org-property-re))))
+      (org-previous-visible-heading 1))
     (org-cycle))
 
   (defun open-file-same-window () (interactive)
