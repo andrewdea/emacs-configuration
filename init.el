@@ -550,8 +550,18 @@
                   (org-previous-visible-heading 1)
                   (org-narrow-to-subtree))))
 
-  ;; TODO edit `org-journal-date-format' to something like:
-  ;; weekday, month (as word), day, year
+  ;; NOTE right now any entry gets the CREATED property which is kinda
+  ;; useless since it's just automatically set to the date of the
+  ;; entry (ie not actually the date it was created)
+  ;; TODO fix this
+
+  ;; TODO standardize diary entries, maybe write a
+  ;; `journal-set-as-diary-entry' function that will set the
+  ;; :DIARY-ENTRY property (are boolean properties a good practice?)
+
+  ;; NOTE right now it gets buggy when I try to add multiple TODO
+  ;; entries for the same day
+  ;; TODO try to fix this
   :custom
   (org-journal-dir "~/org/journal/")
   (org-journal-file-type 'yearly)
