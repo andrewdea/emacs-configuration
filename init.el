@@ -505,6 +505,9 @@
   (advice-add #'org-capture :after (lambda (&rest r) (setq auto-insert t)))
 
   :custom
+  ;; TODO maybe explore somehow adding the work org-roam directory
+  ;; here as well? some sort of dual setup where one of the
+  ;; directories is opt-in would be ideal, maybe through iCloud
   (org-roam-directory "~/org-roam")
   (org-roam-capture-templates
    '(("d" "default" plain "%?"
