@@ -605,7 +605,8 @@
     ;; go back to where the yank started, to make sure we set the
     ;; property for this node's top-level
     (goto-char (1+ latest-max))
-    (org-set-date-property "ARCHIVED")))
+    (org-set-date-property "ARCHIVED"))
+  (org-roam-node-find 'other-window  (org-headline-text)))
 
 ;;;; MARKDOWN mode
 (use-package markdown-mode
