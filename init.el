@@ -2873,13 +2873,8 @@ middle of the window instead."
 (use-package noaa
   :init
   (defalias #'weather #'noaa)
-  (load-file "custom/noaa-local-vars.el")
   :custom
   (noaa-location "Brooklyn, NY")
-  ;; `calendar-latitude' and `calendar-longitude' are set in
-  ;; "custom/noaa-local-vars.el"
-  (noaa-latitude calendar-latitude)
-  (noaa-longitude calendar-longitude)
   ;; TODO can't quite figure out how to actually set the default style.
   ;; I must not be getting something right, this should be a lot easier!
   (defun noaa-set-defaults (&rest r)
