@@ -529,7 +529,17 @@
   :bind (:map org-mode-map
 	      ("C-c q" . org-roam-tags-tag-note)))
 
-;; TODO: org-roam-ui
+(use-package org-roam-ui
+  :after org-roam
+  :custom
+  ;; use `xwidget-webkit' by default
+  (org-roam-ui-browser-function #'xw-url)
+  ;; NOTE: use `org-roam-ui-open' to see the graph
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
 
 ;;;;; org journal
 (use-package org-journal
