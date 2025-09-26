@@ -1137,6 +1137,8 @@ Print a message to alert of the capitalization"
 
 ;;;;; flyspell
 (use-package flyspell
+  :custom
+  (flyspell-mark-duplications-flag nil)
   :bind (:map flyspell-mode-map
 	      ("<mouse-3>" . flyspell-correct-word)
 	      ("C-c f" . flyspell-correct-word-before-point)))
