@@ -585,27 +585,29 @@
 (defvar saved-links-file "~/org/saved_links.org"
   "File to store links (typically found inside the org directory)")
 
-(defun org-set-dated-property (property)
+(defun org-set-property-to-today (property)
   (interactive (list nil))
   (let ((property (or property (org-read-property-name))))
     (org-set-property property (format-time-string "%Y-%m-%d"))))
 
 (defun link-new ()
+  "Create a new link in `saved-links-file'"
   (interactive )
   (find-file saved-links-file)
   (goto-char (point-min))
   (search-forward "* to read")
   (insert "\n** ")
   (insert (read-from-minibuffer "title: "))
-  (org-set-dated-property "CREATED")
+  (org-set-property-to-today "CREATED")
   (org-set-tags-command)
-  ;; MAYBE there's a better way to go past the propreties and start
+  ;; MAYBE there's a better way to go past the properties and start
   ;; editing the contents?
   (search-forward ":END:")
   (end-of-line)
   (insert "\n"))
 
 (defun link-archive ()
+  "Archive the link at point (move it to the archived section of the file)"
   (interactive)
   (org-cut-subtree)
   (goto-char (point-max))
@@ -616,8 +618,22 @@
     ;; go back to where the yank started, to make sure we set the
     ;; property for this node's top-level
     (goto-char (1+ latest-max))
-    (org-set-dated-property "ARCHIVED"))
-  (org-roam-node-find 'other-window  (org-headline-text)))
+    (org-set-property-to-today "ARCHIVED"))
+  (link-org-roam-node))
+
+(defun link-org-roam-node ()
+  "Create an org-roam-node for the current link"
+  (interactive)
+  (let ((links-buffer (current-buffer))
+        (_ (org-roam-node-find 'other-window  (org-headline-text)))
+        (node-buffer (current-buffer))
+        (id (org-entry-get (point) "id")))
+    (switch-to-buffer links-buffer)
+    (org-fold-show-subtree)
+    (org-next-visible-heading 1)
+    (left-char)
+    (insert (format "\n - [[id:%s][org-roam node]]" id))
+    (switch-to-buffer node-buffer)))
 
 ;;;; MARKDOWN mode
 (use-package markdown-mode
