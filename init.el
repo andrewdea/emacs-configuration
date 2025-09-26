@@ -606,9 +606,9 @@
   (end-of-line)
   (insert "\n"))
 
-(defun link-archive ()
+(defun link-archive (with-org-roam-node)
   "Archive the link at point (move it to the archived section of the file)"
-  (interactive)
+  (interactive "P")
   (org-cut-subtree)
   (goto-char (point-max))
   (org-fold-show-subtree)
@@ -619,7 +619,8 @@
     ;; property for this node's top-level
     (goto-char (1+ latest-max))
     (org-set-property-to-today "ARCHIVED"))
-  (link-org-roam-node))
+  (when with-org-roam-node
+    (link-org-roam-node)))
 
 (defun link-org-roam-node ()
   "Create an org-roam-node for the current link"
