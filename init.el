@@ -607,7 +607,9 @@
   (insert "\n"))
 
 (defun link-archive (with-org-roam-node)
-  "Archive the link at point (move it to the archived section of the file)"
+  "Archive the link at point (move it to the archived section of the
+  file)
+With prefix arg, also create a corresponding `org-roam' node"
   (interactive "P")
   (org-cut-subtree)
   (goto-char (point-max))
