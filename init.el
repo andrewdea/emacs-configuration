@@ -582,6 +582,8 @@
   (org-journal-time-format ""))
 
 ;;;;; saved links
+;; TODO these functionalities could work even better by creating a
+;; "saved links" mode inheriting from `org-mode'
 (defvar saved-links-file "~/org/saved_links.org"
   "File to store links (typically found inside the org directory)")
 
@@ -618,9 +620,10 @@ With prefix arg, also create a corresponding `org-roam' node"
     (goto-char latest-max)
     (yank)
     ;; go back to where the yank started, to make sure we set the
-    ;; property for this node's top-level
+    ;; property & tags for this node's top-level
     (goto-char (1+ latest-max))
-    (org-set-property-to-today "ARCHIVED"))
+    (org-set-property-to-today "ARCHIVED")
+    (org-set-tags (delete "Toarchive" (org-get-tags))))
   (when with-org-roam-node
     (link-org-roam-node)))
 
@@ -2944,7 +2947,7 @@ middle of the window instead."
  '(custom-safe-themes t)
  '(org-cycle-emulate-tab 'whitestart)
  '(package-selected-packages
-   '(noaa org-roam org-journal lsp-mode clojurescript-mode elm-mode code-cells detached osm jupyter magit origami dired casual gh-md treesit-auto which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
+   '(org-roam-ui noaa org-roam org-journal lsp-mode clojurescript-mode elm-mode code-cells detached osm jupyter magit origami dired casual gh-md treesit-auto which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
  '(package-vc-selected-packages
    '((transient-showcase :url "https://github.com/positron-solutions/transient-showcase.git")))
  '(safe-local-variable-values
@@ -2958,6 +2961,13 @@ middle of the window instead."
            (fboundp 'rainbow-mode)
            (rainbow-mode 1))))
  '(tool-bar-mode nil))
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 
 (provide 'init.el)
 ;;; init.el ends here
