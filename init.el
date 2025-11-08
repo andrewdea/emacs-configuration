@@ -523,9 +523,58 @@
 	 ("C-c n f" . org-roam-node-find)
 	 ("C-c n i" . org-roam-node-insert)))
 
+;; MAYBE it'd be nice to have the option to "turn tags off" so that
+;; they're not always displayed in the graph. Crudest way I can think
+;; of is to go through every file and comment-out these tags. Then the
+;; tag's own node can stay up, and if there any actual links to those
+;; node those can stay up as well. Another possibility is to comment
+;; out each tag node, which might be easier to implement but not
+;; necessarily the best result
+;;
+;; Another cool thing could be to display the tags as colors (each
+;; node with that tag takes that color?) rather than as links? though
+;; not sure how to deal with multiple tags on the same node, would
+;; have to think that through
 (use-package org-roam-tags
   :load-path "custom/packages/org-roam-tags/"
-  ;; TODO how to make sure this map is loaded together with org-roam?
+  :after org-roam
+
+  :config
+  (defun my/org-roam-tags-toggle-here ()
+    (when
+        (search-forward org-roam-tags--file-tags-line-marker
+                        nil 'no-error)
+      (move-beginning-of-line 1)
+      ;; if the current line starts with "# ", then remove it,
+      ;; else, insert it
+      (if (string-prefix-p "# " (thing-at-point 'line))
+          (progn
+            (message "removing comment")
+            (delete-forward-char 2))
+        (message "adding comment")
+        (insert "# "))
+      ;; TODO need to figure out how to actually make it update the
+      ;; info within the graph, the below doesn't seem to work as expected
+      (org-roam-ui--update-current-node)))
+
+  (defun my/org-roam-tags-toggle-file (file)
+    ;; MAYBE when applied to multiple files in bulk, it might be
+    ;; convenient to have the option to force one of the two states
+    ;; (tagged or un-tagged) rather than toggle the previous state
+    (message "\n")
+    (with-temp-file file
+      (insert-file-contents file)
+      (message file)
+      (my/org-roam-tags-toggle-here)))
+
+  (defun my/org-roam-tags-toggle-all ()
+    (interactive)
+    ;; TODO if the buffer is open, it might be better to do it in the
+    ;; buffer directly rather than open a separate temp file for it
+    ;; (especially if the file is in the current buffer)
+    (mapc #'my/org-roam-tags-toggle-file (org-roam-list-files)))
+
+  ;; TODO how to make sure this keymap is loaded together with org-roam?
   :bind (:map org-mode-map
 	      ("C-c q" . org-roam-tags-tag-note)))
 
@@ -703,6 +752,7 @@ With prefix arg, also create a corresponding `org-roam' node"
   (defalias #'gh-md-preview #'gh-md-render-buffer))
 
 ;;;; FILE utilities
+(setq find-file-visit-truename t)
 ;;;;; dialog boxes
 (setq use-file-dialog nil)
 (setq use-dialog-box nil)
