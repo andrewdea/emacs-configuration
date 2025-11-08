@@ -117,7 +117,9 @@
 (defun startup-look ()
   "Set (or restore) the initial appearance."
   (interactive)
-  (funcall (default-theme))
+  ;; NOTE getting some weird behavior when calling this:
+  ;; Invalid face box: :color, "#64645E", :line-width, 1, :style, unspecified
+  ;; (funcall (default-theme))
   ;; if not already maximized, maximize
   (or (eq (frame-parameter (selected-frame) 'fullscreen) 'maximized)
       (toggle-frame-maximized))
@@ -285,6 +287,8 @@
 (global-set-key (kbd "M-o") #'other-frame-or-make)
 
 ;;;;; themes and colors
+;; TODO: there's a problem in emacs30 with themes:
+;; face-spec-set-2: Invalid face box: :color, "#64645E", :line-width, 1, :style, unspecified
 (defun un-theme (&optional arg)
   "Disable all custom themes and load theme ARG."
   (interactive (list (intern (completing-read "New theme: "
@@ -505,8 +509,14 @@
   (org-roam-db-autosync-mode)
 
   ;; TEMP hack to avoid templates when using org-capture
-  (advice-add #'org-capture :before (lambda (&rest r) (setq auto-insert nil)))
-  (advice-add #'org-capture :after (lambda (&rest r) (setq auto-insert t)))
+  (advice-add #'org-capture :before
+              (lambda (&rest r)
+                (setq auto-insert nil)))
+  (advice-add #'org-capture :after
+              (lambda (&rest r)
+                (setq auto-insert t)))
+
+  ;; TODO I want to make `org-roam-node-read' NOT case-sensitive
 
   :custom
   ;; TODO maybe explore somehow adding the work org-roam directory
@@ -825,7 +835,8 @@ With prefix arg, also create a corresponding `org-roam' node"
   '(jazz-notes "~/org/jazz_notes.org")
   '(links "~/org/saved_links.org")
   '(cooking "~/org/cooking.org")
-  '(languages "~/org/language_learning.org")))
+  '(languages "~/org/language_learning.org")
+  '(shows "~/org/shows_to_look_into.org")))
 
 ;; open a file in my temp directory
 (defun temp ()
