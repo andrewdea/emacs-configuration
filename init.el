@@ -1628,7 +1628,7 @@ open siblings (directories at its same depth)"
 
 ;;;;; git
 (use-package transient
-  :load-path "~/.emacs.d/elpa/transient-20241102.1229/")
+  :load-path "~/.emacs.d/elpa/transient-20251108.1336/")
 
 (use-package magit
   :config
