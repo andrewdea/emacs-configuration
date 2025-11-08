@@ -2846,15 +2846,49 @@ middle of the window instead."
   :load-path "custom/packages/webkit-mac-enhance/")
 
 ;;;;; pdf tools & epub
+;; TODO Wed Oct 22 10:56:35 EDT 2025
+;; issue with the libraries needed by pdf-tools,
+;; haven't been able to figure out the exact problem
 (use-package pdf-tools
   :init
   ;; install pdf-tools at the first call to doc-view-mode
   (advice-add 'doc-view-mode :after #'pdf-tools-install)
+  :custom
+  (pdf-annot-minor-mode-map-prefix (kbd "C-a"))
+  :config
+  (defun pdf-annot-write-highlight-annotation (list-of-edges)
+    "Create an annotation with `pdf-annot-add-highlight-markup-annotation',
+then activate it with `pdf-annot-activate-annotation' to start writing"
+    (interactive (list (pdf-view-active-region t)))
+    (pdf-annot-activate-annotation (pdf-annot-add-highlight-markup-annotation
+				    list-of-edges)))
+
   :bind
   (:map pdf-view-mode-map
 	("M-w" . pdf-view-kill-ring-save)
 	("C-w" . pdf-view-kill-ring-save)
-	("s-c" . pdf-view-kill-ring-save)))
+	("s-c" . pdf-view-kill-ring-save)
+	;; "b" was originally mapped to `image-previous-frame',
+	;; which in this mode usually just does: (message "No image animation.")
+	("b" . pdf-history-backward)
+	;; "f" was originally mapped to `pdf-links-isearch-link', whose
+	;; behavior/purpose is unclear to me
+	("f" . pdf-history-forward)))
+
+;; TODO there should be a way to easily export all annotations into an org/md
+;; file.
+;; `org-noter' is touted as a way to do this but it seems pretty suboptimal
+;; https://github.com/weirdNox/org-noter
+;; furthermore, this should be fairly easy to do using nothing but pdf-tools?
+;; see this stack overflow answer for some ideas:
+;; https://stackoverflow.com/a/29480524
+;; TODO would like to figure out if there's a way to link to specific annotation
+(use-package pdf-annot
+  :after pdf-tools
+  :load-path (lambda () (locate-library "pdf-tools"))
+  :bind
+  (:map pdf-annot-minor-mode-map
+	("C-a w" . pdf-annot-write-highlight-annotation)))
 
 (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 
