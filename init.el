@@ -667,9 +667,10 @@
   (end-of-line)
   (insert "\n"))
 
+;; TODO check if we could leverage the existing setup for this
+;; https://orgmode.org/manual/Archiving.html
 (defun link-archive (with-org-roam-node)
-  "Archive the link at point (move it to the archived section of the
-  file)
+  "Archive the link at point (move it to the archived section of the file).
 With prefix arg, also create a corresponding `org-roam' node"
   (interactive "P")
   (org-cut-subtree)
