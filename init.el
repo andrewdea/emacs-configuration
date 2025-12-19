@@ -2954,6 +2954,13 @@ then activate it with `pdf-annot-activate-annotation' to start writing"
 
 (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 
+(setq package-vc-allow-build-commands t)
+;; TODO make it only support the file-formats I want to support, NOT
+;; epub or xlsx
+(use-package reader
+  :vc (:url "https://codeberg.org/divyaranjan/emacs-reader"
+  	    :make "all"))
+
 ;;;; GAMES
 ;;;;; tetris
 
