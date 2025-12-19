@@ -418,41 +418,13 @@
                            "~/org/saved_links.org"))
 
   (defun org-headline-text ()
-    "Return the text of the current headline"
-    (nth 4 (org-heading-components)))
-
-  (defun org-link-at-point ()
-    "Copy the link at point, message it in the minibuffer, and return it"
-    (interactive)
-    (let* ((props (text-properties-at (point)))
-           (link (plist-get (plist-get props 'htmlize-link) :uri)))
-      (if link
-          (progn (kill-new link)
-                 (message "%s %s"
-                          (propertize "copied:" 'face 'minibuffer-prompt)
-                          link)
-                 link)
-        (progn (message (propertize "No link found at point" 'face
-                                    'minibuffer-prompt))
-               nil))))
-
-  ;; ensure we can pick up a link in org:
-  ;; xwidget-webkit uses (thing-at-point 'url):
-  (advice-add 'thing-at-point :after-until
-              (lambda (thing &optional no-properties)
-                (when (eq thing 'url)
-                  (org-link-at-point))))
-
-  ;; eww uses eww-suggest-uris:
-  (if (member 'word-at-point eww-suggest-uris)
-      (setq eww-suggest-uris (replace-in-list 'word-at-point
-                                              (list #'org-link-at-point
-                                                    'word-at-point)
-                                              eww-suggest-uris))
-    (nconc eww-suggest-uris (list #'org-link-at-point 'word-at-point)))
+    "Return the text of the current headline.
+Return nil if not applicable."
+    (nth 4 (ignore-errors
+	     (org-heading-components))))
 
   (defun my-org-tab ()
-    "If current line is a heading, call regular org-cycle;
+    "If current line is a heading or a property, call regular org-cycle;
     else, first move to previous visible heading, then call it"
     (interactive)
     (move-beginning-of-line 1)
@@ -480,17 +452,69 @@
 
   (defun electric-fontify ()
     "If in org-mode (or a derived mode),
-    when a region is highlighted and we've inserted a character that fontifies text,
-    the whole region is fontified (by automatically inserting character at mark)"
+when a region is highlighted and we've inserted a character that fontifies text,
+the whole region is fontified (by automatically inserting character at mark)"
     (if (and (boundp 'to-fontify) to-fontify)
 	(progn (exchange-point-and-mark)
 	       (insert last-command-event)
 	       (makunbound 'to-fontify))))
   (add-hook 'post-self-insert-hook #'electric-fontify)
 
+  (defun org-link-at-point ()
+    "Copy the link at point, message it in the minibuffer, and return it"
+    (interactive)
+    (let* ((props (text-properties-at (point)))
+           (link (plist-get (plist-get props 'htmlize-link) :uri)))
+      (if link
+          (progn (kill-new link)
+                 (message "%s %s"
+                          (propertize "copied:" 'face 'minibuffer-prompt)
+                          link)
+                 link)
+        (progn (message (propertize "No link found at point" 'face
+                                    'minibuffer-prompt))
+               nil))))
+
+  ;; ensure we can pick up a link in org:
+  ;; xwidget-webkit uses (thing-at-point 'url):
+  ;; TODO: this functionality should be added to eww as well
+  (advice-add 'thing-at-point :after-until
+              (lambda (thing &optional no-properties)
+                (when (eq thing 'url)
+                  (org-link-at-point))))
+
+  (defun my/org-post-structure-template (&optional _type)
+    "advice to use after `org-insert-structure-template':
+after having written the structure, make sure we also add a newline so we can
+    start writing the contents"
+    ;; if region is active, we are adding the structure *around* existing
+    ;; content, so no need to make room for it
+    (unless (region-active-p)
+      ;; TODO make the search non-case-sensitive
+      (search-forward "#+end_")
+      (beginning-of-line)
+      (left-char)
+      (insert ?\n))
+    ;; TODO might also need something to make sure that the indentation is
+    ;; consistent
+    ;; (eg copy the amt of whitespace before #+end_ and paste that)
+    )
+
+  (advice-add #'org-insert-structure-template :after
+	      'my/org-post-structure-template)
+
+  ;; KLUDGE this ensures that org-links generated with org-ql queries work right away
+  (load (file-name-concat (file-name-directory (locate-library "org-ql")) "org-ql-search.el"))
+
   :hook
   (org-mode . org-indent-mode)
   (org-mode . turn-on-flyspell)
+  (org-mode . electric-pair-local-mode)
+  :custom
+  ;; allow each org file to set their own preferred image-width
+  (org-image-actual-width nil)
+  ;; use the absolute path for file links
+  (org-link-file-path-type 'absolute)
   :bind (("C-c s" . org-store-link)
 	 ("C-c l" . org-insert-link)
 	 ("C-c a" . org-agenda)
@@ -1002,6 +1026,20 @@ default behavior:
 (setq ns-right-command-modifier 'control)
 
 ;;;;; utilities
+(defun copy-message-return (it &optional it-message it-return)
+  "Handy function to perform these three actions together.
+Copy a string, message IT in the minibuffer, and return IT.
+IT is the string, optional arguments IT-MESSAGE and IT-RETURN can be used to
+  have different behavior for each action: when nil, they default to IT.
+IT-MESSAGE can be a string or a list starting with a format string followed by
+its arguments"
+  (kill-new it)
+  (let ((it-message (or it-message it)))
+    (if (listp it-message)
+	(apply #'message it-message)
+      (message it-message)))
+  (or it-return it))
+
 (defun dwim-move-beginning-of-line (&optional arg)
   "Move point back to indentation of beginning of line.
   `move-beginning-of-line' but smarter.
