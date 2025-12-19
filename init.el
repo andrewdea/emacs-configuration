@@ -764,6 +764,46 @@ With prefix arg, also create a corresponding `org-roam' node"
 
 ;;;; FILE utilities
 (setq find-file-visit-truename t)
+
+(defun latest-file (path)
+  "Get latest file in PATH."
+  (message "Finding latest file in path: %s" path)
+  ;; MAYBE enforce that `path' should end with a /
+  (let* ((relative-filename
+	  (car (split-string
+		;; TODO: how to deal with this command failing?
+		(shell-command-to-string (format "ls -t %s" path))
+		"\n")))
+	 (absolute-filename (file-name-concat path relative-filename)))
+    (copy-message-return absolute-filename
+			 relative-filename)))
+
+(defun downloads-latest ()
+  "Open the latest file added to the Downloads directory"
+  (interactive)
+  (find-file (latest-file "/Users/andyjda/Downloads/")))
+
+(defun list-files-newest-first (directory)
+  "List files in `directory', sorted by modification date, newest first."
+  (mapcar #'car
+	  (sort (directory-files-and-attributes zotero-storage-path)
+		#'(lambda (x y) (time-less-p (nth 6 y) (nth 6 x))))))
+
+(defun create-symlink (filename target-dir &optional new-name)
+  "Create a symlink to FILENAME in TARGET-DIR.
+When optional NEW-NAME is non-nil, give the new file this name."
+  (let* ((directory (file-name-directory filename))
+	 (relative (file-name-nondirectory filename))
+	 (new-name (or new-name (file-name-concat target-dir relative))))
+    (if (file-exists-p new-name)
+	(progn
+	  (message "File already exists: %s" new-name)
+	  (error "attempted symlink on existing file"))
+      (progn
+	(shell-command (format "ln -s \"%s\" \"%s\"" filename new-name))
+	(message "Created symlinked file %s" new-name)))))
+
+
 ;;;;; dialog boxes
 (setq use-file-dialog nil)
 (setq use-dialog-box nil)
