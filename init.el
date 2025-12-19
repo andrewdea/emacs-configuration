@@ -526,6 +526,9 @@ after having written the structure, make sure we also add a newline so we can
 	 ("C-M-<backspace>" . org-cut-subtree)
 	 ("TAB" . my-org-tab)))
 
+;;;;; org ql
+(use-package org-ql)
+
 ;;;;; org roam
 (use-package org-roam
   :defer 3
