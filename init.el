@@ -731,8 +731,10 @@ With prefix arg, also create a corresponding `org-roam' node"
 
 ;;;; MARKDOWN mode
 (use-package markdown-mode
-  :config
+  :init
+  (add-to-list 'auto-mode-alist '("\\.mdx\\'" . markdown-mode))
 
+  :config
   ;; preview mode
   ;; NOTE actually it seems the package `gh-md' already does pretty
   ;; much what I needed
@@ -758,6 +760,34 @@ With prefix arg, also create a corresponding `org-roam' node"
 
   ;; (advice-add 'markdown-live-preview-export :around
   ;; #'adv/disable-auto-insert-mode)
+  (defun markdown-current-heading ()
+    "Get the current heading"
+    (let* ((heading (save-excursion
+		      (unless (string-prefix-p "#" (thing-at-point 'line))
+			(markdown-previous-heading))
+		      (thing-at-point 'line))))
+      (when (string-prefix-p "#" heading)
+	heading)))
+
+  (defun markdown-current-heading-as-url-anchor ()
+    "Get the current heading and format it so it can be used in a url"
+    (when-let ((heading (markdown-current-heading)))
+      (string-trim-right (replace-regexp-in-string
+			  ;; TODO get (some of) these characters from
+			  ;; `markdown-electric-pairs'?
+			  ;; TODO not sure if the period . must always be removed
+			  "`\\|~\\|\\*\\|:\\|\"\\|\\."
+			  ""
+			  (string-replace
+			   " "
+			   "-"
+			   ;; NOTE don't remember what the purpose of this
+			   ;; replace is (in what situations do we get this "+ "?)
+			   (replace-regexp-in-string
+			    "#+ "
+			    "#"
+			    (downcase
+			     heading)))))))
 
   (defun markdown-live-preview-window-xwidget (file)
     "Preview FILE with xwidget.
@@ -768,11 +798,22 @@ With prefix arg, also create a corresponding `org-roam' node"
   (setq markdown-live-preview-window-function
 	#'markdown-live-preview-window-xwidget)
 
-  (defvar markdown-electric-pairs '((?` . ?`) (?* . ?*)) "Electric pairs for markdown-mode.")
+  (defvar markdown-electric-pairs
+    '((?` . ?`) (?* . ?*) (?~ . ?~))
+    "Electric pairs for markdown-mode.")
 
   (defun markdown-add-electric-pairs ()
-    (setq-local electric-pair-pairs (append electric-pair-pairs markdown-electric-pairs))
+    (setq-local electric-pair-pairs
+		(append electric-pair-pairs markdown-electric-pairs))
     (setq-local electric-pair-text-pairs electric-pair-pairs))
+
+
+  :bind
+  (:map markdown-mode-map
+	;; TODO bind this to a consistent spot for markdown and org?
+	("C-c C-," . #'markdown-insert-gfm-code-block)
+	;; consistent "open link" keys for org and markdown:
+	("C-c o" . #'markdown-follow-thing-at-point))
 
   :custom
   (markdown-fontify-code-blocks-natively t)
@@ -1571,9 +1612,10 @@ open siblings (directories at its same depth)"
 
 ;;;;; treemacs
 (use-package treemacs
-  ;; :load-path "/Users/andyjda/treemacs-paste-feature/treemacs/src/elisp"
   :if window-system
-  :demand t
+  ;; NOTE this autoload is ton ensure that `my-treemacs-add-project' works
+  ;; properly. It may need other things to be autoloaded as well
+  :autoload treemacs--select-workspace-by-name
   :init
   (defalias #'tm #'treemacs)
 
@@ -1583,44 +1625,31 @@ open siblings (directories at its same depth)"
          (equal 'visible (treemacs-current-visibility)))
         (delete-window (treemacs-get-local-window))))
 
+  ;; NOTE: forgot what exactly the point of this function is supposed to be
+  ;; TODO if not needed, let's get rid of it
   (defun treemacs-close-and-other-windows (&optional arg)
     (interactive "P")
     (if arg (treemacs-close-window))
     (delete-other-windows))
 
-
-  ;; for the paste to work, make sure you have this function in
-  ;; treemacs-mouse-interface
-  ;; (defun treemacs--paste-point-to-minibuffer ()
-  ;;     "Paste the path at point into the minibuffer.
-  ;; This is used by the \"Paste here\" button,
-  ;; which assumes that we are running `treemacs--copy-or-move',
-  ;; so that pasting this path into the minibuffer allows us to copy/move
-  ;; the previously-selected file into the path at point."
-  ;;     (interactive)
-  ;;     (let* ((path-at-point (treemacs--prop-at-point :path))
-  ;;            (path
-  ;;             (if (file-directory-p path-at-point)
-  ;;                 path-at-point
-  ;;               (file-name-directory path-at-point))))
-  ;;       (switch-to-minibuffer)
-  ;;       (mark-whole-buffer)
-  ;;       (delete-region (region-beginning) (region-end))
-  ;;       (insert path))
-  ;;     (message "copied from treemacs"))
-
-  ;; and this in `treemacs-rightclick-menu'
-
-  ;; `(["Paste here"
-  ;;                treemacs--paste-point-to-minibuffer
-  ;;                :visible ,(string-match-p "\\(\\(Move\\)\\|\\(Copy\\)\\) to: " (or (minibuffer-prompt) ""))]
+  (defun my-treemacs-add-project (&optional directory)
+    "Add project at DIRECTORY to treemacs. Prompt the user for the workspace.
+Basically just a nice wrapper around `treemacs-add-project-to-workspace', making
+    it more user-friendly"
+    (interactive)
+    (let* ((directory
+	    (or directory
+		(read-directory-name "Pick the project's directory: ")))
+	   (treemacs-override-workspace (treemacs--select-workspace-by-name)))
+      (treemacs-add-project-to-workspace directory)
+      (treemacs-do-switch-workspace treemacs-override-workspace)))
 
   :config
-  ;; this is necessary for treemacs-paste to work properly
-  ;; (add-to-list 'ido-read-file-name-non-ido #'treemacs-rightclick-menu)
+  (add-to-list 'ido-read-file-name-non-ido #'treemacs-rightclick-menu)
 
-  :bind
-  (("C-x 1" . treemacs-close-and-other-windows)))
+  ;; :bind
+  ;; (("C-x 1" . treemacs-close-and-other-windows))
+  :bind (:map treemacs-mode-map ("x" . treemacs-delete-marked-files)))
 
 ;;;; TRANSIENT menus and KEY help
 ;;;;; which key
@@ -1730,7 +1759,30 @@ open siblings (directories at its same depth)"
   :load-path "~/.emacs.d/elpa/transient-20251108.1336/")
 
 (use-package magit
+  :after transient
+  :init
+
+  (defcustom magit-default-homebase-dir "~/"
+    "Default directory to clone git projects into"
+    :type '(string)
+    :group 'magit)
+
+  (defun clone-and-add-project (&optional url)
+    "Clone a project into a default directory and add it to a treemacs workspace"
+    (interactive "srepo URL: ")
+    (let* ((project-name (file-name-base url))
+	   (directory (read-directory-name "clone into directory: "
+					   (file-name-concat
+					    magit-default-homebase-dir
+					    project-name))))
+      (message "project-name: %s" project-name)
+      (message "directory: %s" directory)
+      (make-directory directory)
+      (my-treemacs-add-project directory)
+      (magit-clone-internal url directory (transient-args 'magit-clone))))
+
   :config
+
   ;; instead of `magit-insert-unpushed-to-upstream-or-recent',
   ;; show both `magit-insert-unpushed-to-upstream' and
   ;; `magit-insert-recent-commits' in `magit-status-sections-hook'
@@ -1740,32 +1792,81 @@ open siblings (directories at its same depth)"
                            magit-insert-recent-commits)
                          magit-status-sections-hook))
 
-  (defun vc-refresh-buffer (arg)
-    (set-buffer arg)
-    (vc-refresh-state))
+  ;;   (defun vc-refresh-buffer (arg)
+  ;;     (with-current-buffer arg
+  ;;       (vc-refresh-state)))
 
-  (defun magit-add-force (arg)
-    "Adds (with force) the file ARG to the git repo.
-If ARG not specified, defaults to the current buffer's file"
-    (interactive (list (read-file-name "git add -f " (buffer-file-name))))
-    (shell-command (concat "git add -f " arg)))
+  ;;   (defun vc-refresh-all-git-buffers ()
+  ;;     "Get list of git files from magit,
+  ;; for each open buffer with one of these files,
+  ;; refresh the version-control state"
+  ;;     (mapcar #'vc-refresh-buffer
+  ;; 	    (seq-intersection
+  ;; 	     (mapcar #'buffer-name (buffer-list))
+  ;; 	     (mapcar #'file-name-nondirectory (magit-list-files))
+  ;; 	     #'string-equal-ignore-case)))
 
-  (defun vc-refresh-all-git-buffers ()
-    "get list of git files from magit,
-for each open buffer with one of these files, refresh the version-control state"
-    (mapcar #'vc-refresh-buffer
-	    (seq-intersection
-	     (mapcar #'file-name-nondirectory (magit-list-files))
-	     (mapcar #'buffer-name (buffer-list))
-	     #'string-equal-ignore-case)))
+  (defun my-magit-show-refs (arg)
+    "If ARG is nil, list the branches sorted by date of most-recent commit.
+  Else, setup the transient for `magit-show-refs'"
+    (interactive "P")
+    (if arg
+	(magit-show-refs 'transient)
+      (magit-refs-setup-buffer "HEAD" (list "--sort=-committerdate"))))
 
+  (global-auto-revert-mode)
+
+  (setq magit-completing-read-function 'magit-ido-completing-read)
   ;; this might affect performance when there are many files
-  ;; but it can always be turned off
-  :hook (magit-refresh-buffer . vc-refresh-all-git-buffers))
+  ;; but it can always be turned off. Would be cool to maybe find a way to only
+  ;; trigger it when needed (eg we put off refreshing the buffer til next time
+  ;; it's opened?) trying to see if this can be accomplished with
+  ;; `global-auto-revert-mode'
+  ;; :hook (magit-mode . vc-refresh-all-git-buffers)
+
+  ;; in `magit-diff' buffers, when we copy text, we generally don't want to
+  ;; include the '+/-' at the beginning of the line
+  (defun magit-diff--cleanup-kills (string-in-list &optional _replace)
+    (if (bound-and-true-p magit--use-cleanup-kills)
+	;; NOTE that `kill-new' actually passes its string argument as a list
+	;; so we need to get its car first, and then pass it back in a string
+	(let ((str (car string-in-list)))
+	  (when (and (string-match "^+" str)
+		     (string-match "^-" str))
+	    (warn "\
+The copied text from the magit-diff buffer contains both PLUS \
+symbols and MINUS symbols. Are you sure that you intend to copy text from \
+multiple revisions?
+(NOTE: if you want to copy the actual diff, you can do so by temporarily \
+setting `magit--use-cleanup-kills' to nil. Otherwise, while it is t, MINUS and \
+PLUS signs are automatically removed)"))
+	  (list
+	   (replace-regexp-in-string "^[+ -]" "" str)))
+      string-in-list))
+
+  :hook
+  ;; NOTE this approach is used by `inferior-python-cleanup-kills' as well.
+  ;; it seems a bit suboptimal: adding an advice for a general function
+  ;; *everywhere*, but disabling the function's via a buffer-local variable.
+  ;; I'm not sure if there's a better way, but this could be investigated
+  (magit-diff-mode . (lambda ()
+		       (setq-local magit--use-cleanup-kills t)
+		       (advice-add #'kill-new :filter-args
+				   #'magit-diff--cleanup-kills)))
+
+  :custom
+  (magit-clone-set-remote.pushDefault t)
+  :bind (:map magit-mode-map
+	      ("y" . my-magit-show-refs)))
 
 (use-package magit-todos
   :after magit
   :config (magit-todos-mode 1))
+
+(defcustom git-remote-see-push t
+  "Whether to retrieve the PUSH url."
+  :type 'boolean
+  :group 'magit)
 
 (defun git-remote-url (&optional push)
   "Get the remote URL for the current file or directory.
@@ -1776,7 +1877,7 @@ With optional argument PUSH, get the pushRemote"
          (url-from-command
           (shell-command-to-string
            (concat "git remote get-url "
-                   (if push "--push" "") "origin")))
+                   (if push "--push " "") "origin")))
          (trimmed (if (string-prefix-p "fatal: not a git repository"
                                        url-from-command)
                       (error url-from-command)
@@ -1797,6 +1898,8 @@ With optional argument PUSH, get the pushRemote"
 	 (here-path (or filename
 			(string-trim (shell-command-to-string
                                       "pwd"))))
+	 ;; KLUDGE thing to deal with ssh'd files
+	 (here-path (replace-regexp-in-string "/ssh:.*@.*:" "" here-path))
 	 (root (string-trim (shell-command-to-string
                              "git rev-parse --show-toplevel")))
 	 (relative (replace-regexp-in-string
@@ -1805,43 +1908,44 @@ With optional argument PUSH, get the pushRemote"
 	 ;; get the current branch
 	 (branch (string-trim (shell-command-to-string
 			       "git rev-parse --abbrev-ref HEAD")))
-	 ;; get the current-line or region
-	 ;; TODO would be cool if this was an optional additional bit:
-	 ;; the user should specify whether or not they want to go to the
-	 ;; specific line
-	 (line-or-region (when (and filename
-				    (not (string-suffix-p ".md" filename)))
-			   (if (region-active-p)
-			       (save-excursion
-				 (concat "#L" (number-to-string
-					       (progn
-						 (goto-char (region-beginning))
-						 (line-number-at-pos)))
-					 "-L" (number-to-string
-					       (progn
-						 (goto-char (region-end))
-						 (line-number-at-pos)))))
-			     (concat "#L" (number-to-string (line-number-at-pos))))))
+	 ;; get the current "anchor:" in most cases, the line or region,
+	 ;; or, for markdown files, the current heading
+	 (anchor (when filename
+		   (cond ((or
+			   (string-suffix-p ".md" filename)
+			   (string-suffix-p ".mdx" filename))
+			  (markdown-current-heading-as-url-anchor))
+			 ((region-active-p)
+			  (save-excursion
+			    (concat "#L" (number-to-string
+					  (progn
+					    (goto-char
+					     (region-beginning))
+					    (line-number-at-pos)))
+				    "-L" (number-to-string
+					  (progn
+					    (goto-char (region-end))
+					    (line-number-at-pos))))))
+			 (t
+			  (concat "#L" (number-to-string
+					(line-number-at-pos)))))))
 	 (final-url (concat repo-url
 			    (if filename "/blob/" "/tree/")
-			    branch relative
-			    line-or-region)))
-    (kill-new final-url)
-    (message "%s %s"
-             (propertize "copied:" 'face 'minibuffer-prompt)
-             final-url)
-    final-url))
+			    branch
+			    relative
+			    anchor)))
+    (copy-message-return
+     final-url
+     (list "%s %s"
+	   (propertize "copied:" 'face 'minibuffer-prompt)
+	   final-url))))
 
 (defun git-open-remote (&optional in-xwidget push)
   "Open the remote URL for the current file or directory.
   With prefix argument IN-XWIDGET, open it within emacs in a Safari
   xwidget."
-  ;; TODO: keep an eye on this: it might be useful to also prompt the
-  ;; user for the desired file & branch.
-  ;; on the other hand, if the goal is mostly to check the contents of
-  ;; a file in a different branch, use `magit-find-file'
   (interactive "P")
-  (let ((url (git-remote-url)))
+  (let ((url (git-remote-url (or push (bound-and-true-p git-remote-see-push)))))
     (message "%s %s"
              (propertize "Opening:" 'face 'minibuffer-prompt)
              url)
@@ -3143,24 +3247,8 @@ then activate it with `pdf-annot-activate-annotation' to start writing"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(column-number-mode t)
- '(custom-safe-themes t)
- '(org-cycle-emulate-tab 'whitestart)
- '(package-selected-packages
-   '(org-roam-ui noaa org-roam org-journal lsp-mode clojurescript-mode elm-mode code-cells detached osm jupyter magit origami dired casual gh-md treesit-auto which-key request ripgrep no-littering ruff-format dap-mode gruber-darker-theme zig-mode coterm wiki-summary prettier web-mode tide json-mode magit-todos timu-caribbean-theme vterm eat sticky-shell symbol-overlay hacker-typer flycheck-package package-lint cloud-theme rustic rust-mode nov tree-sitter-langs tree-sitter god-mode toc-org use-package ace-window racket-mode emacsql-sqlite-builtin rainbow-mode benchmark-init blacken lsp-pyright aggressive-indent expand-region cheatsheet exec-path-from-shell dired-subtree pdf-tools tablist vundo elpy avy csv-mode dashboard gcmh monicelli-mode all-the-icons-ibuffer all-the-icons-dired projectile all-the-icons flycheck cyberpunk-theme monokai-theme mood-line org-inlinetask outshine javadoc-lookup go-mode sr-speedbar scala-mode cider clojure-mode))
- '(package-vc-selected-packages
-   '((transient-showcase :url "https://github.com/positron-solutions/transient-showcase.git")))
- '(safe-local-variable-values
-   '((vc-default-patch-addressee . "bug-gnu-emacs@gnu.org")
-     (etags-regen-ignores "test/manual/etags/")
-     (etags-regen-regexp-alist
-      (("c" "objc")
-       "/[ \11]*DEFVAR_[A-Z_ \11(]+\"\\([^\"]+\\)\"/\\1/" "/[ \11]*DEFVAR_[A-Z_ \11(]+\"[^\"]+\",[ \11]\\([A-Za-z0-9_]+\\)/\\1/"))
-     (checkdoc-minor-mode . t)
-     (eval when
-           (fboundp 'rainbow-mode)
-           (rainbow-mode 1))))
- '(tool-bar-mode nil))
+ '(package-selected-packages nil)
+ '(package-vc-selected-packages '((wasabi :url "https://github.com/xenodium/wasabi"))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
