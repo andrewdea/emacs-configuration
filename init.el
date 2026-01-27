@@ -1252,14 +1252,23 @@ If TO-REPLACE is not found in LIST, return LIST unaltered"
   (funcall command (region-beginning) (region-end))
   (buffer-substring (region-beginning) (region-end)))
 
-(defun my-smart-upcase ()
+(defun my-smart-upcase (&optional only-first-chars)
   "If region is selected, `upcase-region', else `upcase-char'.
+With prefix-argument ONLY-FIRST-CHARS, use `capitalize-dwim' to only capitalize
+  the first character in each word (at point, or in the selected region).
 Print a message to alert of the capitalization"
-  (interactive)
-  (if mark-active
-      (upcase-region (region-beginning) (region-end))
-    (upcase-char nil))
-  (message "CAPITALIZED %s, %s" (thing-at-point 'word) (what-line)))
+  (interactive "P")
+  (if only-first-chars
+      (capitalize-dwim 1)
+    (if mark-active
+	(upcase-region (region-beginning) (region-end))
+      (upcase-char nil)))
+  (message "CAPITALIZED %s, %s"
+	   (thing-at-point
+	    (if mark-active
+		'region
+	      'word))
+	   (what-line)))
 
 (defun my-smart-downcase ()
   "If region is selected, `downcase-region', else `downcase-char'.
@@ -1268,7 +1277,12 @@ Print a message to alert of the capitalization"
   (if mark-active
       (downcase-region (region-beginning) (region-end))
     (downcase-region (point) (progn (forward-char) (point))))
-  (message "downCASED %s, %s" (thing-at-point 'word) (what-line)))
+  (message "downCASED %s, %s"
+	   (thing-at-point
+	    (if mark-active
+		'region
+	      'word))
+	   (what-line)))
 
 (global-set-key (kbd "C-x C-u") #'my-smart-upcase)
 (global-set-key (kbd "C-x C-l") #'my-smart-downcase)
