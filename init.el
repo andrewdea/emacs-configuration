@@ -905,7 +905,8 @@ When optional NEW-NAME is non-nil, give the new file this name."
   '(links "~/org/saved_links.org")
   '(cooking "~/org/cooking.org")
   '(languages "~/org/language_learning.org")
-  '(shows "~/org/shows_to_look_into.org")))
+  '(shows "~/org/shows_to_look_into.org")
+  '(jobs "~/org/jobs.org")))
 
 ;; open a file in my temp directory
 (defun temp ()
