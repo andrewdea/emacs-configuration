@@ -1266,6 +1266,10 @@ Print a message to alert of the capitalization"
 ;; save clipboard contents to kill-ring
 (setq save-interprogram-paste-before-kill 1000)
 
+(defun word-count ()
+  (interactive)
+  (message "Buffer has %s words" (count-words (point-min) (point-max))))
+
 ;;;;; undo
 ;; make sure you use the better keyboard command
 (global-set-key (kbd "C-x u")
@@ -3044,6 +3048,11 @@ then activate it with `pdf-annot-activate-annotation' to start writing"
   :vc (:url "https://codeberg.org/divyaranjan/emacs-reader"
   	    :make "all"))
 
+
+;;;;; whatsapp
+(use-package wasabi
+  :load-path "custom/packages/wasabi/")
+
 ;;;; GAMES
 ;;;;; tetris
 
@@ -3060,6 +3069,11 @@ then activate it with `pdf-annot-activate-annotation' to start writing"
 
 (add-hook 'tetris-mode-hook #'tetris-setup)
 
+;; TODO potential enhancement is to add a prefix argument that, when
+;; non-nil, instead of closing the tetris buffer simply gets us back
+;; to the normal view. This needs to then be paired with logic to
+;; re-wire `tetris' such that it checks whether the buffer exists
+;; instead of always creating a new one
 (defun tetris-quit ()
   (interactive)
   (my-gc-setup)
