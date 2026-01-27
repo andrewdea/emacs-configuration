@@ -415,7 +415,8 @@
                            ;; "~/org/TODO.org"
                            "~/org/ToBuy.org"
                            "~/org/chtu_todo.org"
-                           "~/org/saved_links.org"))
+                           "~/org/saved_links.org"
+                           "~/org/journal.org"))
 
   (defun org-headline-text ()
     "Return the text of the current headline.
