@@ -514,7 +514,25 @@ after having written the structure, make sure we also add a newline so we can
 	      'my/org-post-structure-template)
 
   ;; KLUDGE this ensures that org-links generated with org-ql queries work right away
-  (load (file-name-concat (file-name-directory (locate-library "org-ql")) "org-ql-search.el"))
+  (load (file-name-concat
+         (file-name-directory (locate-library "org-ql"))
+         "org-ql-search.el"))
+
+  (defun my/org-previous (&optional up-element)
+    "With prefix arg UP-ELEMENT, `org-up-element',
+else `org-previous-visible-heading'"
+    (interactive "P")
+    (if up-element
+	(org-up-element)
+      (org-previous-visible-heading 1)))
+
+  (defun my/org-next (&optional element)
+    "With prefix arg ELEMENT, `org-forward-element',
+else `org-next-visible-heading'"
+    (interactive "P")
+    (if element
+	(org-forward-element)
+      (org-next-visible-heading 1)))
 
   :hook
   (org-mode . org-indent-mode)
@@ -525,6 +543,10 @@ after having written the structure, make sure we also add a newline so we can
   (org-image-actual-width nil)
   ;; use the absolute path for file links
   (org-link-file-path-type 'absolute)
+  ;; display things like \to as arrow etc
+  ;; https://emacsdocs.org/docs/org/Special-Symbols
+  ;; and invoke `org-entities-help' for a full list of special symbols
+  (org-pretty-entities t)
   :bind (("C-c s" . org-store-link)
 	 ("C-c l" . org-insert-link)
 	 ("C-c a" . org-agenda)
@@ -534,7 +556,9 @@ after having written the structure, make sure we also add a newline so we can
 	 ("M-+" . org-timestamp-up-day)
 	 ("C-c o" . open-file-same-window)
 	 ("C-M-<backspace>" . org-cut-subtree)
-	 ("TAB" . my-org-tab)))
+	 ("TAB" . my-org-tab)
+         ("C-c p" . my/org-previous)
+	 ("C-c n" . my/org-next)))
 
 ;;;;; org ql
 (use-package org-ql)
