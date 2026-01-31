@@ -492,14 +492,23 @@ after having written the structure, make sure we also add a newline so we can
     ;; content, so no need to make room for it
     (unless (region-active-p)
       ;; TODO make the search non-case-sensitive
-      (search-forward "#+end_")
-      (beginning-of-line)
-      (left-char)
-      (insert ?\n))
-    ;; TODO might also need something to make sure that the indentation is
-    ;; consistent
-    ;; (eg copy the amt of whitespace before #+end_ and paste that)
-    )
+      (let* ((end-of-template-string "#+end_")
+	     (end-of-template-rgx (concat
+				   (regexp-quote end-of-template-string)
+				   ".*\n"))
+	     (line (progn
+		     (search-forward end-of-template-string)
+		     (thing-at-point 'line)))
+	     (whitespace (replace-regexp-in-string end-of-template-rgx
+						   ""
+						   line)))
+	;; TEMP for debugging
+	;; (message "line: '%s'" line)
+        ;; (message "whitespace: '%s'" whitespace)
+	(beginning-of-line)
+	(left-char)
+	(insert
+	 (concat "\n" whitespace)))))
 
   (advice-add #'org-insert-structure-template :after
 	      'my/org-post-structure-template)
