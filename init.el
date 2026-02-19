@@ -677,12 +677,30 @@ else `org-next-visible-heading'"
                       nil :inherit 'diary :foreground "green")
   (autoload #'org-element--cache-active-p (concat lisp-directory
                                                   "org/org-element.el"))
+
+  (defun org-journal-narrow-to-entry (&rest _)
+    (save-excursion
+      ;; NOTE typically this function is called automatically when
+      ;; we're creating a new entry.
+      ;; in those cases, we know we'll be under the entry's heading,
+      ;; so we need to move up.
+      (org-previous-visible-heading 1)
+      (org-narrow-to-subtree)))
+
   ;; a new entry is narrowed to display only that day in the buffer
-  (advice-add 'org-journal-new-entry :after
-              (lambda (&rest _)
-                (save-excursion
-                  (org-previous-visible-heading 1)
-                  (org-narrow-to-subtree))))
+  (advice-add 'org-journal-new-entry :after #'org-journal-narrow-to-entry)
+
+  ;; NOTE that `org-journal-narrow-to-entry' means that we have to
+  ;; widen the buffer when we're looking to read any other date
+  ;; we achieve this by adding advice to
+  ;; `org-journal--get-entry-path', which is called at the beginning
+  ;; of `org-journal-read-entry'
+  (defun org-journal-widen-buffer (org-journal-file)
+    (when-let (j-buffer (find-buffer-visiting org-journal-file))
+      (with-current-buffer j-buffer (widen)))
+    org-journal-file)
+
+  (advice-add 'org-journal--get-entry-path :filter-return #'org-journal-widen-buffer)
 
   ;; NOTE right now any entry gets the CREATED property which is kinda
   ;; useless since it's just automatically set to the date of the
