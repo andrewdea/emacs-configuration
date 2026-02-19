@@ -2252,6 +2252,12 @@ from `startup-look'"
 
   (setq gptel-use-context 'user))
 
+;;;;; formatting
+(use-package apheleia
+  :config
+  (setf (alist-get 'python-ts-mode apheleia-mode-alist) 'ruff)
+  (setf (alist-get 'python-mode apheleia-mode-alist) 'ruff))
+
 ;;;; PROGRAMMING LANGUAGES
 ;;;;; java
 (use-package javadoc-lookup
