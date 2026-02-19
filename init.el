@@ -1881,7 +1881,10 @@ Basically just a nice wrapper around `treemacs-add-project-to-workspace', making
 
   (global-auto-revert-mode)
 
-  (setq magit-completing-read-function 'magit-ido-completing-read)
+  ;; TEMP `magit-ido-completing-read' is not found in this setup
+  ;; TODO investigate
+  ;; (setq magit-completing-read-function 'magit-ido-completing-read)
+
   ;; this might affect performance when there are many files
   ;; but it can always be turned off. Would be cool to maybe find a way to only
   ;; trigger it when needed (eg we put off refreshing the buffer til next time
