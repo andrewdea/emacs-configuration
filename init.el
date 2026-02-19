@@ -2454,6 +2454,7 @@ We check the RES to ensure the process finished successfully"
     ;; or `projectile-compile-project' leveraging `set-compile-command'
     (py-run-command-in-project-venv py-project-test-command edit-cmd))
 
+  ;; TODO could this be autoloaded?
   (defun py-install-project (&optional remove-earlier)
     "Use the default command to install a python project.
 With prefix arg REMOVE-EARLIER, remove the existing .venv directory."
@@ -2521,7 +2522,18 @@ If `buffer-file-name' returns nil, return DEFAULT"
 	 (venv-dir (concat root ".venv")))
     (if (file-directory-p venv-dir)
 	(file-name-as-directory venv-dir)
-      (progn (message "no '.venv' or 'venv' directory found in this project: %s" root) nil))))
+      (progn (message
+	      "no '.venv' or 'venv' directory found in this project: %s" root)
+	     nil))))
+
+;; TODO make this more generic; it's not just for python
+(defun python--get-project-root-cmd ()
+  "Move to the project directory to run a make command"
+  (when (equal (projectile-project-type) 'python-toml)
+    (let ((root (if (boundp 'projectile-project-root)
+		    (projectile-project-root)
+		  (error "No root directory found for this project"))))
+      (format "cd %s" root))))
 
 (use-package pyvenv
   :hook (python-base-mode . pyvenv-mode)
