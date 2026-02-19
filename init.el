@@ -2610,22 +2610,7 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
     string))
 
 ;;;;; javascript
-(use-package tide)
-
-(add-hook 'js-base-mode-hook #'subword-mode)
-
 ;;;
-(defun setup-tide-mode ()
-  (interactive)
-  (tide-setup)
-  (flycheck-mode +1)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  (tide-hl-identifier-mode +1)
-  ;; company is an optional dependency. You have to
-  ;; install it separately via package-install
-  ;; `M-x package-install [ret] company`
-  (company-mode +1))
 
 ;; aligns annotation to the right hand side
 (setq company-tooltip-align-annotations t)
@@ -2686,16 +2671,20 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
   (interactive)
   (query-replace-regexp "\n\s*\s*console.log(.*);?" ""))
 
-(use-package js
+(use-package web-mode
   :config
-  ;; (setq web-mode-enable-current-element-highlight t)
+  (setq web-mode-enable-current-element-highlight t)
   (set (make-local-variable 'delete-print) #'js-query-delete-console)
-  :bind (:map js-base-mode-map
+  :hook
+  (web-mode . apheleia-mode)
+  :bind (:map web-mode-map
 	      ("M-p" . js-debug-log-stringify)
 	      ("C-M-p" . js-debug-log)))
 
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
+
 (add-hook 'web-mode-hook
           (lambda ()
             (when (string-equal "tsx" (file-name-extension buffer-file-name))
