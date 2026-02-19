@@ -2365,19 +2365,18 @@ We check the RES to ensure the process finished successfully"
               ("C-M-p" . go-debug-print)))
 
 ;;;;; python mode
-(add-hook 'inferior-python-mode-hook #'subword-mode)
 (use-package python
   :config
-
-  ;; functionalities for `prog-setup'
-  (defun py-generic-format (arg action &optional line-number
-                                block-name)
+  (defun py-generic-format (arg action &optional line-number block-name)
     (let ((arg (if arg
                    (string-replace "\"" "'" arg))))
       (format (concat
                action
                "(f\""
-               (when block-name (format "From: '%s'; " block-name))
+               (when line-number (format "From: `%s` in %s; "
+					 block-name
+					 (file-name-nondirectory
+					  (buffer-file-name))))
                (when line-number (format "line number: %s; " line-number))
                (when arg "%s : {%s}")
                "\")")
@@ -2428,29 +2427,78 @@ We check the RES to ensure the process finished successfully"
     (query-comment-out "print"))
 
   (setq ruff-format-command "/Users/andyjda/.pyenv/shims/ruff")
+  (defun py-run-command-in-project-venv (cmd &optional edit-cmd)
+    "Run CMD in a project shell"
+    (interactive "srun this command in a venv: ")
+    (let* ((prefix-cmd (python--get-project-root-cmd))
+	   (full-cmd (concat
+		      prefix-cmd
+		      (when prefix-cmd " && ")
+		      "source .venv/bin/activate && "
+		      cmd)))
+      (compile (if edit-cmd
+		   (compilation-read-command full-cmd)
+		 full-cmd)
+	       t)))
+
+  ;; TODO having trouble setting this for particular projects
+  (defvar py-project-test-command "ruff check --fix && make check-all"
+    "Command to use when testing a Python project. Can be customized for
+    specific projects")
+
+  (defun py-project-test (&optional edit-cmd)
+    "Run 'ruff check --fix && make test-all' in a project shell"
+    (interactive "P")
+    ;; TODO this could potentially be adapted by leveraging
+    ;; `projectile-test-project'
+    ;; or `projectile-compile-project' leveraging `set-compile-command'
+    (py-run-command-in-project-venv py-project-test-command edit-cmd))
+
+  (defun py-install-project (&optional remove-earlier)
+    "Use the default command to install a python project.
+With prefix arg REMOVE-EARLIER, remove the existing .venv directory."
+    (interactive "P")
+    ;; TODO this could be potentially optimized if it ran in a more performant
+    ;; terminal emulator, like `vterm'? Although so far I'm getting decent
+    ;; performance with `compile' and the COMINT flag
+    (let ((command (concat
+		    (when-let ((prefix-cmd (python--get-project-root-cmd)))
+		      (concat prefix-cmd " && "))
+		    (when remove-earlier "rm -rf .venv && ")
+		    "uv venv && source .venv/bin/activate && uv pip install -e .")))
+      (compile command t)))
 
   (defun ruff-fix ()
+    "Run 'ruff check --fix' in a project shell"
     (interactive)
-    (let* ((default-directory (project-root (project-current t)))
-	   (venv-cmd (python-venv--activate-cmd))
-	   (ruff-cmd "ruff check --fix")
-	   (cmd (if venv-cmd
-		    (format "%s && %ss" venv-cmd ruff-cmd)
-		  ruff-cmd)))
-      (shell-command ruff-cmd)))
+    (py-run-command-in-project-venv "ruff check --fix"))
 
+  ;; since these functions have more to do with formatting, maybe they should be
+  ;; in the apheleia section?
+  (defun buffer-file-contains-rgx (rgx &optional default)
+    "Return whether `buffer-file-name' contains the given RGX.
+If `buffer-file-name' returns nil, return DEFAULT"
+    (if-let (name (buffer-file-name))
+	(string-match-p rgx name)
+      default))
+
+  ;; MAYBE would be great to have a way to
+  ;; apply `auto-fill' only to docstrings as well
   :hook
   (python-base-mode . subword-mode)
-  (python-base-mode . ruff-format-on-save-mode)
-  (python-base-mode . (lambda () (setq-local
-                                  ;; TODO would be great to have a way to
-                                  ;; apply `auto-fill' only to docstrings as well
-                                  comment-auto-fill-only-comments t)))
+  (inferior-python-mode . subword-mode)
 
+  ;; NOTE turn this off when we need to open and make edits to the cceval datasets,
+  ;; without worrying about linting
+  ;; (python-base-mode . ruff-format-on-save-mode)
+  (python-base-mode . (lambda () (setq-local fill-column 88
+					     whitespace-line-column 88
+					     comment-auto-fill-only-comments t)))
   :bind (:map python-base-mode-map
               ("M-<right>" . python-indent-shift-right)
               ("M-<left>" . python-indent-shift-left)
               ("C-c r" . py-run-this)
+	      ("C-c t" . py-project-test)
               ("C-M-l" . py-debug-log)
               ("C-M-p" . py-debug-print)))
 
