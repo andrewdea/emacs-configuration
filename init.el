@@ -2702,50 +2702,53 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 	       (comint-send-input nil t))))
   (insert "npm run dev"))
 
-(use-package prettier
-  :init
-  ;; (add-hook 'typescript-mode-hook 'prettier-mode)
-  (add-hook 'web-mode-hook 'prettier-mode))
-
 (use-package lsp-mode
-  :hook
-  (web-mode . lsp)
   :ensure t
   :config
   ;; (require 'lsp-clients)
-  ;; (add-hook 'web-mode-hook 'lsp)
-  (defun lsp-booster--advice-json-parse (old-fn &rest args)
-    "Try to parse bytecode instead of json."
-    (or
-     (when (equal (following-char) ?#)
-       (let ((bytecode (read (current-buffer))))
-         (when (byte-code-function-p bytecode)
-           (funcall bytecode))))
-     (apply old-fn args)))
-  (advice-add (if (progn (require 'json)
-                         (fboundp 'json-parse-buffer))
-                  'json-parse-buffer
-                'json-read)
-              :around
-              #'lsp-booster--advice-json-parse)
+  (add-hook 'web-mode-hook 'lsp)
+  ;; (add-hook 'c-or-c++-ts-mode-hook 'lsp)
+  ;; (add-hook 'c-mode-hook 'lsp)
+  ;; (add-hook 'c++-mode-hook 'lsp)
+  ;; (add-hook 'c-ts-mode-hook 'lsp)
+  ;; (add-hook 'c++-ts-mode-hook 'lsp)
 
-  (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
-    "Prepend emacs-lsp-booster command to lsp CMD."
-    (let ((orig-result (funcall old-fn cmd test?)))
-      (if (and (not test?)                             ;; for check lsp-server-present?
-               (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
-               lsp-use-plists
-               (not (functionp 'json-rpc-connection))  ;; native json-rpc
-               (executable-find "emacs-lsp-booster"))
-          (progn
-            (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
-              (setcar orig-result command-from-exec-path))
-            (message "Using emacs-lsp-booster for %s!" orig-result)
-            (cons "emacs-lsp-booster" orig-result))
-        orig-result)))
 
-  (advice-add 'lsp-resolve-final-command :around
-              #'lsp-booster--advice-final-command))
+  ;; lsp-booster
+  ;; (defun lsp-booster--advice-json-parse (old-fn &rest args)
+  ;;   "Try to parse bytecode instead of json."
+  ;;   (or
+  ;;    (when (equal (following-char) ?#)
+  ;;      (let ((bytecode (read (current-buffer))))
+  ;; 	 (when (byte-code-function-p bytecode)
+  ;;          (funcall bytecode))))
+  ;;    (apply old-fn args)))
+  ;; (advice-add (if (progn (require 'json)
+  ;; 			 (fboundp 'json-parse-buffer))
+  ;;                 'json-parse-buffer
+  ;; 		'json-read)
+  ;;             :around
+  ;;             #'lsp-booster--advice-json-parse)
+
+  ;; (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  ;;   "Prepend emacs-lsp-booster command to lsp CMD."
+  ;;   (let ((orig-result (funcall old-fn cmd test?)))
+  ;;     (if (and (not test?)                             ;; for check lsp-server-present?
+  ;;              (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+  ;;              lsp-use-plists
+  ;;              (not (functionp 'json-rpc-connection))  ;; native json-rpc
+  ;;              (executable-find "emacs-lsp-booster"))
+  ;;         (progn
+  ;;           (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+  ;;             (setcar orig-result command-from-exec-path))
+  ;;           (message "Using emacs-lsp-booster for %s!" orig-result)
+  ;;           (cons "emacs-lsp-booster" orig-result))
+  ;; 	orig-result)))
+  ;; (advice-add 'lsp-resolve-final-command :around
+  ;; 	      #'lsp-booster--advice-final-command)
+
+  )
+
 
 ;;;;; rust
 (use-package rustic
@@ -3301,6 +3304,15 @@ then activate it with `pdf-annot-activate-annotation' to start writing"
 
   (advice-add 'noaa-mode :after #'noaa-set-defaults))
 
+;; ;;;;; trying out agentic setups
+(use-package agent-shell
+  :ensure t
+  ;; :ensure-system-package
+  ;; Add agent installation configs here
+  ;; ((claude . "brew install claude-code")
+  ;;  (claude-code-acp . "npm install -g
+  ;; @zed-industries/claude-code-acp"))
+  )
 
 ;;; CUSTOM-added variables and faces
 ;; my custom-safe-themes are my-monokai, tango-dark,
