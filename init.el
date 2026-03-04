@@ -2982,15 +2982,14 @@ SETUP-FUNCS is a list of functions to run when setting up the shell."
 
 ;;;;; commands
 
-(defun cmd (program-and-args)
+
+(defun cmd (program-and-args &optional async)
   "Run PROGRAM-AND-ARGS synchronously.
 Show the output in the echo area and return it.
 NOTE that this doesn't use a shell, so it might not always behave as
   expected: for example, some programs prefer to print to stdout
   rather than return values, and this doesn't give them a chance to do
-  that.
-For interactive use, it's better to call `shell-command'
-  (asynchronously, if needed), or `call-process-shell-command'."
+  that. If needed, use `call-process-shell-command'."
   (interactive "sexecute: ")
   ;; TODO check if there's a way to make this asynchronous (maybe
   ;; leveraging `detached')
@@ -3007,7 +3006,40 @@ For interactive use, it's better to call `shell-command'
                        (concat " 🤖:\n" output))))
     output))
 
+(defun reveal-in-finder (arg)
+  "Use \"open -R ARG\" to select file in Finder."
+  (interactive (list (ido-read-file-name
+		      "open in Finder: "
+		      nil
+		      (buffer-file-name))))
+  (cmd (format "open -R \"%s\"" arg)))
 
+(defun this-file ()
+  "`copy-message-return' the current path (file or directory)"
+  (interactive)
+  (copy-message-return (or buffer-file-name default-directory)))
+
+(nconc eww-suggest-uris '(region-at-point word-at-point))
+
+(setq eww-search-prefix "https://search.brave.com/search?q=")
+
+(autoload ; so `open-in-browser' works, even if we haven't loaded eww yet
+  #'eww-suggested-uris
+  (concat lisp-directory "net/eww.el"))
+
+(defun open-in-browser (url)
+  (interactive
+   (let ((uris (eww-suggested-uris)))
+     (list (read-string (format-prompt "Enter URL or keywords"
+                                       (and uris (car uris)))
+                        nil 'eww-prompt-history uris))))
+  ;; NOTE: Mon Nov 17 15:26:46 EST 2025
+  ;; that this command might apply some unwanted formatting in the URL:
+  ;; the formatting is done by the open command and not by us, so it's hard to
+  ;; control. But it only really applies to weird formats and is not usually a problem
+  (cmd
+   ;; NOTE `eww--dwim-expand-url' must be autoloaded
+   (format "open \"%s\"" (eww--dwim-expand-url url))))
 
 (defun app-list-running (&optional no-filter)
   "List all running apps.
@@ -3025,6 +3057,8 @@ If optional arg NO-FILTER is non-nil, don't do any filtering."
           (delete-dups
            (regexp-all-matches
             "/.*/.*.app/Contents/MacOS/\\([^ ][^-\n]*\\)" raw 1))))
+    ;; TODO the filter could use some work, eg I would like it to list Ollama
+    ;; even when it's running in the background
     (if no-filter
         all
       ;; remove any app whose name doesn't match (ignoring case)
@@ -3037,6 +3071,9 @@ If optional arg NO-FILTER is non-nil, don't do any filtering."
                     available-apps))
          all)))))
 
+(defun app-is-running (name &optional no-filter)
+  (member name (app-list-running no-filter)))
+
 (defun app-list-all ()
   "List all directories in the /Applications/ directory whose name
 ends in '.app'."
@@ -3048,13 +3085,16 @@ ends in '.app'."
    ".app\n"
    'omit-nulls))
 
-(defun app-quit (app)
-  "Use the recommended MacOS script to quit the app.
-This allows for a graceful shutdown."
-  (interactive
-   (list (completing-read "quit "
-                          (app-list-running))))
-  (cmd (format "osascript -e 'quit app \"%s.app\"'" app)))
+(defun app-quit (app &optional force)
+  "Use the recommended MacOS script to quit APP.
+If we run into issues with the script, return the output of the command, unless
+  FORCE is t, in which case try the more direct command 'killall'"
+  (interactive (list (completing-read "quit "
+				      (app-list-running))))
+  (let* ((force (or force current-prefix-arg))
+	 (output (cmd (format "osascript -e 'quit app \"%s\"" app))))
+    (when (and force (length> output 0))
+      (cmd (format "killall %s" app)))))
 
 (defun app-open (app)
   (interactive (list (completing-read "open "
@@ -3073,36 +3113,32 @@ osascript -e 'tell application \"{app_name}\" to activate'
                           (app-list-running))))
   (app-open app))
 
-;; TODO probably limit this to just apps as default?
-;; BUT need to make sure it allows other options as well
-;; and give the option for which signal to use
-(defun kill-other-process (name)
-  (interactive
-   (list (completing-read "pkill: "
-                          (app-list-running))))
-  (cmd (format "pkill %s" name)))
+(defun os-cleanup ()
+  "Perform cleanup steps required for shutdown or restart."
+  (app-quit "Slack"))
 
-(defun reveal-in-finder (arg)
-  "Use \"open -R ARG\" to select file in Finder."
-  (interactive (list (ido-read-file-name "open in Finder: ")))
-  (cmd (format "open -R %s" arg)))
+;; scripts from:
+;; https://gist.github.com/atifazad/6afd3cbedb8819dd7ed7be92dec2dc0d
+(defun os-shutdown ()
+  "Turn off the computer"
+  (interactive)
+  (os-cleanup)
+  (cmd "osascript -e 'tell app \"System Events\" to shutdown'"))
 
-(nconc eww-suggest-uris '(region-at-point word-at-point))
+(defun os-restart ()
+  "Restart the computer"
+  (interactive)
+  (os-cleanup)
+  (cmd "osascript -e 'tell app \"System Events\" to restart'"))
 
-(setq eww-search-prefix "https://search.brave.com/search?q=")
-
-(autoload ; so `open-in-browser' works, even if we haven't loaded eww yet
-  #'eww-suggested-uris
-  (concat lisp-directory "net/eww.el"))
-
-(defun open-in-browser (url)
-  (interactive
-   (let ((uris (eww-suggested-uris)))
-     (list (read-string (format-prompt "Enter URL or keywords"
-                                       (and uris (car uris)))
-                        nil 'eww-prompt-history uris))))
+(defun ghostty ()
+  "Open the terminal emulator"
+  (interactive)
+  ;; TODO also add the option to run commands (not sure how)
   (cmd
-   (format "open \"%s\"" (eww--dwim-expand-url url))))
+   (format
+    "open -na ghostty --args --title=ghostty-from-emacs --working-directory=%s"
+    default-directory)))
 
 ;;;;; detached
 (use-package detached
