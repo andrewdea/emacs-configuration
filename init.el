@@ -411,6 +411,9 @@
   ;; files. Not sure what's causing it, but
   ;; since I'm not using many agenda
   ;; features, seems fine?
+  ;; NOTE for org to find eg "~/org/journal.org", we may have to allow
+  ;; it to follow symlinks? although it is able to find saved_links,
+  ;; so not sure what the problem is. But it's saying it can't find journal
   (setq org-agenda-files '(
                            ;; "~/org/TODO.org"
                            "~/org/ToBuy.org"
@@ -3382,6 +3385,9 @@ then activate it with `pdf-annot-activate-annotation' to start writing"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(org-agenda-files
+   '("/Users/andyjda/org/ToBuy.org" "/Users/andyjda/org/chtu_todo.org"
+     "/Users/andyjda/org/saved_links.org"))
  '(package-selected-packages nil)
  '(package-vc-selected-packages '((wasabi :url "https://github.com/xenodium/wasabi"))))
 
