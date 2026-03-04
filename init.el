@@ -2229,31 +2229,43 @@ from `startup-look'"
 
 
 ;;;;; LLMs
+(defun ollama-ls-models ()
+  "Call 'ollama ls' and parse its output to return the list of
+available models, *as symbols* (the main use of this right now is within
+`gptel-make-ollama', which expects symbols).
+
+NOTE that the expected output from Ollama will look like this:
+NAME                       ID              SIZE      MODIFIED       
+llama3:latest              365c0bd3c000    4.7 GB    11 minutes ago"
+  (let ((raw-output (make-it-quiet (cmd "ollama ls"))))
+    (cl-loop for row in (cdr (split-string raw-output "\n"))
+	     if (length> row 0)
+	     collect (intern (car (split-string row))))))
+
+(defun ollama-start ()
+  (interactive)
+  (unless (app-is-running "Ollama")
+    ;; NOTE we tell it to 'run' as opposed to 'open', so it runs in the
+    ;; background without opening a panel
+    (cmd "osascript -e 'tell application \"Ollama\" to run'")))
+
 (use-package gptel
-  :load-path "custom/packages/gptel"
+  ;; NOTE switching back to the public version of this
+  ;; :load-path "custom/packages/gptel/"
+
+  :hook
+  ;; NOTE ideally this would happen /after/ the buffer has already been
+  ;; displayed, which would make it snappier
+  (gptel-mode . ollama-start)
+
   :config
   (setq
-   ollama-models '
-   (
-
-    (granite3.1-dense:2b
-     :description
-     "text-only dense LLMs trained on over 12 trillion tokens of data"
-     :capabilities (tool))
-
-    (qwen2.5:7b
-     :description
-     "latest series of Qwen large language models"
-     :capabilities (json)))
-
-   gptel-model 'granite3.1-dense:2b
-   gptel-backend (gptel-make-ollama "OLL🦙M🦙"
-                   :host "localhost:11434"
-                   :stream t
-                   ;; :request-params '(:options (:temperature 0.3 :test t))
-                   :models ollama-models))
-
-  (setq gptel-use-context 'user))
+   gptel-model 'llama3:latest
+   gptel-backend
+   (gptel-make-ollama "*gptel-🦙*"
+     :host "localhost:11434"
+     :stream t
+     :models (ollama-ls-models))))
 
 ;;;;; formatting
 (use-package apheleia
