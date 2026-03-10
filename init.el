@@ -1847,7 +1847,7 @@ Basically just a nice wrapper around `treemacs-add-project-to-workspace', making
       (message "directory: %s" directory)
       (make-directory directory)
       (my-treemacs-add-project directory)
-      (magit-clone-internal url directory (transient-args 'magit-clone))))
+      (magit-clone-regular url directory (transient-args 'magit-clone))))
 
   :config
 
