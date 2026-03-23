@@ -1120,6 +1120,54 @@ default behavior:
   (icloud-default-open-function (if ido-mode #'ido-find-file #'find-file))
   :defer 1)
 
+;;;;; restart
+;; with lots of inspiration from this
+;; https://github.com/iqbalansari/restart-emacs
+;; this is kind of hacky right now
+;; some potential improvements:
+;; keep better track of the initial `command-line-args', so that for example
+;; it'd be easier to restart in terminal or not depending on the situation?
+(defun quick-restart--gui-using-sh (&optional args)
+  "Start GUI version of Emacs using sh.
+
+ARGS is the list arguments with which Emacs should be started, including the
+  Emacs binary."
+  (let ((formatted (format "%s &"
+                           (string-join (mapcar #'shell-quote-argument
+                                                args)
+                                        " "))))
+    (call-process "sh" nil
+                  0 nil
+                  "-c" formatted)))
+
+(defun quick-restart (&optional file)
+  "Restart Emacs by opening FILE"
+  (interactive)
+  (when-let*
+      ;; NOTE that this actually will always return non-nil
+      ;; TODO find a viable way to allow for nil responses
+      ((file (or file
+		 (read-file-name "Restart by opening file: ")))
+       ;; NOTE not sure if it makes sense to let the user defined many options
+       ;; here. It wouldn't make sense to specify '-nw' from within a GUI for
+       ;; example, because the new process would like a TUI to start in.
+       ;; (options (read-string "options: "))
+       (command-line-args (list (car command-line-args)
+				"--file" file
+				;; options
+				)))
+    ;; (message "command-line-args: %s" command-line-args)
+    ;; TODO this isn't working properly: clearly the `restart-emacs' actually gets
+    ;; the `command-line-args' from somewhere else?
+    ;; look into the approach used here:
+    ;; https://github.com/iqbalansari/restart-emacs
+    ;; (restart-emacs)
+    (let ((kill-emacs-hook (append kill-emacs-hook
+				   (list (apply-partially #'quick-restart--gui-using-sh
+							  command-line-args)))))
+      (kill-emacs))))
+
+
 ;;;; TEXT EDITING and keyboard commands
 ;;;;; keys
 ;; allow more flexibility by binding the right-side cmd-key to C-
