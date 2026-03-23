@@ -2327,7 +2327,7 @@ llama3:latest              365c0bd3c000    4.7 GB    11 minutes ago"
 
   :config
   (setq
-   gptel-model 'llama3:latest
+   gptel-model 'llama3.1:latest
    gptel-backend
    (gptel-make-ollama "*gptel-🦙*"
      :host "localhost:11434"
