@@ -2304,7 +2304,7 @@ available models, *as symbols* (the main use of this right now is within
 NOTE that the expected output from Ollama will look like this:
 NAME                       ID              SIZE      MODIFIED       
 llama3:latest              365c0bd3c000    4.7 GB    11 minutes ago"
-  (let ((raw-output (make-it-quiet (cmd "ollama ls"))))
+  (let ((raw-output (cmd "ollama ls")))
     (cl-loop for row in (cdr (split-string raw-output "\n"))
 	     if (length> row 0)
 	     collect (intern (car (split-string row))))))
