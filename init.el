@@ -1867,7 +1867,26 @@ Basically just a nice wrapper around `treemacs-add-project-to-workspace', making
 (use-package prog-setup
   :hook
   (prog-mode . prog-setup-appearance)
-  :load-path "custom/packages/prog-setup/")
+  :load-path "custom/packages/prog-setup/"
+  :config
+  (defun prog-insert-date ()
+    "Insert today's date.
+If the current line is empty, also add 'NOTE'.
+Comment-out the current line, if it isn't already"
+    (interactive)
+    (let ((og-line-empty
+	   (= 0
+	      (length (string-trim (thing-at-point 'line))))))
+      (save-excursion
+	(insert (string-trim (shell-command-to-string "date \"+%B %d, %Y, %I:%M%p (%Z)\""))))
+      (when og-line-empty
+	(insert "NOTE: "))
+      (unless (comment-only-p (pos-bol) (pos-eol))
+	(comment-line 1)))
+    (end-of-visual-line))
+
+  :bind (:map prog-mode-map
+	      ("C-c ." . prog-insert-date)))
 
 
 ;;;;; git
