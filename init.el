@@ -3270,20 +3270,20 @@ osascript -e 'tell application \"{app_name}\" to activate'
     default-directory)))
 
 ;;;;; detached
-(use-package detached
-  :init
-  (detached-init)
-  ;; keeping the original commands for now, I want to get an explicit understanding
-  ;; of when/how I use the detached commands, and what benefits they provide
-  ;; :bind (;; Replace `async-shell-command' with `detached-shell-command'
-  ;;        ([remap async-shell-command] . detached-shell-command)
-  ;;        ;; Replace `compile' with `detached-compile'
-  ;;        ([remap compile] . detached-compile)
-  ;;        ([remap recompile] . detached-compile-recompile)
-  ;;        ;; Replace built in completion of sessions with `consult'
-  ;;        ([remap detached-open-session] . detached-consult-session))
-  :custom ((detached-show-output-on-attach t)
-           (detached-terminal-data-command system-type)))
+;; (use-package detached
+;;   :init
+;;   (detached-init)
+;;   ;; keeping the original commands for now, I want to get an explicit understanding
+;;   ;; of when/how I use the detached commands, and what benefits they provide
+;;   ;; :bind (;; Replace `async-shell-command' with `detached-shell-command'
+;;   ;;        ([remap async-shell-command] . detached-shell-command)
+;;   ;;        ;; Replace `compile' with `detached-compile'
+;;   ;;        ([remap compile] . detached-compile)
+;;   ;;        ([remap recompile] . detached-compile-recompile)
+;;   ;;        ;; Replace built in completion of sessions with `consult'
+;;   ;;        ([remap detached-open-session] . detached-consult-session))
+;;   :custom ((detached-show-output-on-attach t)
+;;            (detached-terminal-data-command system-type)))
 
 ;;;;; shell appearance
 (use-package sticky-shell
