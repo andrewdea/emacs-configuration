@@ -705,10 +705,16 @@ else `org-next-visible-heading'"
 
   (advice-add 'org-journal--get-entry-path :filter-return #'org-journal-widen-buffer)
 
-  ;; NOTE right now any entry gets the CREATED property which is kinda
-  ;; useless since it's just automatically set to the date of the
-  ;; entry (ie not actually the date it was created)
-  ;; TODO fix this
+  ;; fix the created property: set it to today, as in the day in which
+  ;; we are creating the journal entry. By default it sets to the
+  ;; value of the time variable, which is almost always the date of
+  ;; the entry instead.
+  ;; NOTE that the same day-entry might have multiple sub-entries
+  ;; created on different days: we do not set the properties for those
+  (defun my/org-journal-fix-created-date (&rest _r)
+    (org-set-property-to-today "CREATED"))
+
+  (advice-add 'org-journal--insert-entry-header :after #'my/org-journal-fix-created-date)
 
   ;; TODO standardize diary entries, maybe write a
   ;; `journal-set-as-diary-entry' function that will set the
@@ -720,7 +726,8 @@ else `org-next-visible-heading'"
   :custom
   (org-journal-dir "~/org/journal/")
   (org-journal-file-type 'yearly)
-  (org-journal-time-format ""))
+  (org-journal-time-format "")
+  (org-journal-created-property-timestamp-format "%Y-%m-%d"))
 
 ;;;;; saved links
 ;; TODO these functionalities could work even better by creating a
