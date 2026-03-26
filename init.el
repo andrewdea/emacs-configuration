@@ -413,7 +413,9 @@
   ;; features, seems fine?
   ;; NOTE for org to find eg "~/org/journal.org", we may have to allow
   ;; it to follow symlinks? although it is able to find saved_links,
-  ;; so not sure what the problem is. But it's saying it can't find journal
+  ;; so not sure what the problem is. But it's saying it can't find
+  ;; journal
+  (setq vc-follow-symlinks t)
   (setq org-agenda-files '(
                            ;; "~/org/TODO.org"
                            "~/org/ToBuy.org"
@@ -893,10 +895,12 @@ With prefix arg, also create a corresponding `org-roam' node"
   (defalias #'gh-md-preview #'gh-md-render-buffer))
 
 ;;;; FILE utilities
-(setq find-file-visit-truename t)
+(setq find-file-visit-truename t) ;; TODO is this better on or off?
 
-(defun latest-file (path)
-  "Get latest file in PATH."
+(defun latest-file (path &optional skip-copy)
+  "Get latest file in PATH.
+Call `copy-message-return' on the result. If optional arg SKIP-COPY is non-nil,
+  only message and return it."
   (message "Finding latest file in path: %s" path)
   ;; MAYBE enforce that `path' should end with a /
   (let* ((relative-filename
@@ -905,13 +909,17 @@ With prefix arg, also create a corresponding `org-roam' node"
 		(shell-command-to-string (format "ls -t %s" path))
 		"\n")))
 	 (absolute-filename (file-name-concat path relative-filename)))
-    (copy-message-return absolute-filename
-			 relative-filename)))
+    (copy-message-return
+     (if skip-copy
+	 nil
+       absolute-filename)
+     relative-filename
+     absolute-filename)))
 
 (defun downloads-latest ()
   "Open the latest file added to the Downloads directory"
   (interactive)
-  (find-file (latest-file "/Users/andyjda/Downloads/")))
+  (find-file (latest-file "/Users/andrewjda/Downloads/")))
 
 (defun list-files-newest-first (directory)
   "List files in `directory', sorted by modification date, newest first."
@@ -919,19 +927,47 @@ With prefix arg, also create a corresponding `org-roam' node"
 	  (sort (directory-files-and-attributes zotero-storage-path)
 		#'(lambda (x y) (time-less-p (nth 6 y) (nth 6 x))))))
 
-(defun create-symlink (filename target-dir &optional new-name)
-  "Create a symlink to FILENAME in TARGET-DIR.
-When optional NEW-NAME is non-nil, give the new file this name."
-  (let* ((directory (file-name-directory filename))
-	 (relative (file-name-nondirectory filename))
+(defun create-symlink (og-file target-dir &optional new-name)
+  "Create a symlink to OG-FILE in TARGET-DIR.
+When optional NEW-NAME is non-nil, give the new file this name.
+Otherwise, use OG-FILE's relative name."
+  (let* ((symlink-output-buffer "*symlink-output-buffer*")
+	 (directory (file-name-directory og-file))
+	 (relative (file-name-nondirectory og-file))
 	 (new-name (or new-name (file-name-concat target-dir relative))))
     (if (file-exists-p new-name)
 	(progn
 	  (message "File already exists: %s" new-name)
 	  (error "attempted symlink on existing file"))
       (progn
-	(shell-command (format "ln -s \"%s\" \"%s\"" filename new-name))
-	(message "Created symlinked file %s" new-name)))))
+	;; TODO look into using `call-process' or `start-process' here instead
+	(shell-command
+	 (format "ln -s \"%s\" \"%s\"" og-file new-name)
+	 symlink-output-buffer)
+	;; KLUDGE this is a quite primitive mechanism for verifying that the
+	;; command worked
+	(let ((output
+	       (with-current-buffer symlink-output-buffer
+		 (buffer-string))))
+	  (message "output: %s" output)
+	  (if (length> output 0)
+	      (warn output)
+	    (message "Created symlinked file %s" new-name)))
+	(kill-buffer symlink-output-buffer)))))
+
+
+(defun symlink ()
+  "interactive entry-point to `create-symlink'"
+  (interactive)
+  (let* ((filename (read-file-name "(original) filename to link to: "))
+	 (directory (file-name-directory filename))
+	 (relative (file-name-nondirectory filename))
+	 ;; ensure `ido' doesn't switch us to the existing file
+	 (ido-auto-merge-work-directories-length -1)
+	 (target (read-file-name "new link: " nil nil nil relative))
+	 (target-dir (file-name-directory target))
+	 (new-name (file-name-nondirectory target)))
+    (create-symlink filename target-dir new-name)))
 
 
 ;;;;; dialog boxes
@@ -1062,6 +1098,13 @@ default behavior:
   :bind
   (:map dired-mode-map
         ("E" . wdired-change-to-wdired-mode)))
+
+;; Saved macro
+(defalias 'dired-my-move
+  ;; this works but not as well as I'd like:
+  ;; I'd like to be able to edit the target if needed
+  ;; TODO I would like to have a similar situation for a copy as well
+  (kmacro "C-u w R"))
 
 ;;;;; recent files
 (use-package recentf
