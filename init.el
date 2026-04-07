@@ -291,9 +291,10 @@
 ;; face-spec-set-2: Invalid face box: :color, "#64645E", :line-width, 1, :style, unspecified
 (defun un-theme (&optional arg)
   "Disable all custom themes and load theme ARG."
-  (interactive (list (intern (completing-read "New theme: "
-                                              (mapcar #'symbol-name
-				                      (custom-available-themes))))))
+  (interactive (list (intern
+                      (completing-read "New theme: "
+                                       (mapcar #'symbol-name
+				               (custom-available-themes))))))
   (mapc #'disable-theme custom-enabled-themes)
   (if arg (load-theme arg)
     (call-interactively #'load-theme)))
@@ -454,7 +455,8 @@ Return nil if not applicable."
 	    (and (derived-mode-p 'org-mode) mark-active
 		 (member last-command-event fontify-list)))))
 
-  (add-hook 'self-insert-uses-region-functions #'electric-fontify-will-use-region-p)
+  (add-hook 'self-insert-uses-region-functions
+            #'electric-fontify-will-use-region-p)
 
   (defun electric-fontify ()
     "If in org-mode (or a derived mode),
@@ -705,7 +707,8 @@ else `org-next-visible-heading'"
       (with-current-buffer j-buffer (widen)))
     org-journal-file)
 
-  (advice-add 'org-journal--get-entry-path :filter-return #'org-journal-widen-buffer)
+  (advice-add 'org-journal--get-entry-path
+              :filter-return #'org-journal-widen-buffer)
 
   ;; keep track of when entries are being created.
   ;; NOTE the `org-journal' package uses the "CREATED" property to find
@@ -714,15 +717,17 @@ else `org-next-visible-heading'"
   ;; created on different days: do we want to set the properties for those?
   (defun my/org-journal-set-entry-created-date (&rest _r)
     (org-set-property-to-today "ENTRY_CREATED_ON"))
-  (advice-add 'org-journal--insert-entry-header :after #'my/org-journal-set-entry-created-date)
+  (advice-add 'org-journal--insert-entry-header
+              :after #'my/org-journal-set-entry-created-date)
 
   ;; TODO standardize diary entries, maybe write a
   ;; `journal-set-as-diary-entry' function that will set the
   ;; :DIARY-ENTRY property (are boolean properties a good practice?)
 
-  ;; NOTE right now it gets buggy when I try to add multiple TODO
-  ;; entries for the same day
+  ;; NOTE right now it gets buggy when I try to add multiple entries
+  ;; for the same day.
   ;; TODO try to fix this
+  ;; Do we want to always add the TODO note?
 
   :custom
   (org-journal-dir "~/org/journal/")
