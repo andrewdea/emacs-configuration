@@ -394,6 +394,15 @@
 (use-package org
   :defer 5
   :config
+
+  ;; track progress
+  (setq org-todo-keywords
+        '((sequence "TODO" "PROG" "|" "DONE")))
+
+  ;; the PROG keyword doesn't have a default face: set it here
+  (setq org-todo-keyword-faces
+        (quote (("PROG" :foreground "light blue" :weight bold))))
+
   ;; this is a nice feature
   ;; but it can slow emacs down with certain optimized JIT-lock settings
   (setq org-hide-emphasis-markers t)
