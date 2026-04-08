@@ -414,7 +414,10 @@
 				  (compose-region (match-beginning 1)
 						  (match-end 1) "•"))))))
 
-  (setq org-log-done t)
+  ;; most of the time I don't use this, so I'm keeping the default
+  ;; nil. If needed, it can be set on a per-file basis
+  (setq org-log-done nil)
+
   ;; NOTE there's a weird bug that breaks the
   ;; `org-tag-view' when I have
   ;; "~/org/TODO.org" as one of the agenda
