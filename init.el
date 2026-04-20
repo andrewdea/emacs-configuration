@@ -1293,7 +1293,10 @@ Then, delete all preceding whitespace."
   (interactive "P")
   (if (or (not arg) (> arg 1))
       (move-beginning-of-line 1))
-  (kill-line arg)
+  (kill-line (or arg
+		 ;; if the current line is just whitespace, set arg to 0
+		 (when (looking-at "^\\s-*$")
+		   0)))
   (when (eq (char-before) ?\C-j) ; newline
     (delete-char -1))
   (delete-horizontal-space 'backwards))
