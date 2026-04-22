@@ -426,6 +426,9 @@
                            "~/org/saved_links.org"
                            "~/org/journal/current_journal_file.org"))
 
+  ;; TODO `org-open-at-point' should be able to use search options
+  ;; (see here: https://orgmode.org/manual/Search-Options.html)
+  ;; but I'm having trouble setting that up
   (defun org-headline-text ()
     "Return the text of the current headline.
 Return nil if not applicable."
