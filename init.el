@@ -418,23 +418,13 @@
   ;; nil. If needed, it can be set on a per-file basis
   (setq org-log-done nil)
 
-  ;; NOTE there's a weird bug that breaks the
-  ;; `org-tag-view' when I have
-  ;; "~/org/TODO.org" as one of the agenda
-  ;; files. Not sure what's causing it, but
-  ;; since I'm not using many agenda
-  ;; features, seems fine?
-  ;; NOTE for org to find eg "~/org/journal.org", we may have to allow
-  ;; it to follow symlinks? although it is able to find saved_links,
-  ;; so not sure what the problem is. But it's saying it can't find
-  ;; journal
   (setq vc-follow-symlinks t)
   (setq org-agenda-files '(
-                           ;; "~/org/TODO.org"
+                           "~/org/TODO.org"
                            "~/org/ToBuy.org"
                            "~/org/chtu_todo.org"
                            "~/org/saved_links.org"
-                           "~/org/journal.org"))
+                           "~/org/journal/current_journal_file.org"))
 
   (defun org-headline-text ()
     "Return the text of the current headline.
