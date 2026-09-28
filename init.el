@@ -1114,6 +1114,10 @@ Otherwise, use OG-FILE's relative name."
   '(shows "~/org/shows_to_look_into.org")
   '(jobs "~/org/jobs.org")))
 
+(defun recipes ()
+  (interactive)
+  (ido-find-file-in-dir "~/org/recipes/"))
+
 ;; open a file in my temp directory
 (defun temp ()
   (interactive)
