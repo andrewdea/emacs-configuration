@@ -561,8 +561,10 @@ else `org-next-visible-heading'"
   ;; https://emacsdocs.org/docs/org/Special-Symbols
   ;; and invoke `org-entities-help' for a full list of special symbols
   (org-pretty-entities t)
+  (org-agenda-span 'day)
   :bind (("C-c s" . org-store-link)
 	 ("C-c l" . org-insert-link)
+         ("C-c t" . org-agenda-list)
 	 ("C-c a" . org-agenda)
 	 :map org-mode-map
 	 ("M--" . org-timestamp-down-day)
