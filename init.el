@@ -777,6 +777,16 @@ This function is called from within `org-journal-new-date-entry'"
   (advice-add 'org-journal-new-scheduled-entry
               :override #'my/org-journal-new-scheduled-entry)
 
+  (defun my/org-journal-new-entry (prefix &optional time no-timestamp)
+    "Filter the arguments to `org-journal-new-entry' to toggle prefix.
+This makes its default behavior: no prefix -> regular entry;
+prefix -> TODO entry.
+"
+    (list (not prefix) time no-timestamp))
+
+  (advice-add 'org-jornal-new-entry
+              :filter-args #'my/org-journal-new-entry)
+
   ;; TODO the `read-only-mode' in org-journal is almost never useful
   ;; -- turn it off by default
 
