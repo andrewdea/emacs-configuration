@@ -3722,6 +3722,13 @@ then activate it with `pdf-annot-activate-annotation' to start writing"
 
   (advice-add 'noaa-mode :after #'noaa-set-defaults))
 
+;; Saved macro
+(defalias 'storygraph-yank
+  (kmacro "M-<return> C-y C-a C-SPC <up> <up> C-e <backspace> SPC b y
+SPC C-a <right> <right> <kp-delete> C-SPC C-s b y <left> <left>
+<left>")
+  "yank content from Storygraph into my books file.")
+
 ;; ;;;;; trying out agentic setups
 (use-package agent-shell
   :ensure t
