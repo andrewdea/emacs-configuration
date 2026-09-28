@@ -798,7 +798,7 @@ prefix -> TODO entry.
 
 ;;;;; saved links
 ;; TODO these functionalities could work even better by creating a
-;; "saved links" mode inheriting from `org-mode'
+;; "saved links" mode inheriting from `org-mode'?
 (defvar saved-links-file "~/org/saved_links.org"
   "File to store links (typically found inside the org directory)")
 
@@ -825,6 +825,7 @@ prefix -> TODO entry.
 
 ;; TODO check if we could leverage the existing setup for this
 ;; https://orgmode.org/manual/Archiving.html
+;; TODO might be good to eventually archive the links in a separate file
 (defun link-archive (with-org-roam-node)
   "Archive the link at point (move it to the archived section of the file).
 With prefix arg, also create a corresponding `org-roam' node"
