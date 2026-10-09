@@ -92,13 +92,14 @@ This assumes the path was provided as an argument"
   "Run the POSIX command `find' in the current folder."
   (interactive)
   (let ((default-command
-	  (concat "find "
-		  default-directory
-		  find-default-options
-		  shell-default-options
-		  "-iname "
-		  "'' "
-		  shell-async)))
+	 (concat "find '"
+		 default-directory
+                 "'"
+		 find-default-options
+		 shell-default-options
+		 "-iname "
+		 "'' "
+		 shell-async)))
     (shell-output-execute-command (my-prompt default-command))))
 
 ;;;###autoload
@@ -116,9 +117,12 @@ This assumes the path was provided as an argument"
 
 (defun my-prompt (default-command)
   "Put DEFAULT-COMMAND in prompt and place cursor in expected position."
-  (read-from-minibuffer "shell command: "
-			`(,default-command . ; initial contents
-			  ,(+ 2 (string-match "'" default-command))))); cursor pos
+  (read-from-minibuffer
+   "shell command: "
+   ;; initial contents:
+   `(,default-command .
+                      ;; cursor position:
+		      ,(+ 2 (string-match "''" default-command)))))
 
 ;; get a file name from a line in the shell-output buffer
 (defun parse-file-at-line ()
