@@ -1118,10 +1118,15 @@ Otherwise, use OG-FILE's relative name."
   (interactive)
   (ido-find-file-in-dir "~/org/recipes/"))
 
+(defun calibre-library ()
+  (interactive)
+  (ido-find-file-in-dir
+   "/Users/andyjda/Library/Mobile Documents/com~apple~CloudDocs/Calibre Library/"))
+
 ;; open a file in my temp directory
 (defun temp ()
   (interactive)
-  (find-file (read-file-name "find-file " "~/temp/")))
+  (ido-find-file-in-dir "~/temp/"))
 
 ;;;;; resolve home dir
 (defun user-home-dir ()
