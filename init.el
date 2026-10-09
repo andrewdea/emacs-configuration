@@ -1289,7 +1289,12 @@ ARGS is the list arguments with which Emacs should be started, including the
 							  command-line-args)))))
       (kill-emacs))))
 
-
+;;;;; search
+(use-package ripgrep
+  :custom
+  (ripgrep-arguments '(
+                       " -L " ; follow symlinks
+                       )))
 ;;;; TEXT EDITING and keyboard commands
 ;;;;; keys
 ;; allow more flexibility by binding the right-side cmd-key to C-
