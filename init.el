@@ -397,7 +397,8 @@
 
   ;; track progress
   (setq org-todo-keywords
-        '((sequence "TODO" "PROG" "|" "DONE")))
+        '((sequence "TODO" "PROG" "|" "DONE")
+          (sequence "REPEAT" "|" "DONE")))
 
   ;; the PROG keyword doesn't have a default face: set it here
   (setq org-todo-keyword-faces
