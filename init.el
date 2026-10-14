@@ -395,6 +395,18 @@
   :defer 5
   :config
 
+  ;; TODO for recurring tasks, can we set it up so that by default we
+  ;; do NOT keep track of every status change?
+  ;; I think my preferred setup is that when a state change is added,
+  ;; we check how many state changes are there, and we ensure they
+  ;; stay below a certain customizable threshold (eg 5 state changes
+  ;; per headline)
+
+  ;; TODO I'd like it to be easier to create checkboxes in plain
+  ;; lists. If I understand correctly, by default the quickest way is
+  ;; `org-toggle-checkbox' with a PREFIX argument. This function
+  ;; should maybe be bound to a more ergonomic shortcut than "C-c C-x C-b".
+
   ;; track progress
   (setq org-todo-keywords
         '((sequence "TODO" "PROG" "|" "DONE")
@@ -1319,7 +1331,7 @@ ARGS is the list arguments with which Emacs should be started, including the
 (defun my/yank-cleanup-query-strings (str)
   "If the STR being yanked looks like a URL, remove every part of it following
 a question mark"
-  (if (and url-cleanup-query-strings-in-yank?
+  (if (and url-yank-cleanup-query-strings?
            (string-match-p "^http.*" str)
            (not (string-match-p
                  ;; some URLs really do require the query string.
@@ -1336,10 +1348,10 @@ a question mark"
 
 (defun set-local-yank-cleanup-query-strings ()
   "Activate `my/yank-cleanup-query-strings' locally in this buffer.
-This is done by setting `url-cleanup-query-strings-in-yank?' to
+This is done by setting `url-yank-cleanup-query-strings?' to
   buffer-local, and setting it to true."
-  (make-local-variable 'url-cleanup-query-strings-in-yank?)
-  (setq url-cleanup-query-strings-in-yank? t))
+  (make-local-variable 'url-yank-cleanup-query-strings?)
+  (setq url-yank-cleanup-query-strings? t))
 
 (defun copy-message-return (it &optional it-message it-return)
   "Handy function to perform these three actions together.
@@ -3346,6 +3358,7 @@ If we run into issues with the script, return the output of the command, unless
       (cmd (format "killall %s" app)))))
 
 (defun app-open (app)
+  ;; TODO make this not case sensitive
   (interactive (list (completing-read "open "
                                       (app-list-all))))
   (cmd (format "open -a \"%s\"" app)))
