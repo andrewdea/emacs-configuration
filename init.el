@@ -549,10 +549,12 @@ else `org-next-visible-heading'"
 	(org-forward-element)
       (org-next-visible-heading 1)))
 
+
   :hook
   (org-mode . org-indent-mode)
   (org-mode . turn-on-flyspell)
   (org-mode . electric-pair-local-mode)
+  (org-mode . set-local-yank-cleanup-query-strings)
   :custom
   ;; allow each org file to set their own preferred image-width
   (org-image-actual-width nil)
@@ -1307,6 +1309,38 @@ ARGS is the list arguments with which Emacs should be started, including the
 (setq ns-right-command-modifier 'control)
 
 ;;;;; utilities
+
+(defvar url-yank-cleanup-query-strings? nil
+  "Boolean determining whether to remove every part of a URL from '?'
+  forward when yanking")
+;; thinking of keeping this^ nil by default but setting it to t in
+;; some modes such as org
+
+(defun my/yank-cleanup-query-strings (str)
+  "If the STR being yanked looks like a URL, remove every part of it following
+a question mark"
+  (if (and url-cleanup-query-strings-in-yank?
+           (string-match-p "^http.*" str)
+           (not (string-match-p
+                 ;; some URLs really do require the query string.
+                 ;; eventually it might be good to list these in a
+                 ;; separate variable and use that here
+                 (regexp-quote
+                  "https://www.youtube.com/watch?")
+                 str)))
+      (replace-regexp-in-string "\?.*$" "" str)
+    str))
+
+;; add to list
+(push #'my/yank-cleanup-query-strings yank-transform-functions)
+
+(defun set-local-yank-cleanup-query-strings ()
+  "Activate `my/yank-cleanup-query-strings' locally in this buffer.
+This is done by setting `url-cleanup-query-strings-in-yank?' to
+  buffer-local, and setting it to true."
+  (make-local-variable 'url-cleanup-query-strings-in-yank?)
+  (setq url-cleanup-query-strings-in-yank? t))
+
 (defun copy-message-return (it &optional it-message it-return)
   "Handy function to perform these three actions together.
 Copy a string, message IT in the minibuffer, and return IT.
