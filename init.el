@@ -784,7 +784,7 @@ prefix -> TODO entry.
 "
     (list (not prefix) time no-timestamp))
 
-  (advice-add 'org-jornal-new-entry
+  (advice-add 'org-journal-new-entry
               :filter-args #'my/org-journal-new-entry)
 
   ;; TODO the `read-only-mode' in org-journal is almost never useful
