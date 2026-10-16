@@ -703,11 +703,17 @@ else `org-next-visible-heading'"
 (use-package org-journal
   :init
   (defun journal ()
+    "Open the journal file at the current date.
+If there's no entry for this date, just go to the bottom of the file"
     (interactive)
     (let ((result (org-journal-read-or-display-entry (current-time))))
       (when (equal result "No journal entry for this date.")
         (org-journal-open-current-journal-file))))
 
+  ;; TODO: right now `org-journal' makes heavy use of the "CREATED"
+  ;; property (with the string literal or with `org-journal--created-re')
+  ;; a better option would be a property like "SCHEDULED_ON" which
+  ;; actually matches the way I'm using the journal
   :config
   (set-face-attribute 'org-journal-calendar-entry-face
                       nil :inherit 'diary :foreground "yellow")
@@ -794,7 +800,8 @@ This function is called from within `org-journal-new-date-entry'"
 
   (defun my/org-journal-new-entry (prefix &optional time no-timestamp)
     "Filter the arguments to `org-journal-new-entry' to toggle prefix.
-This makes its default behavior: no prefix -> regular entry;
+This makes its default behavior:
+no prefix -> regular entry;
 prefix -> TODO entry.
 "
     (list (not prefix) time no-timestamp))
@@ -1495,7 +1502,10 @@ Then, delete all preceding whitespace."
 (defmacro make-it-quiet (&rest body)
   `(let ((inhibit-message t))
      (progn ,@body)
-     ;; if message aren't actually inhibit, use this to clear the echo area:
+     ;; if message aren't actually inhibited, use this to clear the echo
+     ;; area:
+     ;; NOTE: October 16, 2026, 11:29AM (EDT)
+     ;; is this actually useful though?
      (message nil)))
 
 (defun region-at-point ()
