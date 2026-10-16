@@ -805,6 +805,27 @@ prefix -> TODO entry.
   ;; TODO the `read-only-mode' in org-journal is almost never useful
   ;; -- turn it off by default
 
+  (defun my/org-journal--list-files ()
+    "Returns a list of all files in the journal directory.
+Meant to override `org-journal--list-files', which misses symlinks
+    because it uses `directory-files-recursively', replaced here by `directory-files'"
+    (org-journal--create-journal-dir)
+    ;; grab the file list. We can’t use directory-files-recursively’s
+    ;; regexp facility to filter it, because that only checks the
+    ;; regexp against the base filenames, and we need to check it
+    ;; against filenames relative to org-journal-dir.
+    (let ((file-list (directory-files
+                      (file-truename (expand-file-name
+                                      (file-name-as-directory org-journal-dir))) "\.*"))
+          (predicate (lambda (file-path)
+                       (and (string-match-p (org-journal--dir-and-file-format->pattern) file-path)
+                            (or org-journal-encrypt-journal
+                                (not (string-match-p "\.\\(gpg\\|age\\)$" file-path)))))))
+      (seq-filter predicate file-list)))
+
+  (advice-add 'org-journal--list-files
+              :override #'my/org-journal--list-files)
+
   :custom
   (org-journal-dir "~/org/journal/")
   (org-journal-file-type 'yearly)
