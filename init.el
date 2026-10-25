@@ -795,9 +795,6 @@ This function is called from within `org-journal-new-date-entry'"
          time org-time-was-given nil nil nil (list
                                               org-end-time-was-given)))))
 
-  (advice-add 'org-journal-new-scheduled-entry
-              :override #'my/org-journal-new-scheduled-entry)
-
   (defun my/org-journal-new-entry (prefix &optional time no-timestamp)
     "Filter the arguments to `org-journal-new-entry' to toggle prefix.
 This makes its default behavior:
@@ -806,8 +803,16 @@ prefix -> TODO entry.
 "
     (list (not prefix) time no-timestamp))
 
-  (advice-add 'org-journal-new-entry
-              :filter-args #'my/org-journal-new-entry)
+  ;; NOTE: October 21, 2026, 10:11AM (EDT)
+  ;; these pieces of advice appear to mess with the logic to find the right
+  ;; headline when creating a new entry;
+  ;; TODO need to look into it and fix it
+  ;; (advice-add 'org-journal-new-scheduled-entry
+  ;;             :override #'my/org-journal-new-scheduled-entry)
+
+
+  ;; (advice-add 'org-journal-new-entry
+  ;;             :filter-args #'my/org-journal-new-entry)
 
   ;; TODO the `read-only-mode' in org-journal is almost never useful
   ;; -- turn it off by default
