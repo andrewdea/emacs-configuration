@@ -731,7 +731,7 @@ If there's no entry for this date, just go to the bottom of the file"
       ;; we're creating a new entry.
       ;; in those cases, we know we'll be under the entry's heading,
       ;; so we need to move up.
-      (org-previous-visible-heading 1)
+      (org-up-element)
       (org-narrow-to-subtree)))
 
   ;; a new entry is narrowed to display only that day in the buffer
@@ -763,10 +763,6 @@ If there's no entry for this date, just go to the bottom of the file"
   ;; TODO standardize diary entries, maybe write a
   ;; `journal-set-as-diary-entry' function that will set the
   ;; :DIARY-ENTRY property (are boolean properties a good practice?)
-
-  ;; NOTE right now it gets buggy when I try to add multiple entries
-  ;; for the same day.
-  ;; TODO try to fix this
 
   ;; default to non-TODO entries
   (defun my/org-journal-new-scheduled-entry (prefix &optional scheduled-time)
