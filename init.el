@@ -764,57 +764,17 @@ If there's no entry for this date, just go to the bottom of the file"
   ;; `journal-set-as-diary-entry' function that will set the
   ;; :DIARY-ENTRY property (are boolean properties a good practice?)
 
-  ;; default to non-TODO entries
-  (defun my/org-journal-new-scheduled-entry (prefix &optional scheduled-time)
-    "Create a new entry in the future with an active timestamp.
+  (defun my/org-journal-new-scheduled-entry (prefix-and-time)
+    "Flip the prefix: the default behavior is a non-TODO entry;
+a prefix makes it TODO.
+Meant as advice to `org-journal-new-scheduled-entry'"
+    (list (not (car prefix-and-time)) (cadr prefix-and-time)))
 
-With non-nil prefix argument create a TODO entry.
-Otherwise, create a regular entry.
-This function is meant to override the original
-`org-journal-new-scheduled-entry', which uses the prefix argument the
-other way around. I prefer the default to be a non-TODO entry.
-
-This function is called from within `org-journal-new-date-entry'"
-    (interactive "P")
-    (let* ((org-time-was-given nil) (org-end-time-was-given nil)
-           (time (or scheduled-time (org-time-string-to-time (org-read-date nil nil nil "Date:"))))
-           org-journal-carryover-items)
-      (when (time-less-p time (current-time))
-        (user-error "Scheduled time needs to be in the future"))
-      (org-journal-new-entry nil time t)
-      (when prefix
-        (insert "TODO "))
-      (if org-time-was-given
-          (insert (format-time-string org-journal-time-format time)))
-      (save-excursion
-        (insert "\n"
-                org-journal-scheduled-string
-                (if (> (length org-journal-scheduled-string) 0) " " ""))
-        (org-insert-time-stamp
-         time org-time-was-given nil nil nil (list
-                                              org-end-time-was-given)))))
-
-  (defun my/org-journal-new-entry (prefix &optional time no-timestamp)
-    "Filter the arguments to `org-journal-new-entry' to toggle prefix.
-This makes its default behavior:
-no prefix -> regular entry;
-prefix -> TODO entry.
-"
-    (list (not prefix) time no-timestamp))
-
-  ;; NOTE: October 21, 2026, 10:11AM (EDT)
-  ;; these pieces of advice appear to mess with the logic to find the right
-  ;; headline when creating a new entry;
-  ;; TODO need to look into it and fix it
-  ;; (advice-add 'org-journal-new-scheduled-entry
-  ;;             :override #'my/org-journal-new-scheduled-entry)
-
-
-  ;; (advice-add 'org-journal-new-entry
-  ;;             :filter-args #'my/org-journal-new-entry)
+  (advice-add 'org-journal-new-scheduled-entry :filter-args #'my/org-journal-new-scheduled-entry)
 
   ;; TODO the `read-only-mode' in org-journal is almost never useful
   ;; -- turn it off by default
+  ;; DONE today in `org-journal' November 11, 2026, 11:32AM (EST)
 
   (defun my/org-journal--list-files ()
     "Returns a list of all files in the journal directory.
