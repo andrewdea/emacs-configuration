@@ -701,6 +701,9 @@ else `org-next-visible-heading'"
 
 ;;;;; org journal
 (use-package org-journal
+  :load-path "custom/packages/org-journal/"
+  :defer 6
+  ;; TODO ideally `calendar' would automatically trigger loading this package
   :init
   (defun journal ()
     "Open the journal file at the current date.
