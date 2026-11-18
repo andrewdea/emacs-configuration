@@ -1015,7 +1015,7 @@ Call `copy-message-return' on the result. If optional arg SKIP-COPY is non-nil,
   (let* ((relative-filename
 	  (car (split-string
 		;; TODO: how to deal with this command failing?
-		(shell-command-to-string (format "ls -t %s" path))
+		(shell-command-to-string (format "ls -t '%s'" path))
 		"\n")))
 	 (absolute-filename (file-name-concat path relative-filename)))
     (copy-message-return
