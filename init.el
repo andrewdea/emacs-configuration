@@ -833,6 +833,24 @@ Meant to override `org-journal--list-files', which misses symlinks
   (advice-add 'org-journal--list-files
               :override #'my/org-journal--list-files)
 
+  (defun journal-move-to-proper-spot ()
+    "Move the current subtree into its proper header date.
+This is useful when transferring entries created via beorg (usually at
+  the bottom of the file)."
+    (interactive)
+    (if-let*
+        ((time (when (or (org-at-timestamp-p 'lax)
+	                 (re-search-forward org-ts-regexp nil 'noerror))
+                 (org-time-string-to-time (match-string 1)))))
+        (progn
+          (org-cut-subtree)
+          (org-journal-new-entry nil time)
+          (insert-for-yank (replace-regexp-in-string
+                            "\*+ "
+                            ""
+                            (current-kill 0))))
+      (warn "no timestamp found")))
+
   :custom
   (org-journal-dir "~/org/journal/")
   (org-journal-file-type 'yearly)
