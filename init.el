@@ -3560,13 +3560,13 @@ middle of the window instead."
 
 
 (add-hook 'comint-mode-hook
-	  (lambda ()
-	    (visual-line-mode -1)
-	    (electric-pair-local-mode t)
-	    (center-shell-mode t)
-            (setq comint-prompt-read-only t)
-            (comint-output-read-only-mode t)
-            (comint-fold-setup)))
+(lambda ()
+  (visual-line-mode -1)
+  (electric-pair-local-mode t)
+  (center-shell-mode t)
+  (setq comint-prompt-read-only t)
+  (comint-output-read-only-mode t)
+  (comint-fold-setup)))
 
 ;;;;; terminal emulator
 (use-package ghostel
