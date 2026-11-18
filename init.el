@@ -833,15 +833,19 @@ Meant to override `org-journal--list-files', which misses symlinks
   (advice-add 'org-journal--list-files
               :override #'my/org-journal--list-files)
 
-  (defun journal-move-to-proper-spot ()
+  (defun journal-move-to-proper-spot (&optional confirm)
     "Move the current subtree into its proper header date.
 This is useful when transferring entries created via beorg (usually at
   the bottom of the file)."
-    (interactive)
+    (interactive "P")
     (if-let*
         ((time (when (or (org-at-timestamp-p 'lax)
 	                 (re-search-forward org-ts-regexp nil 'noerror))
-                 (org-time-string-to-time (match-string 1)))))
+                 (org-time-string-to-time (match-string 1))))
+         (checked (or (not confirm)
+                      (y-or-n-p
+                       (format "move entry to %s?"
+                               (format-time-string "%Y-%m-%d" time))))))
         (progn
           (org-cut-subtree)
           (org-journal-new-entry nil time)
@@ -850,6 +854,18 @@ This is useful when transferring entries created via beorg (usually at
                             ""
                             (current-kill 0))))
       (warn "no timestamp found")))
+
+  (defun journal-move-all (&optional no-confirm)
+    "Move all entries at the end of the journal buffer to their proper
+spot."
+    (interactive "P")
+    (cl-loop while (progn
+                     (widen)
+                     (end-of-buffer)
+                     (org-previous-visible-heading 1)
+                     (org-fold-show-subtree)
+                     t)
+             do (journal-move-to-proper-spot (not no-confirm))))
 
   :custom
   (org-journal-dir "~/org/journal/")
