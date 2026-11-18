@@ -404,8 +404,9 @@
 
   ;; TODO I'd like it to be easier to create checkboxes in plain
   ;; lists. If I understand correctly, by default the quickest way is
-  ;; `org-toggle-checkbox' with a PREFIX argument. This function
-  ;; should maybe be bound to a more ergonomic shortcut than "C-c C-x C-b".
+  ;; `org-toggle-checkbox' with a PREFIX argument.
+  ;; This function should maybe be bound to a more ergonomic shortcut
+  ;; currently it's "C-c C-x C-b".
 
   ;; track progress
   (setq org-todo-keywords
@@ -561,12 +562,43 @@ else `org-next-visible-heading'"
 	(org-forward-element)
       (org-next-visible-heading 1)))
 
+  ;; a special font for quick jotted down notes
+  ;; the idea is to mark some writing as
+  ;; 'cursive/throw-away manuscripted annotations' and differentiate it
+  ;; from more durable notes.
+  ;; NOTE this implementation is kinda hacky: ideal would be to be able
+  ;; to define my own special block and have direct control over their
+  ;; faces?
+  ;; even better would be to be able to fontify things quickly without
+  ;; needing to put them in their own blocks
+
+  ;; this might be relevant:
+  ;; https://www.gnu.org/software/emacs/manual/html_node/modus-themes/DIY-Font-configurations-for-Org-and-others.html
+  ;; or this:
+  ;; https://protesilaos.com/emacs/fontaine
+
+  (defface jots
+    '((t (:family "Chalkboard SE")))
+    "Quick face for jotted-down notes"
+    :group 'org-faces)
+
+  (setq org-src-block-faces
+        '(("jot" jots)))
+
+  ;; just a TEMP convenience thing for Pale Fire
+  (defun breadcrumb ()
+    (interactive)
+    ;; TODO would be cool to figure out a way to fontify this so it
+    ;; stands out more?
+    (insert "_Breadcrumb 👣:_"))
 
   :hook
   (org-mode . org-indent-mode)
   (org-mode . turn-on-flyspell)
   (org-mode . electric-pair-local-mode)
   (org-mode . set-local-yank-cleanup-query-strings)
+  ;; `variable-pitch-mode' can be useful but usually looks a little weird
+  ;; (org-mode . variable-pitch-mode)
   :custom
   ;; allow each org file to set their own preferred image-width
   (org-image-actual-width nil)
@@ -575,8 +607,12 @@ else `org-next-visible-heading'"
   ;; display things like \to as arrow etc
   ;; https://emacsdocs.org/docs/org/Special-Symbols
   ;; and invoke `org-entities-help' for a full list of special symbols
-  (org-pretty-entities t)
+  ;; (org-pretty-entities t) ; more annoying than not
   (org-agenda-span 'day)
+  ;; apply the `org-block' face to `org-verse' and `org-quote'
+  (org-fontify-quote-and-verse-blocks t)
+  ;; a simpler `org-goto-interface' to easily navigate to headlines
+  (org-goto-interface 'outline-path-completion)
   :bind (("C-c s" . org-store-link)
 	 ("C-c l" . org-insert-link)
          ("C-c t" . org-agenda-list)
@@ -1127,7 +1163,8 @@ An element is assumed to be a list whose car is the intended name for
   '(cooking "~/org/cooking.org")
   '(languages "~/org/language_learning.org")
   '(shows "~/org/shows_to_look_into.org")
-  '(jobs "~/org/jobs.org")))
+  '(jobs "~/org/jobs.org")
+  '(pale-fire "~/org-roam/pale_fire.org")))
 
 ;; for directory shortcuts, I like a way to quickly select the desired
 ;; file, via `ido-find-file-in-dir'
