@@ -3548,7 +3548,7 @@ middle of the window instead."
      end '(read-only t)))
 
   (defun comint-undo-read-only-props ()
-    ;; still doesn't seem to be working :(
+    ;; still doesn't seem to be working :/
     (remove-text-properties (point-min) (point-max) '(read-only nil)))
 
   ;; MAYBE: add logic so when the mode is disabled, it sets all of the
