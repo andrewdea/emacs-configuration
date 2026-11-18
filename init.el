@@ -1125,10 +1125,13 @@ Otherwise, use OG-FILE's relative name."
   (interactive)
   (ido-find-file-in-dir "~/org/recipes/"))
 
+(defvar calibre-library-path
+  "/Users/andyjda/Library/Mobile Documents/com~apple~CloudDocs/Calibre Library/")
+
 (defun calibre-library ()
   (interactive)
   (ido-find-file-in-dir
-   "/Users/andyjda/Library/Mobile Documents/com~apple~CloudDocs/Calibre Library/"))
+   calibre-library-path))
 
 ;; open a file in my temp directory
 (defun temp ()
@@ -3680,19 +3683,101 @@ then activate it with `pdf-annot-activate-annotation' to start writing"
   (:map pdf-annot-minor-mode-map
 	("C-a w" . pdf-annot-write-highlight-annotation)))
 
-(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+;; (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 
 (setq package-vc-allow-build-commands t)
 ;; TODO make it only support the file-formats I want to support, NOT
 ;; epub or xlsx
-(use-package reader
-  :vc (:url "https://codeberg.org/divyaranjan/emacs-reader"
-  	    :make "all"))
+;; (use-package reader
+;;   :vc (:url "https://codeberg.org/divyaranjan/emacs-reader"
+;;   	    :make "all"))
 
 
 ;;;;; whatsapp
 (use-package wasabi
   :load-path "custom/packages/wasabi/")
+
+;;;;; Calibre & epub
+(defun epub-normalize-this-html ()
+  "Normalize an epub buffer by removing unnecessary html content
+(which tends to mess up formatting on the e-Reader)."
+  (interactive)
+  (save-excursion
+    (beginning-of-buffer)
+    ;; NOTE: use "\\(.\\|\n\\)" for 'any character including newline'
+    (let ((head (when
+                    (re-search-forward "<head>\\(.\\|\n\\)*</head>" nil 'noerror)
+                  (replace-match "")
+                  t))
+          (align-div
+           (when (re-search-forward
+                  "<div class=\".*\" style=\"text-align:center\">" nil 'noerror)
+             (replace-match "")
+             (end-of-buffer)
+             (re-search-backward "</div>")
+             (replace-match "")
+             t)))
+      (message "replaced head? %s; and align-div? %s"
+               head
+               align-div))))
+
+(defun epub-normalize-all-internal-html (epub-file)
+  "Apply `epub-normalize-this-html' to all html files within this
+epub."
+  ;; TODO may want to use `with-temp-buffer' and
+  ;; `insert-file-contents' to make it leaner?
+  (find-file epub-file)
+  ;; NOTE the assumption is that we are opening the file in `arc-mode'
+  ;; search for every .html within the buffer, collect the points
+  ;; then iterate through the points, open the html file, and apply
+  ;; `epub-normalize-this-html'.
+  ;; We have to break this into two separate loops (first collect the
+  ;; points, then open each file at the corresponding line) because
+  ;; `re-search-forward' wasn't working properly when it was all a
+  ;; single loop.
+  ;; This may be due to the fact that `epub-normalize-this-html'
+  ;; itself uses `re-search-forward' internally
+  (beginning-of-buffer)
+  (let ((points (cl-loop
+                 while (re-search-forward ".*\.html" nil 'noerror)
+                 collect (point))))
+    (when
+        (y-or-n-p (format "Found %s html files inside %s; convert?"
+                          (length points)
+                          (file-name-nondirectory epub-file)))
+      (cl-loop for p in points
+               do
+               (goto-char p)
+               ;; (message "(thing-at-point 'line): %s" (thing-at-point
+               ;;                                        'line))
+               (archive-extract)
+               ;; (message "looking at: '%s'" (file-name-nondirectory buffer-file-name))
+               (epub-normalize-this-html)
+               (save-buffer)
+               (kill-buffer))))
+  (kill-buffer))
+
+(defun epub-dirs-normalize ()
+  (interactive)
+  (let* ((selected-dirs (or
+                         (dired-get-marked-files)
+                         (when (y-or-n-p
+                                "\
+No marked directories; use instead the latest directory added to Calibre?")
+                           (list (latest-file calibre-library-path)))))
+         (_ (message "selected-dirs: %s" selected-dirs))
+         (epub-files
+          (delete-dups
+           (cl-loop for dir in selected-dirs
+                    append (directory-files-recursively dir
+                                                        ".*\.epub")))))
+    (when
+        (y-or-n-p
+         (format "Normalize these epub-files: \n%s" (string-join epub-files "\n\n")))
+      (cl-loop for file in epub-files
+               do (progn
+                    (message "file: %s" file)
+                    (epub-normalize-all-internal-html file))))))
 
 ;;;; GAMES
 ;;;;; tetris
