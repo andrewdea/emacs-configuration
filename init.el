@@ -3570,13 +3570,6 @@ middle of the window instead."
 
 ;;;;; terminal emulator
 (use-package ghostel
-  :custom
-  ;; attempting to support this in `sticky-shell-mode'
-  ;; TODO this doesn't appear to work super well because it doesn't interact
-  ;; well with character insertion
-  (sticky-shell-supported-modes (append
-				 sticky-shell-supported-modes
-				 '('ghostel-mode #'ghostel-previous-prompt)))
   :bind (("C-x m" . ghostel)
          :map ghostel-mode-map
          ("C-c C-p" . ghostel-previous-prompt)
